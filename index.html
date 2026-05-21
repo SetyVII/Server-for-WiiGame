@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>Mando de Pruebas Web</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #1e1e1e;
+                color: #ffffff;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+            }
+            #status {
+                margin-bottom: 20px;
+                padding: 10px;
+                border-radius: 5px;
+                background-color: #333;
+            }
+            .connected {
+                color: #4caf50;
+            }
+            .disconnected {
+                color: #f44336;
+            }
+
+            .controller-layout {
+                display: flex;
+                gap: 50px;
+                align-items: center;
+            }
+
+            .d-pad {
+                display: grid;
+                grid-template-columns: 60px 60px 60px;
+                grid-template-rows: 60px 60px 60px;
+                gap: 5px;
+            }
+
+            button {
+                background-color: #444;
+                color: white;
+                border: 2px solid #555;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: bold;
+                cursor: pointer;
+                user-select: none;
+                touch-action: manipulation;
+            }
+
+            button:active {
+                background-color: #666;
+                border-color: #888;
+            }
+
+            .btn-up {
+                grid-column: 2;
+                grid-row: 1;
+            }
+            .btn-left {
+                grid-column: 1;
+                grid-row: 2;
+            }
+            .btn-right {
+                grid-column: 3;
+                grid-row: 2;
+            }
+            .btn-down {
+                grid-column: 2;
+                grid-row: 3;
+            }
+
+            .action-pad {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .btn-a {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                background-color: #007acc;
+                border-color: #005999;
+            }
+            .btn-a:active {
+                background-color: #0098ff;
+            }
+            .btn-b {
+                width: 70px;
+                height: 70px;
+                border-radius: 50%;
+                background-color: #5a2d82;
+                border-color: #3d1f5a;
+            }
+            .btn-b:active {
+                background-color: #7b3fbf;
+            }
+
+            #log {
+                margin-top: 20px;
+                font-family: monospace;
+                color: #aaa;
+                font-size: 14px;
+            }
+
+            #sensor-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+                margin-top: 20px;
+            }
+
+            #sensor-data {
+                font-family: monospace;
+                font-size: 14px;
+                background-color: #2a2a2a;
+                border: 1px solid #444;
+                border-radius: 8px;
+                padding: 10px 20px;
+                color: #ccc;
+                min-width: 180px;
+                text-align: center;
+            }
+
+            #sensor-data span {
+                color: #0098ff;
+                font-weight: bold;
+            }
+
+            #mic-section {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+                margin-top: 12px;
+            }
+
+            #mic-label {
+                font-family: monospace;
+                font-size: 14px;
+                color: #ccc;
+            }
+
+            #mic-label span {
+                font-weight: bold;
+                color: #aaa;
+            }
+
+            #volume-bar-container {
+                width: 220px;
+                height: 14px;
+                background-color: #2a2a2a;
+                border: 1px solid #444;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            #volume-bar {
+                height: 100%;
+                width: 0%;
+                background-color: #4caf50;
+                border-radius: 8px;
+                transition:
+                    width 0.05s ease-out,
+                    background-color 0.1s;
+            }
+
+            #volume-bar.yelling {
+                background-color: #f44336;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="status" class="disconnected">🔴 Desconectado</div>
+
+        <div class="controller-layout">
+            <!-- Pad Direccional -->
+            <div class="d-pad">
+                <button class="btn-up" data-x="0" data-y="1">W</button>
+                <button class="btn-left" data-x="-1" data-y="0">A</button>
+                <button class="btn-right" data-x="1" data-y="0">D</button>
+                <button class="btn-down" data-x="0" data-y="-1">S</button>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="action-pad">
+                <button class="btn-b">B</button>
+                <button class="btn-a">A</button>
+            </div>
+        </div>
+
+        <div id="log">Esperando inputs...</div>
+
+        <div id="mic-section">
+            <div id="mic-label">
+                🎙️ Volumen: <span id="mic-status">inactivo</span>
+            </div>
+            <div id="volume-bar-container">
+                <div id="volume-bar"></div>
+            </div>
+        </div>
+
+        <div id="sensor-section">
+            <div id="sensor-btn-container">
+                <button id="start-sensor-btn">
+                    🎮 Activar Sensores para Jugar
+                </button>
+            </div>
+            <div id="sensor-data">
+                📡 γ <span id="sensor-gamma">--</span> &nbsp; β
+                <span id="sensor-beta">--</span>
+            </div>
+        </div>
+
+        <script>
+            const statusEl = document.getElementById("status");
+            const logEl = document.getElementById("log");
+            let ws;
+            let myPlayerId = null; // Guardamos quién somos
+
+            let lastSensorTime = 0;
+            const SENSOR_TICK_RATE = 50; // Enviar datos cada 50ms (20 FPS)
+
+            const startBtn = document.getElementById("start-sensor-btn");
+            const sensorGammaEl = document.getElementById("sensor-gamma");
+            const sensorBetaEl = document.getElementById("sensor-beta");
+
+            // Estado completo del input — se envía cada vez que algo cambia
+            const currentInput = {
+                gamma: 0,
+                beta: 0,
+                dpadX: 0,
+                dpadY: 0,
+                btnA: false,
+                btnB: false,
+            };
+
+            function sendCurrentInput() {
+                if (!ws || ws.readyState !== WebSocket.OPEN || !myPlayerId)
+                    return;
+                ws.send(
+                    JSON.stringify({
+                        type: "input",
+                        ...currentInput,
+                        isYelling,
+                    }),
+                );
+            }
+
+            function sendPuzzleAction(puzzleId, status) {
+                if (!ws || ws.readyState !== WebSocket.OPEN || !myPlayerId)
+                    return;
+                ws.send(
+                    JSON.stringify({ type: "puzzle_action", puzzleId, status }),
+                );
+            }
+            const micStatusEl = document.getElementById("mic-status");
+            const volumeBarEl = document.getElementById("volume-bar");
+
+            let isYelling = false;
+            let audioContext, analyser, microphone;
+
+            async function iniciarMicrofono() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                    });
+                    audioContext = new (
+                        window.AudioContext || window.webkitAudioContext
+                    )();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 256;
+                    microphone = audioContext.createMediaStreamSource(stream);
+                    microphone.connect(analyser);
+                    micStatusEl.textContent = "activo";
+                    micStatusEl.style.color = "#4caf50";
+                    medirVolumen();
+                } catch (err) {
+                    console.error("Error al acceder al micrófono:", err);
+                    micStatusEl.textContent = "sin permiso";
+                    micStatusEl.style.color = "#f44336";
+                }
+            }
+
+            function medirVolumen() {
+                requestAnimationFrame(medirVolumen);
+                const dataArray = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(dataArray);
+
+                let suma = 0;
+                for (let i = 0; i < dataArray.length; i++) suma += dataArray[i];
+                const volumenPromedio = suma / dataArray.length; // 0 - 255
+
+                const umbralGrito = 100;
+                isYelling = volumenPromedio > umbralGrito;
+
+                // Actualizar barra visual (escala 0-255 a 0-100%)
+                const porcentaje = Math.min((volumenPromedio / 255) * 100, 100);
+                volumeBarEl.style.width = porcentaje + "%";
+                volumeBarEl.classList.toggle("yelling", isYelling);
+                micStatusEl.textContent = isYelling
+                    ? "¡GRITANDO! 📢"
+                    : "activo";
+                micStatusEl.style.color = isYelling ? "#f44336" : "#4caf50";
+            }
+
+            startBtn.addEventListener("click", () => {
+                if (
+                    typeof DeviceOrientationEvent !== "undefined" &&
+                    typeof DeviceOrientationEvent.requestPermission ===
+                        "function"
+                ) {
+                    // Requerido en iOS 13+ y algunos Androids nuevos
+                    DeviceOrientationEvent.requestPermission()
+                        .then((permissionState) => {
+                            if (permissionState === "granted") {
+                                iniciarSensores();
+                                iniciarMicrofono();
+                                startBtn.style.display = "none";
+                            } else {
+                                alert(
+                                    "Permiso denegado para usar los sensores.",
+                                );
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    // Dispositivos que no requieren permiso explícito (Android / PC)
+                    iniciarSensores();
+                    iniciarMicrofono();
+                    startBtn.style.display = "none";
+                }
+            });
+
+            function iniciarSensores() {
+                window.addEventListener("deviceorientation", (event) => {
+                    if (!myPlayerId) return;
+
+                    const now = Date.now();
+                    if (now - lastSensorTime > SENSOR_TICK_RATE) {
+                        const anguloMaximo = 40.0;
+
+                        let gamma = event.gamma || 0;
+                        if (gamma > anguloMaximo) gamma = anguloMaximo;
+                        if (gamma < -anguloMaximo) gamma = -anguloMaximo;
+                        currentInput.gamma = gamma / anguloMaximo;
+
+                        // beta: inclinación adelante/atrás, mismo rango
+                        let beta = event.beta || 0;
+                        if (beta > anguloMaximo) beta = anguloMaximo;
+                        if (beta < -anguloMaximo) beta = -anguloMaximo;
+                        currentInput.beta = beta / anguloMaximo;
+
+                        sensorGammaEl.textContent =
+                            currentInput.gamma.toFixed(2);
+                        sensorBetaEl.textContent = currentInput.beta.toFixed(2);
+
+                        sendCurrentInput();
+                        lastSensorTime = now;
+                    }
+                });
+            }
+
+            function flashScreen(color, duration) {
+                const original = document.body.style.backgroundColor;
+                document.body.style.backgroundColor = color;
+                setTimeout(() => {
+                    document.body.style.backgroundColor = original || "#1e1e1e";
+                }, duration);
+            }
+
+            function vibrate(pattern) {
+                if (navigator.vibrate) navigator.vibrate(pattern);
+            }
+
+            function connect() {
+                const wsUrl = `ws://${window.location.host}`;
+                ws = new WebSocket(wsUrl);
+                ws.onopen = () => {
+                    // Nada más conectar, pedimos un hueco de jugador
+                    ws.send(JSON.stringify({ type: "join" }));
+                };
+
+                // Escuchar mensajes del servidor (Aquí se cumple la bidireccionalidad)
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+
+                    // ── Asignación de rol ─────────────────────────────────────────
+                    if (data.type === "assignRole") {
+                        myPlayerId = data.playerId;
+                        if (myPlayerId === 1) {
+                            statusEl.textContent =
+                                "🟢 Eres el Jugador 1 (Azul)";
+                            statusEl.style.color = "#00a8ff";
+                            document.body.style.border = "5px solid #00a8ff";
+                        } else if (myPlayerId === 2) {
+                            statusEl.textContent =
+                                "🟢 Eres el Jugador 2 (Rojo)";
+                            statusEl.style.color = "#e84118";
+                            document.body.style.border = "5px solid #e84118";
+                        }
+                        return;
+                    }
+
+                    // ── Eventos de Unity ──────────────────────────────────────────
+                    if (data.type === "collision") {
+                        logEl.textContent = `💥 Choque con ${data.objectName || "objeto"}`;
+                        flashScreen("#ff0000", 150);
+                        vibrate(200);
+                        return;
+                    }
+
+                    if (data.type === "death") {
+                        logEl.textContent = `💀 ¡Has muerto!`;
+                        flashScreen("#ff0000", 400);
+                        vibrate([200, 100, 200]);
+                        return;
+                    }
+
+                    if (data.type === "pickup") {
+                        logEl.textContent = `✨ Recogiste: ${data.item || "item"}`;
+                        flashScreen("#00ff88", 150);
+                        vibrate(80);
+                        return;
+                    }
+
+                    if (data.type === "ui_update") {
+                        logEl.textContent = `🖥️ ${data.text || JSON.stringify(data)}`;
+                        return;
+                    }
+
+                    if (data.type === "screen_effect") {
+                        flashScreen(
+                            data.color || "#ffffff",
+                            data.duration || 200,
+                        );
+                        if (data.vibrate) vibrate(data.duration || 150);
+                        return;
+                    }
+
+                    if (data.type === "puzzle_start") {
+                        logEl.textContent = `🧩 Puzzle: ${data.puzzleId}`;
+                        vibrate(100);
+                        return;
+                    }
+
+                    if (data.type === "custom") {
+                        logEl.textContent = `📨 ${data.message || JSON.stringify(data)}`;
+                        return;
+                    }
+                };
+
+                ws.onclose = () => {
+                    statusEl.textContent = "🔴 Desconectado (Reintentando...)";
+                    statusEl.style.color = "#f44336";
+                    myPlayerId = null;
+                    setTimeout(connect, 2000);
+                };
+            }
+
+            // sendInput ya no se usa directamente; los handlers usan currentInput + sendCurrentInput()
+
+            document.querySelectorAll(".d-pad button").forEach((btn) => {
+                const x = parseFloat(btn.getAttribute("data-x"));
+                const y = parseFloat(btn.getAttribute("data-y"));
+                btn.addEventListener("pointerdown", () => {
+                    currentInput.dpadX = x;
+                    currentInput.dpadY = y;
+                    sendCurrentInput();
+                });
+                btn.addEventListener("pointerup", () => {
+                    currentInput.dpadX = 0;
+                    currentInput.dpadY = 0;
+                    sendCurrentInput();
+                });
+                btn.addEventListener("pointerleave", () => {
+                    currentInput.dpadX = 0;
+                    currentInput.dpadY = 0;
+                    sendCurrentInput();
+                });
+            });
+
+            // Botón A (salto)
+            document
+                .querySelector(".btn-a")
+                .addEventListener("pointerdown", () => {
+                    currentInput.btnA = true;
+                    sendCurrentInput();
+                });
+            document
+                .querySelector(".btn-a")
+                .addEventListener("pointerup", () => {
+                    currentInput.btnA = false;
+                    sendCurrentInput();
+                });
+            document
+                .querySelector(".btn-a")
+                .addEventListener("pointerleave", () => {
+                    currentInput.btnA = false;
+                    sendCurrentInput();
+                });
+
+            // Botón B (acción secundaria)
+            document
+                .querySelector(".btn-b")
+                .addEventListener("pointerdown", () => {
+                    currentInput.btnB = true;
+                    sendCurrentInput();
+                });
+            document
+                .querySelector(".btn-b")
+                .addEventListener("pointerup", () => {
+                    currentInput.btnB = false;
+                    sendCurrentInput();
+                });
+            document
+                .querySelector(".btn-b")
+                .addEventListener("pointerleave", () => {
+                    currentInput.btnB = false;
+                    sendCurrentInput();
+                });
+
+            connect();
+        </script>
+    </body>
+</html>
