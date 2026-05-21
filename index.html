@@ -302,7 +302,7 @@
                 for (let i = 0; i < dataArray.length; i++) suma += dataArray[i];
                 const volumenPromedio = suma / dataArray.length; // 0 - 255
 
-                const umbralGrito = 100;
+                const umbralGrito = 20;
                 isYelling = volumenPromedio > umbralGrito;
 
                 // Actualizar barra visual (escala 0-255 a 0-100%)
@@ -417,26 +417,26 @@
                     if (data.type === "collision") {
                         logEl.textContent = `💥 Choque con ${data.objectName || "objeto"}`;
                         flashScreen("#ff0000", 150);
-                        vibrate(200);
+                        vibrate(1001);
                         return;
                     }
 
                     if (data.type === "death") {
                         logEl.textContent = `💀 ¡Has muerto!`;
                         flashScreen("#ff0000", 400);
-                        vibrate([200, 100, 200]);
+                        vibrate([500, 100, 401]);
                         return;
                     }
 
                     if (data.type === "pickup") {
-                        logEl.textContent = `✨ Recogiste: ${data.item || "item"}`;
+                        logEl.textContent = `✨ Recogiste: ${data.pickupType || "item"}`;
                         flashScreen("#00ff88", 150);
-                        vibrate(80);
+                        vibrate(1001);
                         return;
                     }
 
                     if (data.type === "ui_update") {
-                        logEl.textContent = `🖥️ ${data.text || JSON.stringify(data)}`;
+                        logEl.textContent = `🖥️ ${data.data || JSON.stringify(data)}`;
                         return;
                     }
 
@@ -445,18 +445,20 @@
                             data.color || "#ffffff",
                             data.duration || 200,
                         );
-                        if (data.vibrate) vibrate(data.duration || 150);
+                        if (data.vibrate)
+                            vibrate(Math.max(data.duration || 150, 1001));
                         return;
                     }
 
                     if (data.type === "puzzle_start") {
                         logEl.textContent = `🧩 Puzzle: ${data.puzzleId}`;
-                        vibrate(100);
+                        vibrate(1001);
                         return;
                     }
 
                     if (data.type === "custom") {
-                        logEl.textContent = `📨 ${data.message || JSON.stringify(data)}`;
+                        logEl.textContent = `📨 ${data.data || JSON.stringify(data)}`;
+                        vibrate(1001);
                         return;
                     }
                 };
