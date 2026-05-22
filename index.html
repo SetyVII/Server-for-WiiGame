@@ -32,6 +32,39 @@
                 color: #f44336;
             }
 
+            #server-config {
+                margin-bottom: 20px;
+                padding: 15px;
+                border-radius: 10px;
+                background-color: #2b2b2b;
+                border: 1px solid #444;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            #ws-address-input {
+                background-color: #111;
+                color: #fff;
+                border: 1px solid #555;
+                border-radius: 5px;
+                padding: 8px;
+                width: 260px;
+                font-family: monospace;
+                font-size: 14px;
+                text-align: center;
+            }
+            #connect-btn {
+                background-color: #007acc;
+                border-color: #005999;
+                padding: 8px 18px;
+                border-radius: 5px;
+                font-size: 14px;
+            }
+            #connect-btn:active {
+                background-color: #0098ff;
+            }
+
             .controller-layout {
                 display: flex;
                 gap: 50px;
@@ -184,6 +217,12 @@
     <body>
         <div id="status" class="disconnected">🔴 Desconectado</div>
 
+        <div id="server-config">
+            <div style="font-size: 12px; color: #aaa; margin-bottom: 4px;">Dirección del Servidor WebSocket</div>
+            <input type="text" id="ws-address-input" placeholder="ws://localhost:3003" />
+            <button id="connect-btn">Conectar</button>
+        </div>
+
         <div class="controller-layout">
             <!-- Pad Direccional -->
             <div class="d-pad">
@@ -226,8 +265,13 @@
         <script>
             const statusEl = document.getElementById("status");
             const logEl = document.getElementById("log");
+            const serverConfigEl = document.getElementById("server-config");
+            const wsAddressInput = document.getElementById("ws-address-input");
+            const connectBtn = document.getElementById("connect-btn");
             let ws;
             let myPlayerId = null; // Guardamos quién somos
+            let reconnectTimeout = null;
+            let currentWsUrl = "";
 
             let lastSensorTime = 0;
             const SENSOR_TICK_RATE = 50; // Enviar datos cada 50ms (20 FPS)
@@ -385,11 +429,25 @@
             }
 
             function connect() {
-                const protocol =
-                    window.location.protocol === "https:" ? "wss://" : "ws://";
-                const wsUrl = `${protocol}${window.location.host}`;
-                ws = new WebSocket(wsUrl);
+                if (ws) {
+                    try { ws.close(); } catch(e) {}
+                }
+
+                let targetUrl = wsAddressInput.value.trim();
+                if (!targetUrl) {
+                    const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+                    targetUrl = `${protocol}${window.location.host}`;
+                    wsAddressInput.value = targetUrl;
+                }
+
+                currentWsUrl = targetUrl;
+                localStorage.setItem("wiigames_ws_url", targetUrl);
+
+                logEl.textContent = "Conectando a " + targetUrl + "...";
+                ws = new WebSocket(targetUrl);
+                
                 ws.onopen = () => {
+                    logEl.textContent = "Conectado. Esperando rol...";
                     // Nada más conectar, pedimos un hueco de jugador
                     ws.send(JSON.stringify({ type: "join" }));
                 };
@@ -398,9 +456,19 @@
                 ws.onmessage = (event) => {
                     const data = JSON.parse(event.data);
 
+                    // ── Manejo de errores ─────────────────────────────────────────
+                    if (data.type === "error") {
+                        logEl.textContent = `❌ Error: ${data.message}`;
+                        statusEl.textContent = `❌ ${data.message}`;
+                        statusEl.style.color = "#f44336";
+                        if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                        return;
+                    }
+
                     // ── Asignación de rol ─────────────────────────────────────────
                     if (data.type === "assignRole") {
                         myPlayerId = data.playerId;
+                        serverConfigEl.style.display = "none"; // Ocultar configuración al conectar con éxito
                         if (myPlayerId === 1) {
                             statusEl.textContent =
                                 "🟢 Eres el Jugador 1 (Azul)";
@@ -469,7 +537,11 @@
                     statusEl.textContent = "🔴 Desconectado (Reintentando...)";
                     statusEl.style.color = "#f44336";
                     myPlayerId = null;
-                    setTimeout(connect, 2000);
+                    document.body.style.border = "none";
+                    serverConfigEl.style.display = "flex"; // Volver a mostrar la configuración al desconectar
+                    
+                    if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                    reconnectTimeout = setTimeout(connect, 2000);
                 };
             }
 
@@ -534,6 +606,24 @@
                     currentInput.btnB = false;
                     sendCurrentInput();
                 });
+
+            // Inicializar valor de input de manera dinámica y robusta
+            let defaultUrl = "";
+            if (window.location.protocol.startsWith("http")) {
+                // Si se sirve desde un servidor web (Javalin, ngrok, etc.), usar el mismo host y protocolo
+                const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+                defaultUrl = `${protocol}${window.location.host}`;
+            } else {
+                // Si se abre localmente como archivo
+                const savedUrl = localStorage.getItem("wiigames_ws_url");
+                defaultUrl = savedUrl || "ws://localhost:3002";
+            }
+            wsAddressInput.value = defaultUrl;
+
+            connectBtn.addEventListener("click", () => {
+                if (reconnectTimeout) clearTimeout(reconnectTimeout);
+                connect();
+            });
 
             connect();
         </script>
