@@ -29,8 +29,9 @@ Móvil J2 ──┘   (Node.js server)     └── (envía eventos de vuelta)
 ## Cómo ejecutar
 
 ```bash
-cd testing
-npm start          # node server.js
+cd "to the proyect"
+pnpm start          # node server.js
+- Activar la función de chrome/otros llamada "--unsafely-treat-insecure-origin-as-secure"
 ```
 
 El servidor escucha en `0.0.0.0:3000`:

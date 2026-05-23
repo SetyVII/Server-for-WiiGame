@@ -7,3 +7,4 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .DS_Store
+pnpm-lock.yaml

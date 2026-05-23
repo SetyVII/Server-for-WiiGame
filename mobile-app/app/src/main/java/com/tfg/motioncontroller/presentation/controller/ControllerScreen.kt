@@ -1,0 +1,708 @@
+package com.tfg.motioncontroller.presentation.controller
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.MicOff
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
+import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tfg.motioncontroller.domain.model.SocketState
+import androidx.activity.ComponentActivity
+import androidx.compose.runtime.DisposableEffect
+import com.tfg.motioncontroller.ui.theme.ButtonA
+import com.tfg.motioncontroller.ui.theme.ButtonB
+import com.tfg.motioncontroller.ui.theme.DPadBackground
+import com.tfg.motioncontroller.ui.theme.DPadBorder
+import com.tfg.motioncontroller.ui.theme.DPadDot
+import com.tfg.motioncontroller.ui.theme.TopBarBackground
+import com.tfg.motioncontroller.ui.theme.VolumeBarGradientEnd
+import com.tfg.motioncontroller.ui.theme.VolumeBarGradientMid
+import com.tfg.motioncontroller.ui.theme.VolumeBarGradientStart
+
+@Composable
+fun ControllerScreen(
+    onSettingsClick: () -> Unit,
+    onDisconnect: () -> Unit,
+    viewModel: ControllerViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Cuenta atras para volver al menu cuando se pierde la conexion
+    LaunchedEffect(uiState.reconnectCountdown) {
+        uiState.reconnectCountdown?.let { count ->
+            if (count == 0) {
+                Toast.makeText(
+                    context,
+                    "Se ha perdido la conexion",
+                    Toast.LENGTH_LONG
+                ).show()
+                viewModel.disconnect()
+                onDisconnect()
+            }
+        }
+    }
+
+    // Ocultar barra de estado en la pantalla del mando
+    DisposableEffect(Unit) {
+        val window = (context as? ComponentActivity)?.window
+        val insetsController = window?.let { WindowInsetsControllerCompat(it, it.decorView) }
+        insetsController?.hide(WindowInsetsCompat.Type.statusBars())
+        onDispose {
+            insetsController?.show(WindowInsetsCompat.Type.statusBars())
+        }
+    }
+
+    // Lanzador para solicitar permiso de microfono
+    val micPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            viewModel.startMicrophone()
+        } else {
+            viewModel.showPermissionDenied()
+        }
+    }
+
+    // Funcion para verificar y solicitar permiso de microfono
+    val checkAndRequestMicPermission = {
+        when {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                viewModel.startMicrophone()
+            }
+            else -> {
+                micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Barra superior
+        TopBar(
+            socketState = uiState.connectionStatus.socketState,
+            playerId = uiState.playerId,
+            micActive = uiState.microphoneState.isActive,
+            sensorsActive = uiState.sensorsActive,
+            onToggleSensors = {
+                if (uiState.sensorsActive) {
+                    viewModel.stopSensors()
+                } else {
+                    viewModel.startSensors()
+                }
+            },
+            onToggleMic = {
+                if (uiState.microphoneState.isActive) {
+                    viewModel.stopMicrophone()
+                } else {
+                    checkAndRequestMicPermission()
+                }
+            },
+            onTestVibration = { viewModel.testVibration() },
+            onSettingsClick = onSettingsClick,
+            onDisconnect = {
+                viewModel.disconnect()
+                onDisconnect()
+            }
+        )
+
+        // Indicador de calibracion
+        if (uiState.isCalibrating) {
+            CalibrationIndicator(
+                progress = uiState.calibrationProgress,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
+
+        // Panel de debug (valores de sensores)
+        if (uiState.sensorsActive && !uiState.isCalibrating) {
+            SensorDebugInfo(
+                tiltX = uiState.sensorValues.tiltX,
+                tiltY = uiState.sensorValues.tiltY,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
+
+        // Panel de microfono expandible
+        AnimatedVisibility(
+            visible = uiState.microphoneState.isActive,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            MicPanel(
+                rmsLevel = uiState.microphoneState.rmsLevel,
+                isBlowing = uiState.microphoneState.isBlowing,
+                threshold = uiState.microphoneState.threshold,
+                cooldown = uiState.microphoneState.cooldown,
+                scale = uiState.microphoneState.scale,
+                onThresholdChange = { viewModel.updateMicrophoneSettings(it, uiState.microphoneState.cooldown, uiState.microphoneState.scale) },
+                onCooldownChange = { viewModel.updateMicrophoneSettings(uiState.microphoneState.threshold, it, uiState.microphoneState.scale) },
+                onScaleChange = { viewModel.updateMicrophoneSettings(uiState.microphoneState.threshold, uiState.microphoneState.cooldown, it) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+
+        // Area principal del mando
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // D-Pad (izquierda)
+            DPad(
+                tiltX = uiState.sensorValues.tiltX,
+                tiltY = uiState.sensorValues.tiltY,
+                isCalibrating = uiState.isCalibrating,
+                modifier = Modifier.weight(1f)
+            )
+
+            Spacer(modifier = Modifier.width(24.dp))
+
+            // Botones A y B (derecha)
+            ActionButtons(
+                onButtonAPress = { viewModel.setButtonA(true) },
+                onButtonARelease = { viewModel.setButtonA(false) },
+                onButtonBPress = { viewModel.setButtonB(true) },
+                onButtonBRelease = { viewModel.setButtonB(false) },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Cuenta atras para reconexion
+        uiState.reconnectCountdown?.let { count ->
+            if (count > 0) {
+                Text(
+                    text = "Reconectando en $count...",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+
+        // Mensaje de error
+        uiState.errorMessage?.let { error ->
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        // Log de eventos del juego
+        uiState.logMessage?.let { log ->
+            Text(
+                text = log,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun CalibrationIndicator(
+    progress: Float,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Calibrando sensores...",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(CircleShape),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+        Text(
+            text = "${(progress * 100).toInt()}% - Manten el movil quieto",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun TopBar(
+    socketState: SocketState,
+    playerId: Int?,
+    micActive: Boolean,
+    sensorsActive: Boolean,
+    onToggleSensors: () -> Unit,
+    onToggleMic: () -> Unit,
+    onTestVibration: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onDisconnect: () -> Unit
+) {
+    val socketStatusText = when (socketState) {
+        SocketState.CONNECTED -> "Socket: conectado"
+        SocketState.CONNECTING -> "Socket: conectando..."
+        SocketState.ERROR -> "Socket: error"
+        SocketState.DISCONNECTED -> "Socket: desconectado"
+    }
+
+    val playerStatusText = playerId?.let { "Jugador $it" } ?: "Sin rol"
+    val playerColor = when (playerId) {
+        1 -> Color(0xFF00A8FF)
+        2 -> Color(0xFFE84118)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val socketStatusColor = if (socketState == SocketState.CONNECTED) Color(0xFF22C55E) else MaterialTheme.colorScheme.onSurfaceVariant
+    val iconColor = Color.White
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(TopBarBackground)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = socketStatusText,
+                style = MaterialTheme.typography.bodySmall,
+                color = socketStatusColor
+            )
+            Text(
+                text = playerStatusText,
+                style = MaterialTheme.typography.bodySmall,
+                color = playerColor,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Button(
+            onClick = onToggleSensors,
+            colors = if (sensorsActive) {
+                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            } else {
+                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            },
+            modifier = Modifier.height(36.dp)
+        ) {
+            Text(
+                if (sensorsActive) "Desactivar sensores" else "Activar sensores",
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onToggleMic) {
+                Icon(
+                    imageVector = if (micActive) Icons.Default.Mic else Icons.Default.MicOff,
+                    contentDescription = if (micActive) "Desactivar microfono" else "Activar microfono",
+                    tint = if (micActive) MaterialTheme.colorScheme.error else iconColor
+                )
+            }
+
+            IconButton(onClick = onTestVibration) {
+                Icon(
+                    imageVector = Icons.Default.Vibration,
+                    contentDescription = "Test de vibracion",
+                    tint = iconColor
+                )
+            }
+
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Configuracion",
+                    tint = iconColor
+                )
+            }
+
+            Button(
+                onClick = onDisconnect,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                ),
+                modifier = Modifier.height(36.dp)
+            ) {
+                Text("Desconectar", style = MaterialTheme.typography.labelSmall)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DPad(
+    tiltX: Float,
+    tiltY: Float,
+    isCalibrating: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(180.dp)
+            .clip(CircleShape)
+            .background(DPadBackground)
+            .padding(3.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        val borderIntensity = ((kotlin.math.abs(tiltX) + kotlin.math.abs(tiltY)) / 2f).coerceIn(0f, 1f)
+        val borderColor = androidx.compose.ui.graphics.lerp(
+            DPadBorder,
+            Color(0xFFFF6B6B),
+            borderIntensity
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(DPadBackground)
+                .padding(2.dp)
+                .clip(CircleShape)
+                .background(borderColor.copy(alpha = 0.3f))
+        )
+
+        // Punto del D-Pad
+        val dotOffsetX = (tiltX * 55).dp
+        val dotOffsetY = (tiltY * 55).dp
+
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .offset(x = dotOffsetX, y = dotOffsetY)
+                .clip(CircleShape)
+                .background(
+                    if (isCalibrating) {
+                        Color.Gray
+                    } else if (borderIntensity > 0.3f) {
+                        Color(0xFFFF6B6B)
+                    } else {
+                        DPadDot
+                    }
+                )
+        )
+    }
+}
+
+@Composable
+private fun MicPanel(
+    rmsLevel: Float,
+    isBlowing: Boolean,
+    threshold: Float,
+    cooldown: Int,
+    scale: Float,
+    onThresholdChange: (Float) -> Unit,
+    onCooldownChange: (Int) -> Unit,
+    onScaleChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                CircleShape.copy(all = androidx.compose.foundation.shape.CornerSize(8.dp))
+            )
+            .padding(12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "Microfono",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.width(60.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(20.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                val progress = (rmsLevel * 100f * scale).coerceIn(0f, 100f) / 100f
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxSize(),
+                    color = when {
+                        progress > 0.8f -> VolumeBarGradientEnd
+                        progress > 0.5f -> VolumeBarGradientMid
+                        else -> VolumeBarGradientStart
+                    },
+                    trackColor = Color.Transparent
+                )
+
+                Text(
+                    text = "${(progress * 100).toInt()}%",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "${(rmsLevel * 100).toInt()}% RMS",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.width(60.dp)
+            )
+        }
+
+        AnimatedVisibility(visible = isBlowing) {
+            Text(
+                text = "SOPLO! (${(rmsLevel * 100).toInt()}%)",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Sensib.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Slider(
+                    value = threshold * 100,
+                    onValueChange = { onThresholdChange(it / 100f) },
+                    valueRange = 5f..50f,
+                    modifier = Modifier.height(24.dp)
+                )
+                Text(
+                    text = "%.2f".format(threshold),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Cooldown",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Slider(
+                    value = cooldown.toFloat(),
+                    onValueChange = { onCooldownChange(it.toInt()) },
+                    valueRange = 200f..2000f,
+                    modifier = Modifier.height(24.dp)
+                )
+                Text(
+                    text = "${cooldown}ms",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Escala",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Slider(
+                    value = scale,
+                    onValueChange = { onScaleChange(it) },
+                    valueRange = 1f..10f,
+                    modifier = Modifier.height(24.dp)
+                )
+                Text(
+                    text = "%.1fx".format(scale),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionButtons(
+    onButtonAPress: () -> Unit,
+    onButtonARelease: () -> Unit,
+    onButtonBPress: () -> Unit,
+    onButtonBRelease: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxHeight(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            PressableButton(
+                text = "A",
+                subtext = "SALTAR",
+                onPress = onButtonAPress,
+                onRelease = onButtonARelease,
+                color = ButtonA,
+                modifier = Modifier.size(120.dp)
+            )
+
+            PressableButton(
+                text = "B",
+                subtext = "VALIDAR",
+                onPress = onButtonBPress,
+                onRelease = onButtonBRelease,
+                color = ButtonB,
+                modifier = Modifier.size(120.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun PressableButton(
+    text: String,
+    subtext: String,
+    onPress: () -> Unit,
+    onRelease: () -> Unit,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            onPress()
+        } else {
+            onRelease()
+        }
+    }
+
+    Button(
+        onClick = { /* handled by interactionSource */ },
+        modifier = modifier,
+        shape = CircleShape,
+        colors = ButtonDefaults.buttonColors(containerColor = color),
+        interactionSource = interactionSource
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text, style = MaterialTheme.typography.headlineMedium)
+            Text(subtext, style = MaterialTheme.typography.labelSmall)
+        }
+    }
+}
+
+@Composable
+private fun SensorDebugInfo(
+    tiltX: Float,
+    tiltY: Float,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = "tiltX: ${tiltX.format(2)} | tiltY: ${tiltY.format(2)}",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = modifier.fillMaxWidth()
+    )
+}
+
+private fun Float.format(digits: Int): String = "%.${digits}f".format(this)

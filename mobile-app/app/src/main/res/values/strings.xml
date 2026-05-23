@@ -1,0 +1,63 @@
+<resources>
+    <string name="app_name">WiiCell App</string>
+    <string name="title_controller">Mando Virtual</string>
+    <string name="title_settings">Configuracion</string>
+
+    <!-- Botones -->
+    <string name="btn_activate_sensors">Activar sensores</string>
+    <string name="btn_release">Soltar</string>
+    <string name="btn_mic_on">Mic ON</string>
+    <string name="btn_mic_off">Mic OFF</string>
+    <string name="btn_test_vibration">Vib test</string>
+    <string name="btn_flip">Voltear</string>
+    <string name="btn_settings">Configuracion</string>
+    <string name="btn_save">Guardar configuracion</string>
+    <string name="btn_back">Volver</string>
+    <string name="btn_connect">Conectar</string>
+
+    <!-- Estados -->
+    <string name="status_connecting">Socket: conectando...</string>
+    <string name="status_connected">Socket: conectado</string>
+    <string name="status_disconnected">Socket: desconectado</string>
+    <string name="status_error">Socket: error</string>
+    <string name="status_unity_connected">Unity: conectado</string>
+    <string name="status_unity_disconnected">Unity: no conectado</string>
+    <string name="status_mic_active">Mic activado</string>
+    <string name="status_mic_disabled">Mic desactivado</string>
+
+    <!-- Acciones -->
+    <string name="action_jump">SALTAR</string>
+    <string name="action_validate">VALIDAR</string>
+    <string name="action_blow">SOPLO!</string>
+
+    <!-- Configuracion -->
+    <string name="settings_appearance">Apariencia</string>
+    <string name="settings_dark_mode">Modo oscuro</string>
+    <string name="settings_font_size">Tamano del texto</string>
+    <string name="settings_sensitivity">Sensibilidad del control</string>
+    <string name="settings_sensitivity_low">Bajo</string>
+    <string name="settings_sensitivity_medium">Medio</string>
+    <string name="settings_sensitivity_high">Alto</string>
+    <string name="settings_sensitivity_custom">Custom</string>
+    <string name="settings_current_level">Nivel:</string>
+    <string name="settings_current_force">Fuerza:</string>
+    <string name="settings_saved">Configuracion guardada correctamente</string>
+
+    <!-- Conexion -->
+    <string name="connection_title">Conectar al servidor</string>
+    <string name="connection_ip_hint">IP del servidor (ej: 192.168.1.10)</string>
+    <string name="connection_port_hint">Puerto (default: 8443)</string>
+    <string name="connection_use_https">Usar HTTPS/WSS</string>
+    <string name="connection_invalid_ip">IP no valida</string>
+
+    <!-- Mic -->
+    <string name="mic_sensitivity">Sensib.</string>
+    <string name="mic_cooldown">Cooldown</string>
+    <string name="mic_scale">Escala</string>
+    <string name="mic_volume">Volumen</string>
+
+    <!-- Errores -->
+    <string name="error_connection_failed">Error de conexion</string>
+    <string name="error_sensors_not_available">Sensores no disponibles</string>
+    <string name="error_mic_permission">Permiso de microfono denegado</string>
+</resources>
