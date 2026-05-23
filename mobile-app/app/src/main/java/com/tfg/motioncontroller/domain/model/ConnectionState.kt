@@ -26,8 +26,7 @@ enum class SocketState {
 data class GameSettings(
     val sensitivity: SensitivityLevel = SensitivityLevel.MEDIUM,
     val customForce: Int = 45,
-    val darkMode: Boolean = true,
-    val fontSize: Int = 16
+    val darkMode: Boolean = true
 )
 
 enum class SensitivityLevel(val force: Int, val label: String, val description: String) {

@@ -1,6 +1,7 @@
 package com.tfg.motioncontroller.presentation.connection
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,9 +28,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,10 +61,17 @@ fun ConnectionScreen(
     var serverIp by remember(savedServerIp) { mutableStateOf(savedServerIp) }
     val serverPort = 3000 // Puerto del servidor WiiGames
     val useHttps = false  // WS (sin SSL)
+    val context = LocalContext.current
+
+    // Contador de intentos fallidos
+    var failedAttempts by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(connectionStatus.socketState) {
         if (connectionStatus.socketState == SocketState.CONNECTED) {
+            failedAttempts = 0
             onConnected()
+        } else if (connectionStatus.socketState == SocketState.ERROR) {
+            failedAttempts++
         }
     }
 
@@ -233,6 +245,45 @@ fun ConnectionScreen(
                         }
                     }
                     else -> {}
+                }
+            }
+        }
+
+        // Mensaje de alternativa web despues de 3 intentos fallidos
+        if (failedAttempts >= 3 && serverIp.isNotBlank()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Tambien puedes usar nuestro control web:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    val webUrl = "http://$serverIp:3000"
+                    Text(
+                        text = webUrl,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.clickable {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
+                            context.startActivity(intent)
+                        }
+                    )
                 }
             }
         }

@@ -26,7 +26,6 @@ class SettingsDataStore @Inject constructor(
 
     companion object {
         val DARK_MODE = booleanPreferencesKey("dark_mode")
-        val FONT_SIZE = intPreferencesKey("font_size")
         val SENSITIVITY = stringPreferencesKey("sensitivity")
         val CUSTOM_FORCE = intPreferencesKey("custom_force")
         val LAST_SERVER_IP = stringPreferencesKey("last_server_ip")
@@ -35,7 +34,6 @@ class SettingsDataStore @Inject constructor(
     val settingsFlow: Flow<GameSettings> = dataStore.data.map { preferences ->
         GameSettings(
             darkMode = preferences[DARK_MODE] ?: true,
-            fontSize = preferences[FONT_SIZE] ?: 16,
             sensitivity = SensitivityLevel.valueOf(
                 preferences[SENSITIVITY] ?: SensitivityLevel.MEDIUM.name
             ),
@@ -46,7 +44,6 @@ class SettingsDataStore @Inject constructor(
     suspend fun saveSettings(settings: GameSettings) {
         dataStore.edit { preferences ->
             preferences[DARK_MODE] = settings.darkMode
-            preferences[FONT_SIZE] = settings.fontSize
             preferences[SENSITIVITY] = settings.sensitivity.name
             preferences[CUSTOM_FORCE] = settings.customForce
         }
@@ -55,12 +52,6 @@ class SettingsDataStore @Inject constructor(
     suspend fun saveDarkMode(darkMode: Boolean) {
         dataStore.edit { preferences ->
             preferences[DARK_MODE] = darkMode
-        }
-    }
-
-    suspend fun saveFontSize(fontSize: Int) {
-        dataStore.edit { preferences ->
-            preferences[FONT_SIZE] = fontSize.coerceIn(12, 24)
         }
     }
 

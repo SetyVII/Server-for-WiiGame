@@ -20,6 +20,8 @@ Aplicacion Android nativa que actua como mando virtual para el juego **WiiGames*
 - **Toast informativo** "Se ha perdido la conexion" al volver al menu
 - **Panel de debug** con valores de sensores en tiempo real
 - **Eventos del juego** visualizados en la UI (choques, monedas, muertes, puzzles)
+- **Guardado automatico** en ajustes (sin boton "Guardar")
+- **Enlace a control web** como alternativa tras 3 intentos de conexion fallidos
 
 ## Requisitos
 
@@ -177,14 +179,22 @@ La app solicita los siguientes permisos:
 - [x] DataStore para persistencia
 - [x] Botones de modo oscuro/claro con iconos
 - [x] Selector de sensibilidad en grid 2x2
-- [x] Slider tamano de texto
-- [x] Campo fuerza personalizada
+- [x] Campo fuerza personalizada (solo en modo Custom)
+- [x] Guardado automatico sin boton "Guardar"
 
-### Fase 6: Polish y UX
+### Fase 6: Conexion robusta
+- [x] Pantalla de conexion con IP guardada
+- [x] Deteccion de 3 intentos fallidos de conexion
+- [x] Enlace alternativo a control web (`http://IP:3000`)
+- [x] URL dinamica basada en la IP introducida
+- [x] Apertura de navegador al tocar el enlace
+
+### Fase 7: Polish y UX
 - [x] Solicitud de permisos en tiempo de ejecucion
 - [x] Barra de estado transparente adaptativa al tema
 - [x] Panel de debug de sensores
 - [x] Correccion de textos (tildes, colores en modo claro)
+- [x] Guardado automatico en settings (sin boton "Guardar")
 - [x] Testing en multiples dispositivos
 
 ## Cambios recientes (23/05/2026)
@@ -197,6 +207,8 @@ Principales cambios:
 - **Mensajes reestructurados** de tipos separados a `InputMessage` unificado
 - **Eventos de Unity** manejados con vibracion y log visual
 - **Reconexion mejorada** con cuenta atras de 5 segundos
+- **Guardado automatico** en settings sin boton "Guardar"
+- **Enlace a control web** tras 3 intentos fallidos de conexion
 
 ## Notas
 

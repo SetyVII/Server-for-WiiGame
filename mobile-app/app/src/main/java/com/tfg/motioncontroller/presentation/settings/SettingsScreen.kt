@@ -39,10 +39,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,9 +59,6 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settings.collectAsState(initial = com.tfg.motioncontroller.domain.model.GameSettings())
-    val isSaved by viewModel.isSaved.collectAsState()
-
-    var tempSettings by remember { mutableStateOf(settings) }
 
     Scaffold(
         topBar = {
@@ -119,9 +112,9 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Button(
-                            onClick = { tempSettings = tempSettings.copy(darkMode = false) },
+                            onClick = { viewModel.saveSettings(settings.copy(darkMode = false)) },
                             modifier = Modifier.weight(1f),
-                            colors = if (!tempSettings.darkMode) {
+                            colors = if (!settings.darkMode) {
                                 ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             } else {
                                 ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -136,9 +129,9 @@ fun SettingsScreen(
                             Text("Claro")
                         }
                         Button(
-                            onClick = { tempSettings = tempSettings.copy(darkMode = true) },
+                            onClick = { viewModel.saveSettings(settings.copy(darkMode = true)) },
                             modifier = Modifier.weight(1f),
-                            colors = if (tempSettings.darkMode) {
+                            colors = if (settings.darkMode) {
                                 ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             } else {
                                 ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -153,20 +146,6 @@ fun SettingsScreen(
                             Text("Oscuro")
                         }
                     }
-
-                    // Tamano de texto
-                    Text(
-                        text = "Tamano del texto: ${tempSettings.fontSize}px",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Slider(
-                        value = tempSettings.fontSize.toFloat(),
-                        onValueChange = {
-                            tempSettings = tempSettings.copy(fontSize = it.toInt())
-                        },
-                        valueRange = 12f..24f,
-                        steps = 11
-                    )
                 }
             }
 
@@ -190,24 +169,24 @@ fun SettingsScreen(
 
                     // Opciones de sensibilidad
                     SensitivityGrid(
-                        selected = tempSettings.sensitivity,
+                        selected = settings.sensitivity,
                         onSelect = {
-                            tempSettings = tempSettings.copy(sensitivity = it)
+                            viewModel.saveSettings(settings.copy(sensitivity = it))
                         }
                     )
 
                     // Input custom
-                    if (tempSettings.sensitivity == SensitivityLevel.CUSTOM) {
+                    if (settings.sensitivity == SensitivityLevel.CUSTOM) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Fuerza personalizada (1-100):",
                             style = MaterialTheme.typography.bodyMedium
                         )
                         TextField(
-                            value = tempSettings.customForce.toString(),
+                            value = settings.customForce.toString(),
                             onValueChange = { value ->
                                 val force = value.toIntOrNull() ?: 45
-                                tempSettings = tempSettings.copy(customForce = force.coerceIn(1, 100))
+                                viewModel.saveSettings(settings.copy(customForce = force.coerceIn(1, 100)))
                             },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
@@ -220,11 +199,11 @@ fun SettingsScreen(
 
                     // Valores actuales
                     Spacer(modifier = Modifier.height(8.dp))
-                    val currentForce = when (tempSettings.sensitivity) {
+                    val currentForce = when (settings.sensitivity) {
                         SensitivityLevel.LOW -> 8
                         SensitivityLevel.MEDIUM -> 45
                         SensitivityLevel.HIGH -> 100
-                        SensitivityLevel.CUSTOM -> tempSettings.customForce
+                        SensitivityLevel.CUSTOM -> settings.customForce
                     }
                     Card(
                         colors = CardDefaults.cardColors(
@@ -241,7 +220,7 @@ fun SettingsScreen(
                             ) {
                                 Text("Nivel:", style = MaterialTheme.typography.bodyMedium)
                                 Text(
-                                    tempSettings.sensitivity.label,
+                                    settings.sensitivity.label,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
@@ -253,10 +232,10 @@ fun SettingsScreen(
                             ) {
                                 Text("Fuerza:", style = MaterialTheme.typography.bodyMedium)
                                 Text(
-                                    if (tempSettings.sensitivity == SensitivityLevel.CUSTOM) {
+                                    if (settings.sensitivity == SensitivityLevel.CUSTOM) {
                                         "${(currentForce / 10.0).format(1)}"
                                     } else {
-                                        tempSettings.sensitivity.description
+                                        settings.sensitivity.description
                                     },
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
@@ -266,33 +245,6 @@ fun SettingsScreen(
                         }
                     }
                 }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Boton Guardar
-            Button(
-                onClick = {
-                    viewModel.saveSettings(tempSettings)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Text(
-                    if (isSaved) "¡Guardado!" else "Guardar configuración",
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-
-            if (isSaved) {
-                Text(
-                    text = "Configuración guardada correctamente",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         }
     }

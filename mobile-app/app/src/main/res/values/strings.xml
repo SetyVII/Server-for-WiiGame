@@ -33,7 +33,7 @@
     <!-- Configuracion -->
     <string name="settings_appearance">Apariencia</string>
     <string name="settings_dark_mode">Modo oscuro</string>
-    <string name="settings_font_size">Tamano del texto</string>
+
     <string name="settings_sensitivity">Sensibilidad del control</string>
     <string name="settings_sensitivity_low">Bajo</string>
     <string name="settings_sensitivity_medium">Medio</string>

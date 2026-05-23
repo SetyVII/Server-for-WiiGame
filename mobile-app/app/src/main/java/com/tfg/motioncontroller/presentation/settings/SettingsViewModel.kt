@@ -20,16 +20,9 @@ class SettingsViewModel @Inject constructor(
 
     val settings = settingsDataStore.settingsFlow
 
-    private val _isSaved = MutableStateFlow(false)
-    val isSaved: StateFlow<Boolean> = _isSaved.asStateFlow()
-
     fun saveSettings(newSettings: GameSettings) {
         viewModelScope.launch {
             settingsDataStore.saveSettings(newSettings)
-            _isSaved.value = true
-            // Ocultar mensaje despues de 3 segundos
-            kotlinx.coroutines.delay(3000)
-            _isSaved.value = false
         }
     }
 }

@@ -97,6 +97,34 @@ Adaptacion completa de la app Android para comunicarse correctamente con el serv
 
 ---
 
+## Cambios adicionales (posteriores al 23/05)
+
+### Eliminada opcion "Tamano de texto" de Settings
+**Razon**: No funcionaba correctamente y no era esencial para el mando.
+**Archivos afectados**:
+- `presentation/settings/SettingsScreen.kt` - Eliminado slider de tamano de texto
+- `domain/model/ConnectionState.kt` - Eliminado campo `fontSize` de `GameSettings`
+- `data/local/SettingsDataStore.kt` - Eliminadas clave y metodos relacionados con `font_size`
+- `res/values/strings.xml` - Eliminado string `settings_font_size`
+
+### Guardado automatico en Settings
+**Razon**: Mejor UX, los cambios se aplican inmediatamente sin pulsar boton.
+**Archivos afectados**:
+- `presentation/settings/SettingsScreen.kt` - Eliminado `tempSettings` y boton "Guardar". Cada cambio llama a `saveSettings()` automaticamente
+- `presentation/settings/SettingsViewModel.kt` - Simplificado, eliminado estado `isSaved` y cuenta atras
+
+### Enlace a control web alternativo
+**Razon**: Si la app no puede conectar, ofrecer alternativa via navegador.
+**Funcionalidad**:
+- Contador de intentos fallidos en ConnectionScreen
+- Despues de 3 intentos fallidos, muestra Card con URL `http://IP:3000`
+- La URL usa la IP introducida en el campo de texto
+- La URL es clicable y abre el navegador del dispositivo
+**Archivos afectados**:
+- `presentation/connection/ConnectionScreen.kt` - Agregado contador y Card condicional con enlace
+
+---
+
 ## Compatibilidad
 
 La app ahora es compatible con el protocolo del servidor `server.js`:
