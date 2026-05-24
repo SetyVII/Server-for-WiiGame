@@ -41,6 +41,8 @@ class WebSocketClient @Inject constructor() {
 
     private var lastErrorMessage: String = ""
     private var onMessageReceived: ((String) -> Unit)? = null
+    private var consecutiveSendFailures: Int = 0
+    private val maxSendFailures: Int = 3
 
     init {
         val logging = HttpLoggingInterceptor().apply {
@@ -49,19 +51,19 @@ class WebSocketClient @Inject constructor() {
 
         client = OkHttpClient.Builder()
             .addInterceptor(logging)
-            .pingInterval(15, TimeUnit.SECONDS)
-            .connectTimeout(10, TimeUnit.SECONDS)
+            .pingInterval(5, TimeUnit.SECONDS)
+            .connectTimeout(3, TimeUnit.SECONDS)
             .readTimeout(0, TimeUnit.SECONDS)
             .build()
     }
 
     fun connect(url: String) {
-        Log.d(TAG, "Intentando conectar a: $url")
+        Log.d(TAG, "=== CONECTANDO A: $url ===")
         
-        if (_connectionState.value == ConnectionState.CONNECTING || 
-            _connectionState.value == ConnectionState.CONNECTED) {
-            Log.w(TAG, "Ya hay una conexion en progreso o activa")
-            return
+        // Forzar desconexion limpia de cualquier intento anterior
+        if (webSocket != null || _connectionState.value != ConnectionState.DISCONNECTED) {
+            Log.w(TAG, "Limpiando estado anterior antes de conectar")
+            forceCleanup()
         }
 
         _connectionState.value = ConnectionState.CONNECTING
@@ -76,8 +78,9 @@ class WebSocketClient @Inject constructor() {
 
             webSocket = client.newWebSocket(request, object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
-                    Log.i(TAG, "WebSocket conectado exitosamente")
+                    Log.i(TAG, "=== WebSocket CONECTADO ===")
                     _connectionState.value = ConnectionState.CONNECTED
+                    consecutiveSendFailures = 0
                     // Enviar join automaticamente
                     send(json.encodeToString(JoinMessage()))
                 }
@@ -89,37 +92,50 @@ class WebSocketClient @Inject constructor() {
 
                 override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                     Log.i(TAG, "WebSocket cerrando: code=$code, reason=$reason")
-                    _connectionState.value = ConnectionState.DISCONNECTED
-                    _playerId.value = null
                 }
 
                 override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                    Log.i(TAG, "WebSocket cerrado: code=$code, reason=$reason")
+                    Log.i(TAG, "=== WebSocket CERRADO ===")
                     _connectionState.value = ConnectionState.DISCONNECTED
                     _playerId.value = null
                 }
 
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                    Log.e(TAG, "WebSocket error: ${t.message}", t)
+                    Log.e(TAG, "=== WebSocket FALLIDO: ${t.message} ===", t)
                     lastErrorMessage = t.message ?: "Error desconocido de conexion"
                     _connectionState.value = ConnectionState.ERROR
                     _playerId.value = null
                 }
             })
+            Log.d(TAG, "WebSocket creado, esperando onOpen...")
         } catch (e: Exception) {
-            Log.e(TAG, "Error al crear WebSocket: ${e.message}", e)
+            Log.e(TAG, "=== Error al crear WebSocket: ${e.message} ===", e)
             lastErrorMessage = e.message ?: "Error al crear conexion"
             _connectionState.value = ConnectionState.ERROR
         }
     }
 
     fun disconnect() {
-        Log.i(TAG, "Desconectando WebSocket")
+        Log.i(TAG, "=== DESCONECTANDO WebSocket ===")
         webSocket?.close(1000, "Cliente desconectando")
         webSocket = null
         _connectionState.value = ConnectionState.DISCONNECTED
         _playerId.value = null
         _lastEvent.value = null
+        consecutiveSendFailures = 0
+    }
+    
+    private fun forceCleanup() {
+        Log.w(TAG, "=== LIMPIEZA FORZADA ===")
+        try {
+            webSocket?.cancel()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error al cancelar websocket: ${e.message}")
+        }
+        webSocket = null
+        _connectionState.value = ConnectionState.DISCONNECTED
+        _playerId.value = null
+        consecutiveSendFailures = 0
     }
 
     fun getLastError(): String = lastErrorMessage
@@ -170,7 +186,18 @@ class WebSocketClient @Inject constructor() {
     }
 
     fun sendInput(data: InputMessage): Boolean {
-        return send(json.encodeToString(data))
+        val success = send(json.encodeToString(data))
+        if (!success) {
+            consecutiveSendFailures++
+            Log.w(TAG, "Fallo al enviar input ($consecutiveSendFailures/$maxSendFailures)")
+            if (consecutiveSendFailures >= maxSendFailures) {
+                Log.e(TAG, "Demasiados fallos consecutivos. Forzando desconexion.")
+                forceCleanup()
+            }
+        } else {
+            consecutiveSendFailures = 0
+        }
+        return success
     }
 
     private fun send(message: String): Boolean {

@@ -6,7 +6,9 @@ Aplicacion Android nativa que actua como mando virtual para el juego **WiiGames*
 
 - **Conexion WebSocket** al servidor Node.js (puerto 3000, sin SSL)
 - **Sensores nativos** de Android (giroscopio + acelerometro) con calibracion automatica
-- **D-Pad visual** que responde a la inclinacion del dispositivo
+- **D-Pad tactil** con bolita de 48.dp arrastrable para control manual
+- **Control de velocidad variable** mediante gamma/beta segun distancia del centro
+- **D-Pad se desactiva** cuando los sensores estan activos (modo visual)
 - **Botones A/B** para saltar y accion secundaria (envio continuo de estado)
 - **Deteccion de soplado/grito** por microfono con panel de configuracion expandible
 - **Vibracion haptic** para feedback de eventos del juego (colisiones, muertes, pickups)
@@ -159,7 +161,9 @@ La app solicita los siguientes permisos:
 - [x] Integracion de microfono como `isYelling` en el input
 
 ### Fase 3: Mando completo
-- [x] D-Pad animado con punto movil
+- [x] D-Pad tactil interactivo con bolita arrastrable (48.dp)
+- [x] Control de velocidad variable mediante gamma/beta
+- [x] Desactivacion automatica del D-Pad cuando sensores activos
 - [x] Deteccion de soplado (AudioRecord + BlowDetector)
 - [x] Panel de microfono expandible con sliders
 - [x] Botones A/B con press/release continuo
@@ -209,6 +213,7 @@ Principales cambios:
 - **Reconexion mejorada** con cuenta atras de 5 segundos
 - **Guardado automatico** en settings sin boton "Guardar"
 - **Enlace a control web** tras 3 intentos fallidos de conexion
+- **D-Pad tactil interactivo** con control de velocidad variable
 
 ## Notas
 

@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
@@ -32,28 +34,36 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import android.Manifest
 import android.content.pm.PackageManager
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
 import android.widget.Toast
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -62,8 +72,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tfg.motioncontroller.domain.model.SocketState
-import androidx.activity.ComponentActivity
-import androidx.compose.runtime.DisposableEffect
 import com.tfg.motioncontroller.ui.theme.ButtonA
 import com.tfg.motioncontroller.ui.theme.ButtonB
 import com.tfg.motioncontroller.ui.theme.DPadBackground
@@ -82,29 +90,37 @@ fun ControllerScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Mostrar Snackbar cuando hay mensaje de snackbarMessage
+    LaunchedEffect(uiState.snackbarMessage) {
+        uiState.snackbarMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.clearSnackbarMessage()
+        }
+    }
 
     // Cuenta atras para volver al menu cuando se pierde la conexion
     LaunchedEffect(uiState.reconnectCountdown) {
         uiState.reconnectCountdown?.let { count ->
             if (count == 0) {
-                Toast.makeText(
-                    context,
-                    "Se ha perdido la conexion",
-                    Toast.LENGTH_LONG
-                ).show()
                 viewModel.disconnect()
                 onDisconnect()
             }
         }
     }
 
-    // Ocultar barra de estado en la pantalla del mando
+    // Modo inmersivo: ocultar barra de navegacion y notificaciones
     DisposableEffect(Unit) {
-        val window = (context as? ComponentActivity)?.window
+        val activity = context as? ComponentActivity
+        val window = activity?.window
         val insetsController = window?.let { WindowInsetsControllerCompat(it, it.decorView) }
-        insetsController?.hide(WindowInsetsCompat.Type.statusBars())
+        
+        insetsController?.hide(WindowInsetsCompat.Type.systemBars())
+        insetsController?.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        
         onDispose {
-            insetsController?.show(WindowInsetsCompat.Type.statusBars())
+            insetsController?.show(WindowInsetsCompat.Type.systemBars())
         }
     }
 
@@ -134,11 +150,14 @@ fun ControllerScreen(
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
         // Barra superior
         TopBar(
             socketState = uiState.connectionStatus.socketState,
@@ -208,19 +227,24 @@ fun ControllerScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // D-Pad (izquierda)
+            // D-Pad (izquierda) - ovalado y grande
             DPad(
-                tiltX = uiState.sensorValues.tiltX,
-                tiltY = uiState.sensorValues.tiltY,
+                tiltX = uiState.sensorValues.gamma,
+                tiltY = uiState.sensorValues.beta,
                 isCalibrating = uiState.isCalibrating,
-                modifier = Modifier.weight(1f)
+                sensorsActive = uiState.sensorsActive,
+                onTiltChange = { gamma, beta -> viewModel.setManualTilt(gamma, beta) },
+                onTiltReset = { viewModel.resetManualTilt() },
+                modifier = Modifier
+                    .width(380.dp)
+                    .height(250.dp)
             )
 
-            Spacer(modifier = Modifier.width(24.dp))
+            Spacer(modifier = Modifier.width(48.dp))
 
             // Botones A y B (derecha)
             ActionButtons(
@@ -228,24 +252,8 @@ fun ControllerScreen(
                 onButtonARelease = { viewModel.setButtonA(false) },
                 onButtonBPress = { viewModel.setButtonB(true) },
                 onButtonBRelease = { viewModel.setButtonB(false) },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.padding(start = 16.dp)
             )
-        }
-
-        // Cuenta atras para reconexion
-        uiState.reconnectCountdown?.let { count ->
-            if (count > 0) {
-                Text(
-                    text = "Reconectando en $count...",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
         }
 
         // Mensaje de error
@@ -274,6 +282,12 @@ fun ControllerScreen(
             )
         }
     }
+
+    SnackbarHost(
+        hostState = snackbarHostState,
+        modifier = Modifier.align(Alignment.BottomCenter)
+    )
+}
 }
 
 @Composable
@@ -418,17 +432,109 @@ private fun DPad(
     tiltX: Float,
     tiltY: Float,
     isCalibrating: Boolean,
+    sensorsActive: Boolean,
+    onTiltChange: (Float, Float) -> Unit,
+    onTiltReset: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Radio maximo para movimiento de la bolita (proporcional al tamano)
+    // Usamos 40% del tamano disponible como radio maximo
+    val density = LocalDensity.current
+    var maxRadiusXPx by remember { mutableStateOf(0f) }
+    var maxRadiusYPx by remember { mutableStateOf(0f) }
+    
+    var manualOffset by remember { mutableStateOf(Offset.Zero) }
+    var isDragging by remember { mutableStateOf(false) }
+
+    // Offset visual: usa manualOffset si se arrastra, sino usa valores del sensor
+    val visualOffset = if (isDragging) {
+        manualOffset
+    } else {
+        Offset(tiltX * maxRadiusXPx, tiltY * maxRadiusYPx)
+    }
+
+    // Color de la bolita: apagado cuando sensores activos
+    val dotColor = when {
+        sensorsActive -> Color.Gray
+        isCalibrating -> Color.Gray
+        else -> DPadDot
+    }
+
+    var dpadWidth by remember { mutableStateOf(0f) }
+    var dpadHeight by remember { mutableStateOf(0f) }
+
     Box(
         modifier = modifier
-            .size(180.dp)
-            .clip(CircleShape)
-            .background(DPadBackground)
-            .padding(3.dp),
+            .onSizeChanged { size ->
+                dpadWidth = size.width.toFloat()
+                dpadHeight = size.height.toFloat()
+                maxRadiusXPx = size.width / 2f * 0.75f
+                maxRadiusYPx = size.height / 2f * 0.75f
+            }
+            .clip(RoundedCornerShape(percent = 50)) // Forma ovalada
+            .background(DPadBackground.copy(alpha = if (sensorsActive) 0.5f else 1f))
+            .padding(4.dp)
+            .pointerInput(sensorsActive) {
+                if (sensorsActive) return@pointerInput
+                
+                detectDragGestures(
+                    onDragStart = { offset ->
+                        isDragging = true
+                        // Calcular offset inicial relativo al centro
+                        manualOffset = Offset(
+                            offset.x - dpadWidth / 2f,
+                            offset.y - dpadHeight / 2f
+                        )
+                        // Limitar al radio ovalado
+                        val normalizedX = manualOffset.x / maxRadiusXPx
+                        val normalizedY = manualOffset.y / maxRadiusYPx
+                        val dist = kotlin.math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY)
+                        if (dist > 1f) {
+                            manualOffset = Offset(
+                                manualOffset.x / dist,
+                                manualOffset.y / dist
+                            )
+                        }
+                        // Calcular gamma/beta
+                        val gamma = (manualOffset.x / maxRadiusXPx).coerceIn(-1f, 1f)
+                        val beta = -(manualOffset.y / maxRadiusYPx).coerceIn(-1f, 1f)
+                        onTiltChange(gamma, beta)
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        val newOffset = manualOffset + Offset(dragAmount.x, dragAmount.y)
+                        val normalizedX = newOffset.x / maxRadiusXPx
+                        val normalizedY = newOffset.y / maxRadiusYPx
+                        val dist = kotlin.math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY)
+                        manualOffset = if (dist > 1f) {
+                            Offset(
+                                newOffset.x / dist,
+                                newOffset.y / dist
+                            )
+                        } else {
+                            newOffset
+                        }
+                        val gamma = (manualOffset.x / maxRadiusXPx).coerceIn(-1f, 1f)
+                        val beta = -(manualOffset.y / maxRadiusYPx).coerceIn(-1f, 1f)
+                        onTiltChange(gamma, beta)
+                    },
+                    onDragEnd = {
+                        isDragging = false
+                        manualOffset = Offset.Zero
+                        onTiltReset()
+                    }
+                )
+            },
         contentAlignment = Alignment.Center
     ) {
-        val borderIntensity = ((kotlin.math.abs(tiltX) + kotlin.math.abs(tiltY)) / 2f).coerceIn(0f, 1f)
+        // Borde decorativo
+        val borderIntensity = if (isDragging) {
+            val normalizedX = manualOffset.x / maxRadiusXPx
+            val normalizedY = manualOffset.y / maxRadiusYPx
+            kotlin.math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY).coerceIn(0f, 1f)
+        } else {
+            ((kotlin.math.abs(tiltX) + kotlin.math.abs(tiltY)) / 2f).coerceIn(0f, 1f)
+        }
         val borderColor = androidx.compose.ui.graphics.lerp(
             DPadBorder,
             Color(0xFFFF6B6B),
@@ -438,31 +544,23 @@ private fun DPad(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(percent = 50))
                 .background(DPadBackground)
                 .padding(2.dp)
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(percent = 50))
                 .background(borderColor.copy(alpha = 0.3f))
         )
 
-        // Punto del D-Pad
-        val dotOffsetX = (tiltX * 55).dp
-        val dotOffsetY = (tiltY * 55).dp
+        // Bolita del D-Pad (48.dp)
+        val dotOffsetX = with(density) { visualOffset.x.toDp() }
+        val dotOffsetY = with(density) { visualOffset.y.toDp() }
 
         Box(
             modifier = Modifier
-                .size(24.dp)
+                .size(48.dp)
                 .offset(x = dotOffsetX, y = dotOffsetY)
                 .clip(CircleShape)
-                .background(
-                    if (isCalibrating) {
-                        Color.Gray
-                    } else if (borderIntensity > 0.3f) {
-                        Color(0xFFFF6B6B)
-                    } else {
-                        DPadDot
-                    }
-                )
+                .background(dotColor)
         )
     }
 }

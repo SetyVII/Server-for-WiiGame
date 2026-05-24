@@ -1,5 +1,6 @@
 package com.tfg.motioncontroller.presentation.controller
 
+import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -52,6 +53,8 @@ class ControllerViewModel @Inject constructor(
             var wasConnected = false
             
             gameRepository.connectionStatus.collect { status ->
+                Log.d("ControllerVM", "Estado de conexion: ${status.socketState}, wasConnected=$wasConnected")
+                
                 _uiState.value = _uiState.value.copy(
                     connectionStatus = status,
                     playerId = status.playerId
@@ -59,17 +62,29 @@ class ControllerViewModel @Inject constructor(
                 
                 when (status.socketState) {
                     SocketState.CONNECTED -> {
+                        Log.i("ControllerVM", "CONECTADO - Deteniendo reconexion")
                         wasConnected = true
+                        if (_uiState.value.reconnectCountdown != null) {
+                            _uiState.value = _uiState.value.copy(
+                                reconnectCountdown = null,
+                                snackbarMessage = "La conexion ha vuelto"
+                            )
+                        }
                         stopAutoReconnect()
                     }
                     SocketState.DISCONNECTED, SocketState.ERROR -> {
-                        // Iniciar cuenta atras si previamente estabamos conectados
+                        Log.w("ControllerVM", "DESCONEXION/ERROR detectado - wasConnected=$wasConnected")
                         if (wasConnected) {
+                            Log.i("ControllerVM", "Iniciando reconexion automatica...")
                             startAutoReconnect()
                             wasConnected = false
                         }
                     }
                     else -> {}
+                }
+
+                status.lastEvent?.let { event ->
+                    handleServerEvent(event)
                 }
             }
         }
@@ -89,14 +104,6 @@ class ControllerViewModel @Inject constructor(
                 currentInput = currentInput.copy(isYelling = state.isBlowing)
             }
         }
-
-        viewModelScope.launch {
-            gameRepository.connectionStatus.collect { status ->
-                status.lastEvent?.let { event ->
-                    handleServerEvent(event)
-                }
-            }
-        }
     }
 
     fun connect(serverIp: String, port: Int = 3000) {
@@ -109,45 +116,51 @@ class ControllerViewModel @Inject constructor(
                     serverUrl = "$serverIp:$port"
                 )
             )
+            Log.i("ControllerVM", "Conectando a $serverIp:$port")
             gameRepository.connect(serverIp, port)
         }
     }
 
     fun disconnect() {
+        Log.i("ControllerVM", "Desconectando manualmente")
         stopAutoReconnect()
         stopMicrophone()
         stopSensors()
         gameRepository.disconnect()
     }
 
-    // ===== CUENTA ATRAS PARA VOLVER AL MENU =====
+    // ===== RECONEXION FALSA (solo visual) =====
     private fun startAutoReconnect() {
         if (reconnectJob?.isActive == true) return
         
         reconnectJob = viewModelScope.launch {
-            // Cuenta atrás de 5 segundos
-            for (i in 5 downTo 1) {
-                _uiState.value = _uiState.value.copy(
-                    reconnectCountdown = i
-                )
-                delay(1000)
-            }
-            
-            // Llegó a 0 - notificar al UI para volver al menú
+            // Mostrar "reconectando" por 3 segundos
             _uiState.value = _uiState.value.copy(
-                reconnectCountdown = 0
+                snackbarMessage = "Reconectando..."
             )
-            // No llamar a disconnect() aquí, el Screen se encargará
-            // de navegar al menú y luego llamar a disconnect()
+            delay(3000)
+            
+            // Volver al menu
+            _uiState.value = _uiState.value.copy(
+                reconnectCountdown = 0,
+                snackbarMessage = "Conexion perdida"
+            )
         }
     }
 
     private fun stopAutoReconnect() {
+        Log.d("ControllerVM", "Deteniendo reconexion")
         reconnectJob?.cancel()
         reconnectJob = null
-        _uiState.value = _uiState.value.copy(
-            reconnectCountdown = null
-        )
+        if (_uiState.value.reconnectCountdown != null) {
+            _uiState.value = _uiState.value.copy(
+                reconnectCountdown = null
+            )
+        }
+    }
+
+    fun clearSnackbarMessage() {
+        _uiState.value = _uiState.value.copy(snackbarMessage = null)
     }
 
     // ===== SENSORES =====
@@ -159,7 +172,6 @@ class ControllerViewModel @Inject constructor(
             return
         }
 
-        // Cancelar job previo si existe
         sensorsJob?.cancel()
         sensorsJob = null
 
@@ -170,9 +182,8 @@ class ControllerViewModel @Inject constructor(
             )
 
             sensorDataSource.sensorDataFlow()
-                .sample(50L) // 20 FPS como la web
+                .sample(50L)
                 .collect { data ->
-                    // Normalizar gamma/beta como en la web (-1 a 1)
                     val gamma = (data.gamma.coerceIn(-anguloMaximo, anguloMaximo) / anguloMaximo)
                     val beta = (data.beta.coerceIn(-anguloMaximo, anguloMaximo) / anguloMaximo)
 
@@ -191,16 +202,12 @@ class ControllerViewModel @Inject constructor(
                         calibrationProgress = data.calibrationProgress
                     )
 
-                    // Actualizar input actual
                     currentInput = currentInput.copy(
                         gamma = gamma,
                         beta = beta
                     )
 
-                    // Enviar al servidor solo si esta conectado y tiene playerId
-                    if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED &&
-                        _uiState.value.playerId != null &&
-                        !data.isCalibrating) {
+                    if (!data.isCalibrating) {
                         gameRepository.sendInput(currentInput)
                     }
                 }
@@ -208,180 +215,183 @@ class ControllerViewModel @Inject constructor(
     }
 
     fun stopSensors() {
+        Log.d("ControllerVM", "Deteniendo sensores")
         sensorsJob?.cancel()
         sensorsJob = null
-
-        // Resetear valores de sensores
-        currentInput = currentInput.copy(gamma = 0f, beta = 0f)
-        
-        // Enviar input reseteado al servidor
-        sendCurrentInput()
-
         _uiState.value = _uiState.value.copy(
             sensorsActive = false,
             isCalibrating = false,
             sensorValues = SensorValues()
         )
+        currentInput = currentInput.copy(gamma = 0f, beta = 0f)
+        gameRepository.sendInput(currentInput)
     }
 
     // ===== BOTONES =====
     fun setButtonA(pressed: Boolean) {
         currentInput = currentInput.copy(btnA = pressed)
-        if (pressed) vibrationManager.vibrateClick()
-        sendCurrentInput()
+        if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED) {
+            gameRepository.sendInput(currentInput)
+        }
     }
 
     fun setButtonB(pressed: Boolean) {
         currentInput = currentInput.copy(btnB = pressed)
-        if (pressed) vibrationManager.vibrateClick()
-        sendCurrentInput()
+        if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED) {
+            gameRepository.sendInput(currentInput)
+        }
     }
 
-    private fun sendCurrentInput() {
-        if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED &&
-            _uiState.value.playerId != null) {
+    // ===== D-PAD MANUAL =====
+    fun setManualTilt(gamma: Float, beta: Float) {
+        currentInput = currentInput.copy(
+            gamma = gamma,
+            beta = beta
+        )
+        if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED) {
+            gameRepository.sendInput(currentInput)
+        }
+    }
+
+    fun resetManualTilt() {
+        currentInput = currentInput.copy(gamma = 0f, beta = 0f)
+        if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED) {
             gameRepository.sendInput(currentInput)
         }
     }
 
     // ===== MICROFONO =====
     fun startMicrophone() {
-        try {
-            blowDetector.startDetection(
-                onBlowStart = { volume ->
-                    _uiState.value = _uiState.value.copy(
-                        microphoneState = _uiState.value.microphoneState.copy(isBlowing = true)
-                    )
-                    currentInput = currentInput.copy(isYelling = true)
-                    vibrationManager.vibrate(VibrationManager.PATTERN_BLOW)
-                    sendCurrentInput()
-                },
-                onBlowEnd = { volume ->
-                    _uiState.value = _uiState.value.copy(
-                        microphoneState = _uiState.value.microphoneState.copy(isBlowing = false)
-                    )
-                    currentInput = currentInput.copy(isYelling = false)
-                    sendCurrentInput()
-                }
-            )
-        } catch (e: SecurityException) {
-            _uiState.value = _uiState.value.copy(
-                errorMessage = "Permiso de microfono denegado"
-            )
-        }
+        blowDetector.startDetection(
+            onBlowStart = { _ ->
+                currentInput = currentInput.copy(isYelling = true)
+            },
+            onBlowEnd = { _ ->
+                currentInput = currentInput.copy(isYelling = false)
+            }
+        )
     }
 
     fun stopMicrophone() {
         blowDetector.stopDetection()
         currentInput = currentInput.copy(isYelling = false)
-        _uiState.value = _uiState.value.copy(
-            microphoneState = MicrophoneState()
-        )
+    }
+
+    fun updateMicrophoneSettings(threshold: Float, cooldown: Int, scale: Float) {
+        blowDetector.updateSettings(threshold, cooldown.toLong(), scale)
     }
 
     fun showPermissionDenied() {
         _uiState.value = _uiState.value.copy(
-            errorMessage = "Permiso de microfono denegado. Activalo en ajustes del sistema."
+            errorMessage = "Permiso de microfono denegado"
         )
-    }
-
-    fun updateMicrophoneSettings(threshold: Float, cooldown: Int, scale: Float) {
-        blowDetector.updateSettings(
-            threshold = threshold,
-            cooldown = cooldown.toLong(),
-            scale = scale
-        )
-    }
-
-    // ===== VIBRACION =====
-    fun testVibration() {
-        vibrationManager.vibrateLong(5000)
-    }
-
-    fun vibrateOnButtonPress() {
-        vibrationManager.vibrateClick()
     }
 
     // ===== EVENTOS DEL SERVIDOR =====
     private fun handleServerEvent(event: ServerMessage) {
         when (event) {
             is ServerMessage.Collision -> {
+                vibrationManager.vibrate(longArrayOf(0, 100))
                 _uiState.value = _uiState.value.copy(
-                    logMessage = "Choque con ${event.objectName ?: "objeto"}"
+                    logMessage = "Colision!"
                 )
-                vibrationManager.vibrate(longArrayOf(1001L))
             }
             is ServerMessage.Death -> {
+                vibrationManager.vibrate(longArrayOf(0, 500, 200, 500))
                 _uiState.value = _uiState.value.copy(
                     logMessage = "Has muerto!"
                 )
-                vibrationManager.vibrate(longArrayOf(500L, 100L, 401L))
             }
             is ServerMessage.Pickup -> {
+                vibrationManager.vibrate(longArrayOf(0, 50))
                 _uiState.value = _uiState.value.copy(
-                    logMessage = "Recogiste: ${event.pickupType ?: "item"}"
+                    logMessage = "Objeto recogido!"
                 )
-                vibrationManager.vibrate(longArrayOf(1001L))
             }
             is ServerMessage.UIUpdate -> {
                 _uiState.value = _uiState.value.copy(
-                    logMessage = event.data ?: ""
+                    logMessage = event.data ?: "UI Update"
+                )
+            }
+            is ServerMessage.ScreenEffect -> {
+                _uiState.value = _uiState.value.copy(
+                    logMessage = "Efecto: ${event.color ?: "unknown"}"
                 )
             }
             is ServerMessage.PuzzleStart -> {
                 _uiState.value = _uiState.value.copy(
-                    logMessage = "Puzzle: ${event.puzzleId ?: ""}"
+                    logMessage = "Puzzle iniciado!"
                 )
-                vibrationManager.vibrate(longArrayOf(1001L))
             }
             is ServerMessage.Custom -> {
                 _uiState.value = _uiState.value.copy(
-                    logMessage = event.data ?: ""
+                    logMessage = event.data ?: "Custom event"
                 )
-                vibrationManager.vibrate(longArrayOf(1001L))
             }
-            is ServerMessage.ScreenEffect -> {
+            is ServerMessage.Error -> {
                 _uiState.value = _uiState.value.copy(
-                    logMessage = "Efecto de pantalla"
+                    errorMessage = event.message
                 )
-                event.vibrate?.let { if (it) vibrationManager.vibrate(longArrayOf(1001L)) }
             }
             else -> {}
         }
     }
 
-    // ===== ERRORES =====
-    fun clearError() {
-        _uiState.value = _uiState.value.copy(errorMessage = null)
-    }
-
-    // ===== LIFECYCLE =====
-    fun onAppBackground() {
-        if (_uiState.value.sensorsActive) {
-            stopSensors()
-            _uiState.value = _uiState.value.copy(
-                errorMessage = "Sensores pausados (app en background)"
+    fun testVibration() {
+        viewModelScope.launch {
+            // Secuencia simple de vibracion de test de 4 segundos:
+            vibrationManager.vibrate(
+                longArrayOf(
+                    0, 1000,       // Start, vibrar 1000ms
+                    500,           // Pausa 500ms
+                    100, 50, 100, 50, 100, 50, 100,  // Zig-zag: 4 pulsos
+                    500,           // Pausa 500ms
+                    1000           // Vibrar 1000ms
+                )
             )
         }
     }
 
-    fun onAppForeground() {
-        if (_uiState.value.errorMessage?.contains("background") == true) {
-            clearError()
+    fun loadSettings() {
+        viewModelScope.launch {
+            settingsDataStore.settingsFlow.collect { settings ->
+                _uiState.value = _uiState.value.copy(
+                    settings = settings
+                )
+            }
         }
     }
 
-    data class ControllerUiState(
-        val connectionStatus: ConnectionStatus = ConnectionStatus(),
-        val playerId: Int? = null,
-        val sensorsActive: Boolean = false,
-        val sensorValues: SensorValues = SensorValues(),
-        val microphoneState: MicrophoneState = MicrophoneState(),
-        val gameSettings: GameSettings = GameSettings(),
-        val errorMessage: String? = null,
-        val logMessage: String? = null,
-        val isCalibrating: Boolean = false,
-        val calibrationProgress: Float = 0f,
-        val reconnectCountdown: Int? = null
-    )
+    // ===== APP LIFECYCLE =====
+    fun onAppBackground() {
+        Log.i("ControllerVM", "App va a background - deteniendo sensores y microfono")
+        stopSensors()
+        stopMicrophone()
+    }
+
+    fun onAppForeground() {
+        Log.i("ControllerVM", "App vuelve a foreground")
+        // No reiniciar automaticamente - dejar que el usuario lo haga manualmente
+    }
+
+    fun saveSettings(settings: GameSettings) {
+        viewModelScope.launch {
+            settingsDataStore.saveSettings(settings)
+        }
+    }
 }
+
+data class ControllerUiState(
+    val connectionStatus: ConnectionStatus = ConnectionStatus(),
+    val playerId: Int? = null,
+    val sensorValues: SensorValues = SensorValues(),
+    val sensorsActive: Boolean = false,
+    val isCalibrating: Boolean = false,
+    val calibrationProgress: Float = 0f,
+    val microphoneState: MicrophoneState = MicrophoneState(),
+    val errorMessage: String? = null,
+    val logMessage: String? = null,
+    val settings: GameSettings = GameSettings(),
+    val reconnectCountdown: Int? = null,
+    val snackbarMessage: String? = null
+)

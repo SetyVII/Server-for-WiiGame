@@ -67,6 +67,25 @@ class VibrationManager @Inject constructor(
         ))
     }
 
+    fun vibrateWithAmplitudes(pattern: LongArray, amplitudes: IntArray) {
+        if (pattern.size != amplitudes.size) {
+            throw IllegalArgumentException("Pattern and amplitudes must have same length")
+        }
+        vibrator?.let { vib ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    val effect = VibrationEffect.createWaveform(pattern, amplitudes, -1)
+                    vib.vibrate(effect)
+                } catch (e: Exception) {
+                    // Fallback if device doesn't support amplitude control
+                    vibrate(pattern, -1)
+                }
+            } else {
+                vibrate(pattern, -1)
+            }
+        }
+    }
+
     fun cancel() {
         vibrator?.cancel()
     }

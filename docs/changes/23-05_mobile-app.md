@@ -123,7 +123,45 @@ Adaptacion completa de la app Android para comunicarse correctamente con el serv
 **Archivos afectados**:
 - `presentation/connection/ConnectionScreen.kt` - Agregado contador y Card condicional con enlace
 
+### D-Pad tactil interactivo
+**Funcionalidad**:
+- Convertir D-Pad visual en control tactil funcional
+- Bolita de 48.dp agarrable y deslizable
+- Movimiento limitado a radio de 55px desde el centro
+- Controla `gamma` (izq/der) y `beta` (arriba/abajo) con valores graduales (-1 a 1)
+- Velocidad variable segun distancia desde el centro
+- Se desactiva visualmente (color gris, alpha 0.5) cuando sensores estan activos
+- No responde al toque cuando `sensorsActive = true`
+- Al soltar, la bolita vuelve al centro y envia gamma=0, beta=0
+**Archivos afectados**:
+- `presentation/controller/ControllerScreen.kt` - Reescrito composable `DPad` con `detectDragGestures`
+- `presentation/controller/ControllerViewModel.kt` - Agregados `setManualTilt()` y `resetManualTilt()`
+
 ---
+
+## Cambios adicionales (reconexion y UI)
+
+### Sistema de reconexion real (3 intentos)
+**Problema anterior**: La "reconexion" solo hacia cuenta atras sin intentar reconectar.
+**Solucion**:
+- Intenta reconectar automaticamente hasta 3 veces (cada 2 segundos)
+- Muestra mensaje "Intento X de 3" en Snackbar
+- Si conecta, muestra "La conexion ha vuelto"
+- Si fallan los 3 intentos, vuelve al menu
+
+### Snackbar para mensajes de conexion
+**Cambio**: Reemplazado el Text de "Reconectando en X..." por SnackbarHost:
+- Mensajes de conexion/vuelta/perdida aparecen como Snackbar en la parte inferior
+- Eliminado contador visual de texto en pantalla
+- ControllerScreen envuelto en Box para posicionar SnackbarHost
+
+### Fix de compilacion (llave faltante)
+**Problema**: Al convertir Column en Box, faltaba una llave de cierre.
+**Archivo**: `presentation/controller/ControllerScreen.kt`
+
+### Eliminado collector duplicado
+**Problema**: Dos collectors de `connectionStatus` en el init del ViewModel.
+**Solucion**: Unificado en un solo collector que maneja tanto estado como eventos.
 
 ## Compatibilidad
 
@@ -132,4 +170,4 @@ La app ahora es compatible con el protocolo del servidor `server.js`:
 - Envio de input con `{"type":"input",...}`
 - Recepcion de `assignRole` para identificar al jugador
 - Recepcion de eventos de Unity: `collision`, `death`, `pickup`, etc.
-- Reconexion automatica con cuenta atras visual
+- Reconexion automatica con hasta 3 intentos
