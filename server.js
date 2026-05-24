@@ -10,10 +10,10 @@ const __dirname = path.dirname(__filename);
 // Servidor HTTP — sirve el mando web al móvil
 const server = http.createServer((req, res) => {
   if (req.url === "/" || req.url === "/index.html") {
-    fs.readFile(path.join(__dirname, "website-app", "index.html"), (err, data) => {
+    fs.readFile(path.join(__dirname, "mobile-web", "index.html"), (err, data) => {
       if (err) {
         res.writeHead(500);
-        return res.end("Error cargando website-app/index.html");
+        return res.end("Error cargando mobile-web/index.html");
       }
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(data);
