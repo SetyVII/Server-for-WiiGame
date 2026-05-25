@@ -299,6 +299,25 @@ Modernización completa de la web desde un monolito HTML de 631 líneas a una SP
 - `mobile-web/style.css` - Estilos para Material Symbols y tamaños en botones
 - `mobile-web/script.js` - Actualización de iconos dinámicos (mic y fullscreen)
 
+### 23. Tema Claro/Oscuro completo
+**Implementación**:
+- Añadidas variables CSS (`:root`) para tema oscuro y claro (`.theme-light`)
+- Paleta oscuro (default): `#1A1A2E` fondo, `#EEEEEE` texto, `#0B1320` variantes
+- Paleta claro: `#F5F5F5` fondo, `#333333` texto, `#E8E8E8` variantes
+- Colores fijos (no cambian): botones A/B, touchpad, topbar, acentos
+- Clase `theme-dark`/`theme-light` en `<body>` controla el tema activo
+- Botón de tema en Settings funcional con persistencia en localStorage
+- Texto "Sin rol" cambiado a `#CCCCCC` para mejor legibilidad
+- Todos los botones de settings (tema, modo, sensibilidad) con diseño consistente:
+  - Activos: fondo `#E94560`, texto blanco
+  - Inactivos: fondo variable, texto variable según tema
+- `flashScreen()` detecta color de fondo actual dinámicamente
+
+**Archivos modificados**:
+- `mobile-web/style.css` - Variables CSS para ambos temas, reemplazo de colores hardcodeados
+- `mobile-web/script.js` - `setTheme()`, `updateThemeUI()`, estado inicial `darkMode: true`
+- `mobile-web/index.html` - Clase `theme-dark` por defecto en body
+
 ---
 
 ## Archivos Afectados
@@ -316,11 +335,10 @@ Modernización completa de la web desde un monolito HTML de 631 líneas a una SP
 
 ## Pendientes
 
+- [x] Tema Dark/Light toggle
 - [ ] PWA: manifest.json, service worker, offline page
-- [ ] Tema Dark/Light toggle (actualmente solo dark)
 - [ ] Tests unitarios
 - [ ] CI/CD para deploy automático
-- [ ] Iconos Material Design 3 (reemplazar emojis por iconos SVG de Google Fonts)
 - [ ] Vibración testeada en iOS Safari (requiere permisos especiales)
 - [ ] Optimizar consumo de batería con sensores activos
 

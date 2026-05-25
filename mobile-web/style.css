@@ -1,3 +1,45 @@
+/* ============================================
+   VARIABLES CSS - TEMAS
+   ============================================ */
+:root {
+    /* Tema Oscuro (default) */
+    --bg-primary: #1A1A2E;
+    --bg-surface: #16213E;
+    --bg-surface-variant: #0B1320;
+    --text-primary: #EEEEEE;
+    --text-secondary: #AAAAAA;
+    --border-color: #444;
+    
+    /* Colores fijos (no cambian con tema) */
+    --color-primary: #E94560;
+    --color-primary-hover: #C73E54;
+    --color-secondary: #0F3460;
+    --color-tertiary: #9333EA;
+    --color-button-b: #EA580C;
+    --color-success: #22C55E;
+    --color-error: #EF4444;
+    --color-info: #00A8FF;
+    --color-player-2: #E84118;
+    
+    /* TopBar siempre oscuro */
+    --topbar-bg: #16213E;
+    --topbar-text: #EEEEEE;
+}
+
+.theme-light {
+    /* Tema Claro */
+    --bg-primary: #F5F5F5;
+    --bg-surface: #FFFFFF;
+    --bg-surface-variant: #E8E8E8;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #CCCCCC;
+    
+    /* TopBar siempre oscuro, incluso en claro */
+    --topbar-bg: #16213E;
+    --topbar-text: #EEEEEE;
+}
+
 /* RESET Y BASE */
 * {
     box-sizing: border-box;
@@ -6,8 +48,8 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-    background-color: #1A1A2E;
-    color: #EEEEEE;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -44,12 +86,12 @@ body {
 
 /* CONTROLLER */
 #screen-controller {
-    background-color: #1A1A2E;
+    background-color: var(--bg-primary);
 }
 
 /* TopBar */
 .top-bar {
-    background-color: #16213E;
+    background-color: var(--topbar-bg);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -76,6 +118,7 @@ body {
 .player-status {
     font-size: 12px;
     font-weight: bold;
+    color: #CCCCCC;
 }
 
 .player-status.player-1 {
@@ -87,7 +130,7 @@ body {
 }
 
 .btn-toggle-sensors {
-    background-color: #E94560;
+    background-color: var(--color-primary);
     color: white;
     border: none;
     border-radius: 8px;
@@ -104,7 +147,7 @@ body {
 }
 
 .btn-toggle-sensors.active {
-    background-color: #EF4444;
+    background-color: var(--color-error);
 }
 
 .top-actions-desktop {
@@ -119,7 +162,7 @@ body {
 
 .bottom-bar {
     display: none;
-    background-color: #16213E;
+    background-color: var(--topbar-bg);
     padding: 8px 12px;
     justify-content: center;
     gap: 8px;
@@ -129,7 +172,7 @@ body {
 .icon-btn {
     background: none;
     border: none;
-    color: white;
+    color: var(--topbar-text);
     cursor: pointer;
     padding: 6px;
     border-radius: 8px;
@@ -149,7 +192,7 @@ body {
 }
 
 .btn-disconnect {
-    background-color: #EF4444;
+    background-color: var(--color-error);
     color: white;
     border: none;
     border-radius: 8px;
@@ -160,12 +203,12 @@ body {
 }
 
 .btn-disconnect.inactive {
-    background-color: #22C55E;
+    background-color: var(--color-success);
 }
 
 /* Calibración */
 .calibration-panel {
-    background-color: #16213E;
+    background-color: var(--bg-surface);
     padding: 8px 16px;
     flex-shrink: 0;
 }
@@ -176,7 +219,7 @@ body {
 
 .calibration-text {
     font-size: 12px;
-    color: #E94560;
+    color: var(--color-primary);
     text-align: center;
     margin-bottom: 4px;
 }
@@ -184,14 +227,14 @@ body {
 .calibration-bar {
     width: 100%;
     height: 8px;
-    background-color: #0B1320;
+    background-color: var(--bg-surface-variant);
     border-radius: 4px;
     overflow: hidden;
 }
 
 .calibration-progress {
     height: 100%;
-    background-color: #E94560;
+    background-color: var(--color-primary);
     border-radius: 4px;
     transition: width 0.1s;
     width: 0%;
@@ -199,7 +242,7 @@ body {
 
 .calibration-percent {
     font-size: 11px;
-    color: #AAAAAA;
+    color: var(--text-secondary);
     text-align: center;
     margin-top: 2px;
 }
@@ -208,7 +251,7 @@ body {
 .debug-info {
     text-align: center;
     font-size: 11px;
-    color: #AAAAAA;
+    color: var(--text-secondary);
     padding: 4px 16px;
     font-family: monospace;
     flex-shrink: 0;
@@ -220,7 +263,7 @@ body {
 
 /* Panel de micrófono */
 .mic-panel {
-    background-color: #0B1320;
+    background-color: var(--bg-surface-variant);
     border-radius: 12px;
     margin: 0 16px 8px;
     padding: 12px;
@@ -240,14 +283,14 @@ body {
 
 .mic-header span {
     font-size: 12px;
-    color: #AAAAAA;
+    color: var(--text-secondary);
     width: 60px;
 }
 
 .volume-display {
     flex: 1;
     height: 20px;
-    background-color: #1A1A2E;
+    background-color: var(--bg-primary);
     border-radius: 10px;
     overflow: hidden;
     position: relative;
@@ -256,7 +299,7 @@ body {
 .volume-bar {
     height: 100%;
     width: 0%;
-    background-color: #22C55E;
+    background-color: var(--color-success);
     border-radius: 10px;
     transition: width 0.1s, background-color 0.2s;
 }
@@ -266,7 +309,7 @@ body {
 }
 
 .volume-bar.high {
-    background-color: #EF4444;
+    background-color: var(--color-error);
 }
 
 .rms-text {
@@ -275,13 +318,13 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 11px;
-    color: white;
+    color: var(--text-primary);
     font-weight: bold;
 }
 
 .blow-indicator {
     text-align: center;
-    color: #EF4444;
+    color: var(--color-error);
     font-size: 14px;
     font-weight: bold;
     margin: 4px 0;
@@ -306,7 +349,7 @@ body {
 
 .slider-group label {
     font-size: 11px;
-    color: #AAAAAA;
+    color: var(--text-secondary);
 }
 
 .slider-group input[type="range"] {
@@ -316,7 +359,7 @@ body {
 
 .slider-group span {
     font-size: 11px;
-    color: #E94560;
+    color: var(--color-primary);
 }
 
 /* Área principal del controller */
@@ -508,7 +551,7 @@ body {
 .event-log {
     text-align: center;
     font-size: 12px;
-    color: #E94560;
+    color: var(--color-primary);
     padding: 4px 16px;
     min-height: 20px;
     flex-shrink: 0;
@@ -518,7 +561,7 @@ body {
 .error-message {
     text-align: center;
     font-size: 12px;
-    color: #EF4444;
+    color: var(--color-error);
     padding: 4px 16px;
     flex-shrink: 0;
 }
@@ -531,11 +574,11 @@ body {
    PANTALLA 3: SETTINGS
    ============================================ */
 #screen-settings {
-    background-color: #1A1A2E;
+    background-color: var(--bg-primary);
 }
 
 .settings-header {
-    background-color: #16213E;
+    background-color: var(--topbar-bg);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -546,7 +589,7 @@ body {
 .settings-header h2 {
     margin: 0;
     font-size: 18px;
-    color: #EEEEEE;
+    color: var(--topbar-text);
 }
 
 .settings-content {
@@ -559,7 +602,7 @@ body {
 }
 
 .settings-card {
-    background-color: #0B1320;
+    background-color: var(--bg-surface-variant);
     border-radius: 12px;
     padding: 16px;
 }
@@ -567,7 +610,7 @@ body {
 .settings-card h3 {
     margin: 0 0 12px 0;
     font-size: 16px;
-    color: #EEEEEE;
+    color: var(--text-primary);
 }
 
 /* Toggle de tema */
@@ -578,11 +621,11 @@ body {
 
 .theme-btn {
     flex: 1;
-    background-color: #1A1A2E;
-    border: 1px solid #444;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 10px;
-    color: #EEEEEE;
+    color: var(--text-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -592,8 +635,9 @@ body {
 }
 
 .theme-btn.active {
-    background-color: #E94560;
-    border-color: #E94560;
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
 }
 
 /* Modo de control */
@@ -604,11 +648,11 @@ body {
 
 .mode-btn {
     flex: 1;
-    background-color: #1A1A2E;
-    border: 1px solid #444;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 12px;
-    color: #EEEEEE;
+    color: var(--text-primary);
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -617,8 +661,9 @@ body {
 }
 
 .mode-btn.active {
-    background-color: rgba(233, 69, 96, 0.1);
-    border: 2px solid #E94560;
+    background-color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    color: white;
 }
 
  .mode-icon {
@@ -648,11 +693,11 @@ body {
 }
 
 .sensitivity-btn {
-    background-color: #1A1A2E;
-    border: 1px solid #444;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 10px;
     padding: 12px;
-    color: #EEEEEE;
+    color: var(--text-primary);
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -662,8 +707,9 @@ body {
 }
 
 .sensitivity-btn.active {
-    background-color: rgba(233, 69, 96, 0.1);
-    border: 2px solid #E94560;
+    background-color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    color: white;
 }
 
 .sensitivity-icon {
@@ -683,7 +729,11 @@ body {
 
 .sensitivity-desc {
     font-size: 11px;
-    color: #AAAAAA;
+    color: var(--text-secondary);
+}
+
+.sensitivity-btn.active .sensitivity-desc {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 /* Custom force */
@@ -700,22 +750,22 @@ body {
 
 .custom-force label {
     font-size: 14px;
-    color: #EEEEEE;
+    color: var(--text-primary);
 }
 
 .custom-force input {
-    background-color: #1A1A2E;
-    border: 1px solid #444;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 10px;
-    color: #EEEEEE;
+    color: var(--text-primary);
     font-size: 16px;
     width: 100%;
 }
 
 .current-sensitivity {
     margin-top: 12px;
-    background-color: #1A1A2E;
+    background-color: var(--bg-primary);
     border-radius: 8px;
     padding: 12px;
     display: flex;
@@ -725,7 +775,7 @@ body {
 }
 
 .current-sensitivity .highlight {
-    color: #E94560;
+    color: var(--color-primary);
     font-weight: bold;
 }
 
@@ -742,11 +792,11 @@ body {
 }
 
 .settings-content::-webkit-scrollbar-track {
-    background: #0B1320;
+    background: var(--bg-surface-variant);
 }
 
 .settings-content::-webkit-scrollbar-thumb {
-    background: #444;
+    background: var(--border-color);
     border-radius: 3px;
 }
 
@@ -841,11 +891,11 @@ body {
     }
     
     .touchpad-container {
-        width: 260px; /* más ancho para aprovechar espacio */
-        height: 100%;
-        max-width: 90%;
-        max-height: 58vh;
-        aspect-ratio: unset;
+        height: 85vw;
+        max-height: 380px;
+        width: auto;
+        aspect-ratio: 380 / 256;
+        padding-top: 25px;
     }
     
     .touchpad {
@@ -901,7 +951,6 @@ body {
         gap: 10px;
         flex-shrink: 0;
         padding-bottom: 16px;
-        align-items: center;
     }
     
     .btn-action {
@@ -937,7 +986,10 @@ body {
     }
     
     .touchpad-container {
-        max-height: 52vh;
+        width: 85vw;
+        max-width: 380px;
+        height: auto;
+        aspect-ratio: 380 / 256;
     }
     
     .btn-action {
@@ -1026,6 +1078,6 @@ body {
 }
 
 .input-disabled .event-log {
-    color: #E94560;
+    color: var(--color-primary);
     font-weight: bold;
 }

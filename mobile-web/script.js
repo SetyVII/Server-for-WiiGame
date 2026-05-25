@@ -37,7 +37,7 @@ const AppState = {
     
     // Settings
     settings: {
-        darkMode: true,
+        darkMode: false,
         controlMode: 'touchpad', // 'touchpad' | 'buttons'
         sensitivity: 'medium', // 'low' | 'medium' | 'high' | 'custom'
         customForce: 45,
@@ -981,10 +981,11 @@ const controllerScreen = {
     },
     
     flashScreen(color, duration) {
-        const original = document.body.style.backgroundColor;
+        const computedStyle = getComputedStyle(document.body);
+        const original = document.body.style.backgroundColor || computedStyle.backgroundColor;
         document.body.style.backgroundColor = color;
         setTimeout(() => {
-            document.body.style.backgroundColor = original || '#1A1A2E';
+            document.body.style.backgroundColor = original;
         }, duration);
     },
     
@@ -1045,7 +1046,7 @@ const settingsScreen = {
             AppState.settings = { ...AppState.settings, ...JSON.parse(saved) };
         }
         
-        // Aplicar settings UI
+        // Aplicar tema al body
         this.updateThemeUI();
         this.updateControlModeUI();
         this.updateSensitivityUI();
@@ -1063,6 +1064,8 @@ const settingsScreen = {
     
     updateThemeUI() {
         const isDark = AppState.settings.darkMode;
+        document.body.classList.toggle('theme-light', !isDark);
+        document.body.classList.toggle('theme-dark', isDark);
         document.getElementById('theme-light').classList.toggle('active', !isDark);
         document.getElementById('theme-dark').classList.toggle('active', isDark);
     },
