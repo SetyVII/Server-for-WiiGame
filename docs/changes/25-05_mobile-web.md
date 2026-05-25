@@ -270,6 +270,35 @@ Modernización completa de la web desde un monolito HTML de 631 líneas a una SP
 - `mobile-web/style.css` - Estilos `.input-disabled` para todos los controles
 - `mobile-web/script.js` - Añade/remueve clase `input-disabled` en `toggleInput()`
 
+### 22. Iconos Material Design 3 (reemplazo de emojis)
+**Implementación**:
+- Añadida API de Google Fonts: `Material Symbols Rounded`
+- Reemplazados todos los emojis de UI por iconos vectoriales MD3
+- Mapeo de iconos:
+  - Micrófono: `mic` / `mic_off` (cambia según estado activo/inactivo)
+  - Vibración: `vibration`
+  - Settings: `settings`
+  - Fullscreen: `fullscreen` / `fullscreen_exit` (cambia según estado)
+  - Flecha atrás: `arrow_back`
+  - Modo claro: `light_mode`
+  - Modo oscuro: `dark_mode`
+  - Modo touchpad: `sports_esports`
+  - Modo botones: `smart_button`
+  - Sensibilidad custom: `tune`
+- Añadidos estilos CSS para `.material-symbols-rounded` con tamaños adaptados
+- Actualizado JS para cambiar dinámicamente iconos de micrófono y fullscreen
+
+**Ventajas**:
+- Iconos vectoriales nítidos en cualquier tamaño/dispositivo
+- Consistencia visual con la app nativa (mobile-app/)
+- Menor peso que emojis (fuente cargada una sola vez)
+- Mejor accesibilidad y semántica
+
+**Archivos modificados**:
+- `mobile-web/index.html` - Link a Google Fonts + reemplazo de emojis por spans con iconos
+- `mobile-web/style.css` - Estilos para Material Symbols y tamaños en botones
+- `mobile-web/script.js` - Actualización de iconos dinámicos (mic y fullscreen)
+
 ---
 
 ## Archivos Afectados
