@@ -121,6 +121,10 @@ const controllerScreen = {
             testVibrationBtnMobile: document.getElementById('test-vibration-btn-mobile'),
             openSettingsBtn: document.getElementById('open-settings-btn'),
             openSettingsBtnMobile: document.getElementById('open-settings-btn-mobile'),
+            fullscreenBtn: document.getElementById('fullscreen-btn'),
+            fullscreenBtnMobile: document.getElementById('fullscreen-btn-mobile'),
+            fullscreenIcon: document.getElementById('fullscreen-icon'),
+            fullscreenIconMobile: document.getElementById('fullscreen-icon-mobile'),
             disconnectBtn: document.getElementById('disconnect-btn'),
             disconnectBtnMobile: document.getElementById('disconnect-btn-mobile'),
             calibrationPanel: document.getElementById('calibration-panel'),
@@ -202,6 +206,25 @@ const controllerScreen = {
                 showScreen('settings');
             });
         }
+        
+        // Fullscreen (desktop)
+        if (this.elements.fullscreenBtn) {
+            this.elements.fullscreenBtn.addEventListener('click', () => {
+                this.toggleFullscreen();
+            });
+        }
+        
+        // Fullscreen (mobile)
+        if (this.elements.fullscreenBtnMobile) {
+            this.elements.fullscreenBtnMobile.addEventListener('click', () => {
+                this.toggleFullscreen();
+            });
+        }
+        
+        // Escuchar cambios de fullscreen para actualizar icono
+        document.addEventListener('fullscreenchange', () => {
+            this.updateFullscreenIcon();
+        });
         
         // Desconectar (desktop)
         this.elements.disconnectBtn.addEventListener('click', () => {
@@ -626,8 +649,34 @@ const controllerScreen = {
     },
     
     testVibration() {
-        if (navigator.vibrate) {
-            navigator.vibrate([0, 1000, 500, 100, 50, 100, 50, 100, 50, 100, 500, 1000]);
+        console.log('[testVibration] Intentando vibrar...');
+        
+        // Feedback visual inmediato (parpadeo del botón)
+        const btns = [
+            this.elements.testVibrationBtn,
+            this.elements.testVibrationBtnMobile
+        ].filter(Boolean);
+        
+        btns.forEach(btn => {
+            btn.style.backgroundColor = '#E94560';
+            setTimeout(() => {
+                btn.style.backgroundColor = '';
+            }, 200);
+        });
+        
+        // Intentar vibrar con patrón complejo (ritmo de prueba)
+        if ('vibrate' in navigator) {
+            try {
+                const result = navigator.vibrate([0, 1000, 500, 100, 50, 100, 50, 100, 50, 100, 500, 1000]);
+                console.log('[testVibration] navigator.vibrate() devolvió:', result);
+                this.logEvent('📳 Vibración de prueba');
+            } catch (err) {
+                console.warn('Error al vibrar:', err);
+                this.showError('Vibración no disponible en este dispositivo');
+            }
+        } else {
+            console.warn('[testVibration] navigator.vibrate no está disponible');
+            this.showError('Tu navegador no soporta vibración');
         }
     },
     
@@ -796,6 +845,27 @@ const controllerScreen = {
                 this.elements.toggleSensorsBtnMobile.textContent = 'Activar sensores';
                 this.elements.toggleSensorsBtnMobile.classList.remove('active');
             }
+        }
+    },
+    
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.warn('Error al entrar en fullscreen:', err);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    },
+    
+    updateFullscreenIcon() {
+        const isFullscreen = !!document.fullscreenElement;
+        const icon = isFullscreen ? '🗗' : '⛶';
+        if (this.elements.fullscreenIcon) {
+            this.elements.fullscreenIcon.textContent = icon;
+        }
+        if (this.elements.fullscreenIconMobile) {
+            this.elements.fullscreenIconMobile.textContent = icon;
         }
     },
     

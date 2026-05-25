@@ -178,6 +178,57 @@ Modernización completa de la web desde un monolito HTML de 631 líneas a una SP
 **Archivos modificados**:
 - `mobile-web/style.css` - Reglas `.btn-a` y `.btn-b` específicas
 
+### 15. Touchpad deshabilitado con sensores activos
+**Implementación**:
+- Cuando se activan los sensores, el touchpad se pone grisáceo e inutilizable
+- Fondo cambia a `#2a2a3e`, borde a `#555`, opacidad `0.4`
+- Bolita se vuelve gris con opacidad `0.6`
+- Transiciones suaves de `0.3s` para el cambio visual
+- El touchpad ignora eventos táctiles si `sensorsActive = true`
+- La bolita se mueve automáticamente reflejando `gamma` y `beta`
+
+**Archivos modificados**:
+- `mobile-web/style.css` - Estilos `.touchpad.disabled` y `.touchpad.disabled .touchpad-dot`
+- `mobile-web/script.js` - Lógica de desactivación en `updateUI()`
+
+### 16. Movimiento de la bolita del touchpad
+**Implementación**:
+- La bolita se mueve usando píxeles absolutos (no porcentajes CSS)
+- Cálculo: `offset = gamma/beta * maxRadius` donde `maxRadius = (dimension/2) * 0.75`
+- En sensores activos: bolita se mueve automáticamente reflejando inclinación
+- En modo manual: bolita sigue el dedo con clamp a 75% del radio
+- Alineación con app nativa: misma fórmula que `ControllerScreen.kt`
+
+**Archivos modificados**:
+- `mobile-web/script.js` - Función `updateTouchpadVisual()`
+
+### 17. Botón Fullscreen
+**Implementación**:
+- Botón ⛶ añadido en `top-actions-desktop` y `top-actions-mobile`
+- Función `toggleFullscreen()` para entrar/salir de pantalla completa
+- Icono cambia a 🗗 cuando está en fullscreen
+- Escucha evento `fullscreenchange` para actualizar icono
+- API: `document.documentElement.requestFullscreen()`
+- Fallback silencioso si el navegador no soporta fullscreen
+
+**Archivos modificados**:
+- `mobile-web/index.html` - Botones `#fullscreen-btn` y `#fullscreen-btn-mobile`
+- `mobile-web/script.js` - Funciones `toggleFullscreen()` y `updateFullscreenIcon()`
+
+### 18. Vibración mejorada
+**Implementación**:
+- Patrón complejo restaurado: `[0, 1000, 500, 100, 50, 100, 50, 100, 50, 100, 500, 1000]`
+- Feedback visual: botón parpadea en rojo `#E94560` al activar
+- Console logs para debug: `[testVibration] Intentando vibrar...`
+- Manejo de errores robusto con try/catch
+- Verificación: `'vibrate' in navigator` antes de intentar
+- Mensaje claro si el navegador no soporta vibración
+
+**Nota importante**: En Chrome Mobile requiere que el dispositivo NO esté en modo "No molestar" (DND)
+
+**Archivos modificados**:
+- `mobile-web/script.js` - Función `testVibration()` mejorada
+
 ---
 
 ## Archivos Afectados
@@ -199,8 +250,9 @@ Modernización completa de la web desde un monolito HTML de 631 líneas a una SP
 - [ ] Tema Dark/Light toggle (actualmente solo dark)
 - [ ] Tests unitarios
 - [ ] CI/CD para deploy automático
-- [ ] Mensaje "Gire el dispositivo" cuando orientación no coincida
-- [ ] Vibración en eventos del servidor (implementado pero no testeado en iOS)
+- [ ] Iconos Material Design 3 (reemplazar emojis por iconos SVG de Google Fonts)
+- [ ] Vibración testeada en iOS Safari (requiere permisos especiales)
+- [ ] Optimizar consumo de batería con sensores activos
 
 ---
 
@@ -213,9 +265,11 @@ El servidor debe ejecutarse con `node server.js` y soporta:
 - Mensajes JSON idénticos a mobile-app/
 
 ### Compatibilidad
-- **Chrome/Android**: 100% funcionalidad
-- **iOS Safari**: Limitaciones en vibración y fullscreen
+- **Chrome/Android**: 100% funcionalidad (incluye fullscreen, sensores, vibración)
+- **iOS Safari**: Limitaciones en vibración y fullscreen (requiere permisos)
+- **Opera Mobile**: Funcional pero sin fullscreen API
 - **Requisito**: HTTPS o localhost para sensores y micrófono
+- **Vibración**: Requiere que el dispositivo NO esté en modo "No molestar" (DND)
 
 ### Estado Actual
 La web está **funcional y lista para usar**. Tiene paridad de features con mobile-app/ excepto PWA y toggle de tema.

@@ -341,14 +341,19 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    transition: background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
 }
 
 .touchpad.disabled {
-    opacity: 0.5;
+    opacity: 0.4;
+    background-color: #2a2a3e;
+    border-color: #555;
+    cursor: not-allowed;
 }
 
 .touchpad.disabled .touchpad-dot {
     background-color: #888;
+    opacity: 0.6;
 }
 
 .touchpad-dot {
@@ -357,7 +362,7 @@ body {
     background-color: #E94560;
     border-radius: 50%;
     position: absolute;
-    transition: transform 0.05s;
+    transition: transform 0.05s, background-color 0.3s ease, opacity 0.3s ease;
     transform: translate(0, 0);
 }
 
