@@ -46,6 +46,9 @@ const AppState = {
     // Touchpad
     isDragging: false,
     manualOffset: { x: 0, y: 0 },
+    
+    // Envío de datos
+    sendingInput: true,
 };
 
 // ============================================
@@ -226,15 +229,15 @@ const controllerScreen = {
             this.updateFullscreenIcon();
         });
         
-        // Desconectar (desktop)
+        // Desactivar/Activar envío (desktop)
         this.elements.disconnectBtn.addEventListener('click', () => {
-            this.disconnect();
+            this.toggleInput();
         });
         
-        // Desconectar (mobile)
+        // Desactivar/Activar envío (mobile)
         if (this.elements.disconnectBtnMobile) {
             this.elements.disconnectBtnMobile.addEventListener('click', () => {
-                this.disconnect();
+                this.toggleInput();
             });
         }
         
@@ -741,38 +744,66 @@ const controllerScreen = {
         }, 2000);
     },
     
-    disconnect() {
-        AppState.sensorsActive = false;
-        AppState.micActive = false;
+    toggleInput() {
+        const screenController = document.getElementById('screen-controller');
         
-        if (this._orientationHandler) {
-            window.removeEventListener('deviceorientation', this._orientationHandler);
-        }
-        
-        if (AppState.ws) {
-            AppState.ws.close();
-            AppState.ws = null;
-        }
-        
-        if (AppState.reconnectTimeout) {
-            clearTimeout(AppState.reconnectTimeout);
-            AppState.reconnectTimeout = null;
+        if (AppState.sendingInput) {
+            // Desactivar envío
+            AppState.sendingInput = false;
+            
+            // Detener sensores
+            if (AppState.sensorsActive) {
+                this.stopSensors();
+            }
+            
+            // Detener micrófono
+            if (AppState.micActive) {
+                this.stopMicrophone();
+            }
+            
+            // Resetear valores a neutro
+            AppState.currentInput = {
+                type: 'input',
+                gamma: 0,
+                beta: 0,
+                dpadX: 0,
+                dpadY: 0,
+                btnA: false,
+                btnB: false,
+                isYelling: false,
+            };
+            AppState.manualOffset = { x: 0, y: 0 };
+            
+            // Enviar último mensaje con todo en 0
+            this.sendInput();
+            
+            // Añadir clase visual de desactivado
+            screenController.classList.add('input-disabled');
+            
+            // Mensaje persistente (no desaparece)
+            this.logEvent('⛔ Envío de datos desactivado', true);
+        } else {
+            // Activar envío
+            AppState.sendingInput = true;
+            
+            // Quitar clase visual de desactivado
+            screenController.classList.remove('input-disabled');
+            
+            // Limpiar mensaje persistente
+            if (this._logTimeout) {
+                clearTimeout(this._logTimeout);
+                this._logTimeout = null;
+            }
+            this.elements.eventLog.textContent = '';
+            
+            this.logEvent('✅ Envío de datos activado');
         }
         
         this.updateUI();
-        this.logEvent('Desconectado');
-        
-        // Auto-reconectar después de 2 segundos
-        AppState.reconnectTimeout = setTimeout(() => {
-            if (!AppState.ws || AppState.ws.readyState !== WebSocket.OPEN) {
-                this.logEvent('Reconectando...');
-                this.autoConnect(AppState.currentWsUrl);
-            }
-        }, 2000);
     },
     
     sendInput() {
-        if (!AppState.ws || AppState.ws.readyState !== WebSocket.OPEN || !AppState.myPlayerId) return;
+        if (!AppState.sendingInput || !AppState.ws || AppState.ws.readyState !== WebSocket.OPEN || !AppState.myPlayerId) return;
         
         const mode = AppState.settings.controlMode;
         let input;
@@ -846,6 +877,26 @@ const controllerScreen = {
                 this.elements.toggleSensorsBtnMobile.classList.remove('active');
             }
         }
+        
+        // Botón Desactivar/Activar envío (desktop)
+        if (AppState.sendingInput) {
+            this.elements.disconnectBtn.textContent = 'Desactivar';
+            this.elements.disconnectBtn.classList.remove('inactive');
+        } else {
+            this.elements.disconnectBtn.textContent = 'Activar';
+            this.elements.disconnectBtn.classList.add('inactive');
+        }
+        
+        // Botón Desactivar/Activar envío (mobile)
+        if (this.elements.disconnectBtnMobile) {
+            if (AppState.sendingInput) {
+                this.elements.disconnectBtnMobile.textContent = 'Desactivar';
+                this.elements.disconnectBtnMobile.classList.remove('inactive');
+            } else {
+                this.elements.disconnectBtnMobile.textContent = 'Activar';
+                this.elements.disconnectBtnMobile.classList.add('inactive');
+            }
+        }
     },
     
     toggleFullscreen() {
@@ -900,13 +951,19 @@ const controllerScreen = {
         }
     },
     
-    logEvent(message) {
+    logEvent(message, persistent = false) {
+        if (this._logTimeout) {
+            clearTimeout(this._logTimeout);
+            this._logTimeout = null;
+        }
         this.elements.eventLog.textContent = message;
-        setTimeout(() => {
-            if (this.elements.eventLog.textContent === message) {
-                this.elements.eventLog.textContent = '';
-            }
-        }, 3000);
+        if (!persistent) {
+            this._logTimeout = setTimeout(() => {
+                if (this.elements.eventLog.textContent === message) {
+                    this.elements.eventLog.textContent = '';
+                }
+            }, 3000);
+        }
     },
     
     showError(message) {

@@ -229,6 +229,47 @@ Modernización completa de la web desde un monolito HTML de 631 líneas a una SP
 **Archivos modificados**:
 - `mobile-web/script.js` - Función `testVibration()` mejorada
 
+### 19. Botón "Desactivar" en lugar de "Desconectar"
+**Implementación**:
+- Cambiado texto del botón de "Desconectar" a "Desactivar"
+- El botón alterna entre "Desactivar" (rojo) y "Activar" (verde)
+- Al desactivar: detiene sensores, micrófono y resetea valores a neutro
+- Envía un último mensaje con todos los valores en 0 antes de desactivar
+- La conexión WebSocket permanece abierta (solo se detiene el envío de datos)
+- Nueva propiedad `AppState.sendingInput` para controlar el estado
+- Función `sendInput()` solo envía datos si `sendingInput === true`
+- Feedback visual: color verde `#22C55E` cuando está en modo "Activar"
+
+**Archivos modificados**:
+- `mobile-web/index.html` - Texto del botón cambiado a "Desactivar"
+- `mobile-web/script.js` - Función `toggleInput()` reemplaza `disconnect()`, lógica de `sendInput()` y `updateUI()`
+- `mobile-web/style.css` - Estilo `.btn-disconnect.inactive` en verde
+
+### 20. Mensaje persistente al desactivar envío
+**Implementación**:
+- `logEvent()` acepta parámetro `persistent` para mantener el mensaje
+- Al desactivar: muestra `⛔ Envío de datos desactivado` de forma permanente
+- Al activar: limpia el mensaje persistente y muestra `✅ Envío de datos activado`
+- Cancela timeout anterior si existe antes de mostrar nuevo mensaje
+
+**Archivos modificados**:
+- `mobile-web/script.js` - Función `logEvent()` con soporte para mensajes persistentes
+
+### 21. Controles grises cuando envío está desactivado
+**Implementación**:
+- Clase CSS `.input-disabled` añadida al `#screen-controller`
+- Touchpad: opacidad 0.3, fondo gris `#2a2a3e`, borde gris `#555`
+- Botones D-Pad: fondo gris `#333`, texto gris `#777`, opacidad 0.6
+- Botones A/B: opacidad 0.4, filtro escala de grises 100%
+- Iconos de barra: opacidad 0.4
+- Botón de sensores: opacidad 0.5
+- Cursor `not-allowed` en todos los controles desactivados
+- Mensaje en log en rojo y negrita para mayor visibilidad
+
+**Archivos modificados**:
+- `mobile-web/style.css` - Estilos `.input-disabled` para todos los controles
+- `mobile-web/script.js` - Añade/remueve clase `input-disabled` en `toggleInput()`
+
 ---
 
 ## Archivos Afectados
