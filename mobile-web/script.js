@@ -578,10 +578,13 @@ const controllerScreen = {
                 
                 AppState.micActive = true;
                 this.elements.micPanel.classList.remove('hidden');
-                this.elements.micIcon.textContent = '🎙️';
+                this.elements.micIcon.textContent = 'mic';
                 this.elements.toggleMicBtn.style.color = '#EF4444';
                 if (this.elements.toggleMicBtnMobile) {
                     this.elements.toggleMicBtnMobile.style.color = '#EF4444';
+                }
+                if (this.elements.micIconMobile) {
+                    this.elements.micIconMobile.textContent = 'mic';
                 }
                 
                 this.measureVolume();
@@ -599,10 +602,13 @@ const controllerScreen = {
             AppState.audioContext = null;
         }
         this.elements.micPanel.classList.add('hidden');
-        this.elements.micIcon.textContent = '🎙️';
+        this.elements.micIcon.textContent = 'mic_off';
         this.elements.toggleMicBtn.style.color = '';
         if (this.elements.toggleMicBtnMobile) {
             this.elements.toggleMicBtnMobile.style.color = '';
+        }
+        if (this.elements.micIconMobile) {
+            this.elements.micIconMobile.textContent = 'mic_off';
         }
         AppState.currentInput.isYelling = false;
         this.sendInput();
@@ -911,7 +917,7 @@ const controllerScreen = {
     
     updateFullscreenIcon() {
         const isFullscreen = !!document.fullscreenElement;
-        const icon = isFullscreen ? '🗗' : '⛶';
+        const icon = isFullscreen ? 'fullscreen_exit' : 'fullscreen';
         if (this.elements.fullscreenIcon) {
             this.elements.fullscreenIcon.textContent = icon;
         }

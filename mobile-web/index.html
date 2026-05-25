@@ -8,6 +8,7 @@
         />
         <title>Control WiiCell</title>
         <link rel="icon" type="image/svg+xml" href="/resources/logo_wiicell.svg" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
@@ -27,16 +28,16 @@
                 
                 <div class="top-actions-desktop">
                     <button id="toggle-mic-btn" class="icon-btn" title="Micrófono">
-                        <span id="mic-icon">🎙️</span>
+                        <span id="mic-icon" class="material-symbols-rounded">mic</span>
                     </button>
                     <button id="test-vibration-btn" class="icon-btn" title="Test vibración">
-                        📳
+                        <span class="material-symbols-rounded">vibration</span>
                     </button>
                     <button id="open-settings-btn" class="icon-btn" title="Configuración">
-                        ⚙️
+                        <span class="material-symbols-rounded">settings</span>
                     </button>
                     <button id="fullscreen-btn" class="icon-btn" title="Pantalla completa">
-                        <span id="fullscreen-icon">⛶</span>
+                        <span id="fullscreen-icon" class="material-symbols-rounded">fullscreen</span>
                     </button>
                     <button id="disconnect-btn" class="btn-disconnect">
                         Desactivar
@@ -46,16 +47,16 @@
                 <!-- Botones solo para móvil (se muestran en portrait) -->
                 <div class="top-actions-mobile">
                     <button id="toggle-mic-btn-mobile" class="icon-btn" title="Micrófono">
-                        <span id="mic-icon-mobile">🎙️</span>
+                        <span id="mic-icon-mobile" class="material-symbols-rounded">mic</span>
                     </button>
                     <button id="test-vibration-btn-mobile" class="icon-btn" title="Test vibración">
-                        📳
+                        <span class="material-symbols-rounded">vibration</span>
                     </button>
                     <button id="open-settings-btn-mobile" class="icon-btn" title="Configuración">
-                        ⚙️
+                        <span class="material-symbols-rounded">settings</span>
                     </button>
                     <button id="fullscreen-btn-mobile" class="icon-btn" title="Pantalla completa">
-                        <span id="fullscreen-icon-mobile">⛶</span>
+                        <span id="fullscreen-icon-mobile" class="material-symbols-rounded">fullscreen</span>
                     </button>
                 </div>
             </header>
@@ -156,7 +157,9 @@
     <!-- PANTALLA SETTINGS -->
         <section id="screen-settings" class="screen">
             <header class="settings-header">
-                <button id="back-btn" class="icon-btn">←</button>
+                <button id="back-btn" class="icon-btn">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
                 <h2>Configuración</h2>
             </header>
             
@@ -166,10 +169,10 @@
                     <h3>Apariencia</h3>
                     <div class="theme-toggle">
                         <button id="theme-light" class="theme-btn">
-                            <span>☀️</span> Claro
+                            <span class="material-symbols-rounded">light_mode</span> Claro
                         </button>
                         <button id="theme-dark" class="theme-btn active">
-                            <span>🌙</span> Oscuro
+                            <span class="material-symbols-rounded">dark_mode</span> Oscuro
                         </button>
                     </div>
                 </div>
@@ -179,11 +182,11 @@
                     <h3>Modo de Control</h3>
                     <div class="control-mode-options">
                         <button id="mode-touchpad" class="mode-btn active">
-                            <span class="mode-icon">🎮</span>
+                            <span class="mode-icon material-symbols-rounded">sports_esports</span>
                             <span class="mode-label">Touchpad</span>
                         </button>
                         <button id="mode-buttons" class="mode-btn">
-                            <span class="mode-icon">🔘</span>
+                            <span class="mode-icon material-symbols-rounded">smart_button</span>
                             <span class="mode-label">Botones</span>
                         </button>
                     </div>
@@ -209,7 +212,7 @@
                             <span class="sensitivity-desc">10.0</span>
                         </button>
                         <button class="sensitivity-btn" data-level="custom">
-                            <span class="sensitivity-icon">⚙</span>
+                            <span class="sensitivity-icon material-symbols-rounded">tune</span>
                             <span class="sensitivity-label">Custom</span>
                             <span class="sensitivity-desc">Personalizado</span>
                         </button>
