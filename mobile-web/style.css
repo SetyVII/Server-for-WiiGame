@@ -502,12 +502,14 @@ body {
     transform: translate(0, 0);
 }
 
-/* D-Pad (Modo botones) */
+/* D-Pad (Modo botones) - Tamaño = 2 botones A/B + gap */
 .d-pad {
     display: grid;
-    grid-template-columns: 60px 60px 60px;
-    grid-template-rows: 60px 60px 60px;
-    gap: 5px;
+    grid-template-columns: 80px 80px 80px;
+    grid-template-rows: 80px 80px 80px;
+    gap: 8px;
+    width: 256px;  /* 120*2 + 16 */
+    height: 256px; /* 120*2 + 16 */
 }
 
 .d-pad.hidden {
@@ -515,9 +517,9 @@ body {
 }
 
 .d-pad button {
-    background-color: #444;
+    background-color: #0F3460;
     color: white;
-    border: 2px solid #555;
+    border: 2px solid #E94560;
     border-radius: 10px;
     font-size: 16px;
     font-weight: bold;
@@ -530,8 +532,8 @@ body {
 }
 
 .d-pad button:active {
-    background-color: #666;
-    border-color: #888;
+    background-color: #1a4a7a;
+    border-color: #ff6b6b;
 }
 
 .d-pad button:disabled {
@@ -742,38 +744,7 @@ body {
     font-size: 12px;
 }
 
-/* Orientación */
-.orientation-options {
-    display: flex;
-    gap: 8px;
-}
 
-.orientation-btn {
-    flex: 1;
-    background-color: #1A1A2E;
-    border: 1px solid #444;
-    border-radius: 8px;
-    padding: 12px;
-    color: #EEEEEE;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-
-.orientation-btn.active {
-    background-color: rgba(233, 69, 96, 0.1);
-    border: 2px solid #E94560;
-}
-
-.orientation-icon {
-    font-size: 24px;
-}
-
-.orientation-label {
-    font-size: 12px;
-}
 
 /* Sensibilidad */
 .sensitivity-grid {
@@ -906,8 +877,11 @@ body {
     }
     
     .d-pad {
-        grid-template-columns: 50px 50px 50px;
-        grid-template-rows: 50px 50px 50px;
+        grid-template-columns: 62px 62px 62px;
+        grid-template-rows: 62px 62px 62px;
+        gap: 5px;
+        width: 196px;  /* 90*2 + 16 */
+        height: 196px; /* 90*2 + 16 */
     }
     
     .d-pad button {
@@ -941,9 +915,11 @@ body {
     }
     
     .d-pad {
-        grid-template-columns: 45px 45px 45px;
-        grid-template-rows: 45px 45px 45px;
+        grid-template-columns: 50px 50px 50px;
+        grid-template-rows: 50px 50px 50px;
         gap: 3px;
+        width: 156px;  /* 70*2 + 16 */
+        height: 156px; /* 70*2 + 16 */
     }
 }
 
@@ -976,6 +952,20 @@ body {
         border-radius: 20px;
     }
     
+    /* D-Pad en orientación vertical - ancho = 2 botones A/B + gap */
+    .d-pad {
+        grid-template-columns: 70px 70px 70px;
+        grid-template-rows: 70px 70px 70px;
+        gap: 7px;
+        width: 224px;  /* 100*2 + 24 */
+        height: 224px; /* 100*2 + 24 */
+    }
+    
+    .d-pad button {
+        font-size: 20px;
+        border-radius: 12px;
+    }
+    
     /* Botones A/B abajo en horizontal */
     .action-buttons {
         flex-direction: row;
@@ -998,5 +988,17 @@ body {
     
     .btn-action .btn-letter {
         font-size: 28px;
+    }
+    
+    .d-pad {
+        grid-template-columns: 58px 58px 58px;
+        grid-template-rows: 58px 58px 58px;
+        gap: 5px;
+        width: 184px;  /* 80*2 + 24 */
+        height: 184px; /* 80*2 + 24 */
+    }
+    
+    .d-pad button {
+        font-size: 18px;
     }
 }

@@ -39,7 +39,6 @@ const AppState = {
     settings: {
         darkMode: true,
         controlMode: 'touchpad', // 'touchpad' | 'buttons'
-        orientation: 'landscape', // 'landscape' | 'portrait'
         sensitivity: 'medium', // 'low' | 'medium' | 'high' | 'custom'
         customForce: 45,
     },
@@ -206,8 +205,13 @@ const controllerScreen = {
         // Actualizar modo de control
         this.updateControlMode();
         
-        // Actualizar orientación
-        this.updateOrientation();
+        // Detectar orientación automáticamente
+        this.detectOrientation();
+        
+        // Escuchar cambios de tamaño para detectar orientación
+        window.addEventListener('resize', () => {
+            this.detectOrientation();
+        });
     },
     
     bindTouchpadEvents() {
@@ -255,6 +259,9 @@ const controllerScreen = {
             AppState.manualOffset = { x: 0, y: 0 };
             AppState.currentInput.gamma = 0;
             AppState.currentInput.beta = 0;
+            // Resetear valores de botones también
+            AppState.currentInput.dpadX = 0;
+            AppState.currentInput.dpadY = 0;
             this.sendInput();
             this.updateTouchpadVisual();
         };
@@ -289,6 +296,9 @@ const controllerScreen = {
         const gamma = (x / maxRadiusX).clamp(-1, 1);
         const beta = -(y / maxRadiusY).clamp(-1, 1);
         
+        // Resetear valores de botones al usar touchpad
+        AppState.currentInput.dpadX = 0;
+        AppState.currentInput.dpadY = 0;
         AppState.currentInput.gamma = gamma;
         AppState.currentInput.beta = beta;
         this.sendInput();
@@ -326,6 +336,9 @@ const controllerScreen = {
             
             const handlePress = () => {
                 if (AppState.sensorsActive) return;
+                // Resetear valores del touchpad al usar botones
+                AppState.currentInput.gamma = 0;
+                AppState.currentInput.beta = 0;
                 AppState.currentInput.dpadX = x;
                 AppState.currentInput.dpadY = y;
                 this.sendInput();
@@ -658,10 +671,34 @@ const controllerScreen = {
     sendInput() {
         if (!AppState.ws || AppState.ws.readyState !== WebSocket.OPEN || !AppState.myPlayerId) return;
         
-        const input = {
-            ...AppState.currentInput,
-            isYelling: AppState.isYelling,
-        };
+        const mode = AppState.settings.controlMode;
+        let input;
+        
+        if (mode === 'touchpad') {
+            // Modo touchpad: enviar gamma, beta (sin dpadX/Y)
+            input = {
+                type: 'input',
+                gamma: AppState.currentInput.gamma,
+                beta: AppState.currentInput.beta,
+                dpadX: 0,
+                dpadY: 0,
+                btnA: AppState.currentInput.btnA,
+                btnB: AppState.currentInput.btnB,
+                isYelling: AppState.isYelling,
+            };
+        } else {
+            // Modo botones: enviar dpadX, dpadY (sin gamma/beta)
+            input = {
+                type: 'input',
+                gamma: 0,
+                beta: 0,
+                dpadX: AppState.currentInput.dpadX,
+                dpadY: AppState.currentInput.dpadY,
+                btnA: AppState.currentInput.btnA,
+                btnB: AppState.currentInput.btnB,
+                isYelling: AppState.isYelling,
+            };
+        }
         
         AppState.ws.send(JSON.stringify(input));
     },
@@ -706,11 +743,22 @@ const controllerScreen = {
             this.elements.touchpadMode.classList.add('hidden');
             this.elements.buttonsMode.classList.remove('hidden');
         }
+        
+        // Limpiar valores del modo anterior al cambiar
+        if (mode === 'touchpad') {
+            AppState.currentInput.dpadX = 0;
+            AppState.currentInput.dpadY = 0;
+        } else {
+            AppState.currentInput.gamma = 0;
+            AppState.currentInput.beta = 0;
+            AppState.manualOffset = { x: 0, y: 0 };
+        }
+        this.sendInput();
     },
     
-    updateOrientation() {
-        const orientation = AppState.settings.orientation;
-        if (orientation === 'portrait') {
+    detectOrientation() {
+        const isPortrait = window.innerHeight > window.innerWidth;
+        if (isPortrait) {
             this.elements.controllerMain.classList.add('portrait-layout');
         } else {
             this.elements.controllerMain.classList.remove('portrait-layout');
@@ -778,14 +826,6 @@ const settingsScreen = {
             this.setControlMode('buttons');
         });
         
-        // Orientación
-        document.getElementById('orientation-landscape').addEventListener('click', () => {
-            this.setOrientation('landscape');
-        });
-        document.getElementById('orientation-portrait').addEventListener('click', () => {
-            this.setOrientation('portrait');
-        });
-        
         // Sensibilidad
         document.querySelectorAll('.sensitivity-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -810,7 +850,6 @@ const settingsScreen = {
         // Aplicar settings UI
         this.updateThemeUI();
         this.updateControlModeUI();
-        this.updateOrientationUI();
         this.updateSensitivityUI();
     },
     
@@ -835,10 +874,8 @@ const settingsScreen = {
         this.updateControlModeUI();
         this.saveSettings();
         
-        // Actualizar controller si está visible
-        if (AppState.currentScreen === 'controller') {
-            controllerScreen.updateControlMode();
-        }
+        // Actualizar controller (cambia las clases CSS para mostrar/ocultar)
+        controllerScreen.updateControlMode();
     },
     
     updateControlModeUI() {
@@ -847,22 +884,7 @@ const settingsScreen = {
         document.getElementById('mode-buttons').classList.toggle('active', mode === 'buttons');
     },
     
-    setOrientation(orientation) {
-        AppState.settings.orientation = orientation;
-        this.updateOrientationUI();
-        this.saveSettings();
-        
-        // Actualizar controller si está visible
-        if (AppState.currentScreen === 'controller') {
-            controllerScreen.updateOrientation();
-        }
-    },
-    
-    updateOrientationUI() {
-        const orientation = AppState.settings.orientation;
-        document.getElementById('orientation-landscape').classList.toggle('active', orientation === 'landscape');
-        document.getElementById('orientation-portrait').classList.toggle('active', orientation === 'portrait');
-    },
+
     
     setSensitivity(level) {
         AppState.settings.sensitivity = level;
@@ -910,9 +932,12 @@ Number.prototype.clamp = function(min, max) {
 // INICIALIZACIÓN
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar pantallas
-    controllerScreen.init();
+    // Inicializar settings primero (para cargar configuración guardada)
     settingsScreen.init();
+    settingsScreen.loadSettings();
+    
+    // Inicializar controller (ahora ya tiene los settings cargados)
+    controllerScreen.init();
     
     // Mostrar pantalla de controller directamente (en web el servidor ya sirve esta página)
     showScreen('controller');
@@ -921,7 +946,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const wsUrl = `${protocol}${window.location.host}`;
     controllerScreen.autoConnect(wsUrl);
-    
-    // Cargar settings
-    settingsScreen.loadSettings();
 });
