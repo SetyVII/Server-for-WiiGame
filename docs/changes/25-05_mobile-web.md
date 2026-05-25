@@ -261,13 +261,13 @@ Modernización completa de la web desde un monolito HTML de 631 líneas a una SP
 - Touchpad: opacidad 0.3, fondo gris `#2a2a3e`, borde gris `#555`
 - Botones D-Pad: fondo gris `#333`, texto gris `#777`, opacidad 0.6
 - Botones A/B: opacidad 0.4, filtro escala de grises 100%
-- Iconos de barra: opacidad 0.4
 - Botón de sensores: opacidad 0.5
-- Cursor `not-allowed` en todos los controles desactivados
+- Iconos de la barra superior (vibración, settings, fullscreen, micrófono) **NO** se ven afectados
+- Cursor `not-allowed` en controles de juego desactivados
 - Mensaje en log en rojo y negrita para mayor visibilidad
 
 **Archivos modificados**:
-- `mobile-web/style.css` - Estilos `.input-disabled` para todos los controles
+- `mobile-web/style.css` - Estilos `.input-disabled` para controles de juego
 - `mobile-web/script.js` - Añade/remueve clase `input-disabled` en `toggleInput()`
 
 ### 22. Iconos Material Design 3 (reemplazo de emojis)

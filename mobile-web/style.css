@@ -1020,11 +1020,6 @@ body {
     filter: grayscale(100%);
 }
 
-.input-disabled .icon-btn {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
 .input-disabled .btn-toggle-sensors {
     opacity: 0.5;
     cursor: not-allowed;
