@@ -7,6 +7,22 @@ import { WebSocketServer, WebSocket } from "ws";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Tipos MIME para archivos estáticos
+const mimeTypes = {
+  ".html": "text/html",
+  ".css": "text/css",
+  ".js": "application/javascript",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".json": "application/json",
+  ".woff2": "font/woff2",
+  ".woff": "font/woff",
+  ".ttf": "font/ttf",
+};
+
 // Servidor HTTP — sirve el mando web al móvil
 const server = http.createServer((req, res) => {
   if (req.url === "/" || req.url === "/index.html") {
@@ -19,8 +35,23 @@ const server = http.createServer((req, res) => {
       res.end(data);
     });
   } else {
-    res.writeHead(404);
-    res.end();
+    // Servir archivos estáticos desde mobile-web/
+    const filePath = path.join(__dirname, "mobile-web", req.url);
+    const ext = path.extname(filePath).toLowerCase();
+
+    if (ext && mimeTypes[ext]) {
+      fs.readFile(filePath, (err, data) => {
+        if (err) {
+          res.writeHead(404);
+          return res.end();
+        }
+        res.writeHead(200, { "Content-Type": mimeTypes[ext] });
+        res.end(data);
+      });
+    } else {
+      res.writeHead(404);
+      res.end();
+    }
   }
 });
 

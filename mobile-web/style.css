@@ -1,66 +1,508 @@
+/* ============================================
+   RESET Y BASE
+   ============================================ */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #1e1e1e;
-    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    background-color: #1A1A2E;
+    color: #EEEEEE;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
+    user-select: none;
+}
+
+/* ============================================
+   SISTEMA DE PANTALLAS
+   ============================================ */
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ============================================
+   PANTALLA 1: CONEXIÓN
+   ============================================ */
+#screen-connection {
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+.connection-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
+    gap: 16px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 16px;
+    object-fit: contain;
+}
+
+.connection-container h1 {
+    color: #E94560;
+    font-size: 28px;
+    font-weight: bold;
     margin: 0;
 }
-#status {
-    margin-bottom: 20px;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #333;
-}
-.connected {
-    color: #4caf50;
-}
-.disconnected {
-    color: #f44336;
+
+.subtitle {
+    color: #AAAAAA;
+    font-size: 16px;
+    margin: 0;
+    margin-top: -8px;
 }
 
-#server-config {
-    margin-bottom: 20px;
-    padding: 15px;
-    border-radius: 10px;
-    background-color: #2b2b2b;
-    border: 1px solid #444;
+.connection-card {
+    background-color: #0B1320;
+    border-radius: 16px;
+    padding: 20px;
+    width: 100%;
     display: flex;
     flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.connection-card label {
+    color: #E94560;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#ws-address-input {
+    background-color: #1A1A2E;
+    border: 1px solid #444;
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: #EEEEEE;
+    font-size: 16px;
+    font-family: monospace;
+    width: 100%;
+}
+
+#ws-address-input::placeholder {
+    color: #666;
+}
+
+.port-info {
+    color: #AAAAAA;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.port-info::before {
+    content: "ℹ️";
+    font-size: 14px;
+}
+
+.btn-primary {
+    background-color: #E94560;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #FF6B6B;
+}
+
+.btn-primary:disabled {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.status-text {
+    text-align: center;
+    font-size: 14px;
+    min-height: 20px;
+}
+
+.status-text.connecting {
+    color: #E94560;
+}
+
+.status-text.error {
+    color: #EF4444;
+}
+
+.info-card {
+    background-color: rgba(233, 69, 96, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    width: 100%;
+}
+
+.info-card strong {
+    color: #E94560;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.info-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #EEEEEE;
+}
+
+.info-card .example {
+    color: #E94560;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.footer-text {
+    color: #AAAAAA;
+    font-size: 12px;
+    text-align: center;
+    margin: 0;
+}
+
+/* ============================================
+   PANTALLA 2: CONTROLLER
+   ============================================ */
+#screen-controller {
+    background-color: #1A1A2E;
+}
+
+/* TopBar */
+.top-bar {
+    background-color: #16213E;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.status-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.socket-status {
+    font-size: 12px;
+    color: #AAAAAA;
+}
+
+.socket-status.connected {
+    color: #22C55E;
+}
+
+.player-status {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.player-status.player-1 {
+    color: #00A8FF;
+}
+
+.player-status.player-2 {
+    color: #E84118;
+}
+
+.btn-toggle-sensors {
+    background-color: #E94560;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    height: 36px;
+}
+
+.btn-toggle-sensors.active {
+    background-color: #EF4444;
+}
+
+.top-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-disconnect {
+    background-color: #EF4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    height: 36px;
+}
+
+/* Calibración */
+.calibration-panel {
+    background-color: #16213E;
+    padding: 8px 16px;
+    flex-shrink: 0;
+}
+
+.calibration-panel.hidden {
+    display: none;
+}
+
+.calibration-text {
+    font-size: 12px;
+    color: #E94560;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.calibration-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #0B1320;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.calibration-progress {
+    height: 100%;
+    background-color: #E94560;
+    border-radius: 4px;
+    transition: width 0.1s;
+    width: 0%;
+}
+
+.calibration-percent {
+    font-size: 11px;
+    color: #AAAAAA;
+    text-align: center;
+    margin-top: 2px;
+}
+
+/* Debug info */
+.debug-info {
+    text-align: center;
+    font-size: 11px;
+    color: #AAAAAA;
+    padding: 4px 16px;
+    font-family: monospace;
+    flex-shrink: 0;
+}
+
+.debug-info.hidden {
+    display: none;
+}
+
+/* Panel de micrófono */
+.mic-panel {
+    background-color: #0B1320;
+    border-radius: 12px;
+    margin: 0 16px 8px;
+    padding: 12px;
+    flex-shrink: 0;
+}
+
+.mic-panel.hidden {
+    display: none;
+}
+
+.mic-header {
+    display: flex;
     align-items: center;
     gap: 8px;
+    margin-bottom: 8px;
 }
-#ws-address-input {
-    background-color: #111;
-    color: #fff;
-    border: 1px solid #555;
-    border-radius: 5px;
-    padding: 8px;
-    width: 260px;
-    font-family: monospace;
-    font-size: 14px;
+
+.mic-header span {
+    font-size: 12px;
+    color: #AAAAAA;
+    width: 60px;
+}
+
+.volume-display {
+    flex: 1;
+    height: 20px;
+    background-color: #1A1A2E;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.volume-bar {
+    height: 100%;
+    width: 0%;
+    background-color: #22C55E;
+    border-radius: 10px;
+    transition: width 0.1s, background-color 0.2s;
+}
+
+.volume-bar.medium {
+    background-color: #EAB308;
+}
+
+.volume-bar.high {
+    background-color: #EF4444;
+}
+
+.rms-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    color: white;
+    font-weight: bold;
+}
+
+.blow-indicator {
     text-align: center;
-}
-#connect-btn {
-    background-color: #007acc;
-    border-color: #005999;
-    padding: 8px 18px;
-    border-radius: 5px;
+    color: #EF4444;
     font-size: 14px;
-}
-#connect-btn:active {
-    background-color: #0098ff;
+    font-weight: bold;
+    margin: 4px 0;
 }
 
-.controller-layout {
+.blow-indicator.hidden {
+    display: none;
+}
+
+.mic-sliders {
     display: flex;
-    gap: 50px;
-    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
 }
 
+.slider-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.slider-group label {
+    font-size: 11px;
+    color: #AAAAAA;
+}
+
+.slider-group input[type="range"] {
+    width: 100%;
+    height: 20px;
+}
+
+.slider-group span {
+    font-size: 11px;
+    color: #E94560;
+}
+
+/* Área principal del controller */
+.controller-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 48px;
+    flex: 1;
+    padding: 16px 24px;
+    min-height: 0;
+}
+
+/* Control Area (D-Pad o Touchpad) */
+.control-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Touchpad - Altura = 2 botones (120px) + gap (16px) = 256px */
+.touchpad-container {
+    width: auto;
+    height: 256px;
+    max-width: 60vw;
+    aspect-ratio: 380 / 256;
+}
+
+.touchpad-container.hidden {
+    display: none;
+}
+
+.touchpad {
+    width: 100%;
+    height: 100%;
+    background-color: #0F3460;
+    border: 4px solid #E94560;
+    border-radius: 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.touchpad.disabled {
+    opacity: 0.5;
+}
+
+.touchpad.disabled .touchpad-dot {
+    background-color: #888;
+}
+
+.touchpad-dot {
+    width: 48px;
+    height: 48px;
+    background-color: #E94560;
+    border-radius: 50%;
+    position: absolute;
+    transition: transform 0.05s;
+    transform: translate(0, 0);
+}
+
+/* D-Pad (Modo botones) */
 .d-pad {
     display: grid;
     grid-template-columns: 60px 60px 60px;
@@ -68,7 +510,11 @@ body {
     gap: 5px;
 }
 
-button {
+.d-pad.hidden {
+    display: none;
+}
+
+.d-pad button {
     background-color: #444;
     color: white;
     border: 2px solid #555;
@@ -78,127 +524,479 @@ button {
     cursor: pointer;
     user-select: none;
     touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-button:active {
+.d-pad button:active {
     background-color: #666;
     border-color: #888;
+}
+
+.d-pad button:disabled {
+    background-color: #333;
+    border-color: #444;
+    color: #666;
+    cursor: not-allowed;
 }
 
 .btn-up {
     grid-column: 2;
     grid-row: 1;
 }
+
 .btn-left {
     grid-column: 1;
     grid-row: 2;
 }
+
 .btn-right {
     grid-column: 3;
     grid-row: 2;
 }
+
 .btn-down {
     grid-column: 2;
     grid-row: 3;
 }
 
-.action-pad {
+/* Botones de Acción */
+.action-buttons {
     display: flex;
+    flex-direction: column;
+    gap: 16px;
     align-items: center;
     justify-content: center;
 }
 
-.btn-a {
-    width: 80px;
-    height: 80px;
+.btn-action {
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
-    background-color: #007acc;
-    border-color: #005999;
-}
-.btn-a:active {
-    background-color: #0098ff;
-}
-.btn-b {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background-color: #5a2d82;
-    border-color: #3d1f5a;
-}
-.btn-b:active {
-    background-color: #7b3fbf;
-}
-
-#log {
-    margin-top: 20px;
-    font-family: monospace;
-    color: #aaa;
-    font-size: 14px;
-}
-
-#sensor-section {
+    border: none;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    touch-action: manipulation;
+    transition: transform 0.1s;
+}
+
+.btn-action:active {
+    transform: scale(0.95);
+}
+
+.btn-action .btn-letter {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.btn-action .btn-label {
+    font-size: 11px;
+    margin-top: 2px;
+    text-transform: uppercase;
+}
+
+.btn-a {
+    background-color: #9333EA;
+}
+
+.btn-a:active {
+    background-color: #A855F7;
+}
+
+.btn-b {
+    background-color: #EA580C;
+}
+
+.btn-b:active {
+    background-color: #F97316;
+}
+
+/* Log de eventos */
+.event-log {
+    text-align: center;
+    font-size: 12px;
+    color: #E94560;
+    padding: 4px 16px;
+    min-height: 20px;
+    flex-shrink: 0;
+}
+
+/* Mensaje de error */
+.error-message {
+    text-align: center;
+    font-size: 12px;
+    color: #EF4444;
+    padding: 4px 16px;
+    flex-shrink: 0;
+}
+
+.error-message.hidden {
+    display: none;
+}
+
+/* ============================================
+   PANTALLA 3: SETTINGS
+   ============================================ */
+#screen-settings {
+    background-color: #1A1A2E;
+}
+
+.settings-header {
+    background-color: #16213E;
+    display: flex;
     align-items: center;
     gap: 12px;
-    margin-top: 20px;
+    padding: 12px 16px;
+    flex-shrink: 0;
 }
 
-#sensor-data {
-    font-family: monospace;
-    font-size: 14px;
-    background-color: #2a2a2a;
+.settings-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #EEEEEE;
+}
+
+.settings-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.settings-card {
+    background-color: #0B1320;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.settings-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #EEEEEE;
+}
+
+/* Toggle de tema */
+.theme-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.theme-btn {
+    flex: 1;
+    background-color: #1A1A2E;
     border: 1px solid #444;
     border-radius: 8px;
-    padding: 10px 20px;
-    color: #ccc;
-    min-width: 180px;
-    text-align: center;
+    padding: 10px;
+    color: #EEEEEE;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 14px;
 }
 
-#sensor-data span {
-    color: #0098ff;
-    font-weight: bold;
+.theme-btn.active {
+    background-color: #E94560;
+    border-color: #E94560;
 }
 
-#mic-section {
+/* Modo de control */
+.control-mode-options {
+    display: flex;
+    gap: 8px;
+}
+
+.mode-btn {
+    flex: 1;
+    background-color: #1A1A2E;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 12px;
+    color: #EEEEEE;
+    cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 4px;
+}
+
+.mode-btn.active {
+    background-color: rgba(233, 69, 96, 0.1);
+    border: 2px solid #E94560;
+}
+
+.mode-icon {
+    font-size: 24px;
+}
+
+.mode-label {
+    font-size: 12px;
+}
+
+/* Orientación */
+.orientation-options {
+    display: flex;
     gap: 8px;
-    margin-top: 12px;
 }
 
-#mic-label {
-    font-family: monospace;
-    font-size: 14px;
-    color: #ccc;
-}
-
-#mic-label span {
-    font-weight: bold;
-    color: #aaa;
-}
-
-#volume-bar-container {
-    width: 220px;
-    height: 14px;
-    background-color: #2a2a2a;
+.orientation-btn {
+    flex: 1;
+    background-color: #1A1A2E;
     border: 1px solid #444;
     border-radius: 8px;
-    overflow: hidden;
+    padding: 12px;
+    color: #EEEEEE;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
 }
 
-#volume-bar {
-    height: 100%;
-    width: 0%;
-    background-color: #4caf50;
+.orientation-btn.active {
+    background-color: rgba(233, 69, 96, 0.1);
+    border: 2px solid #E94560;
+}
+
+.orientation-icon {
+    font-size: 24px;
+}
+
+.orientation-label {
+    font-size: 12px;
+}
+
+/* Sensibilidad */
+.sensitivity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.sensitivity-btn {
+    background-color: #1A1A2E;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 12px;
+    color: #EEEEEE;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    height: 90px;
+}
+
+.sensitivity-btn.active {
+    background-color: rgba(233, 69, 96, 0.1);
+    border: 2px solid #E94560;
+}
+
+.sensitivity-icon {
+    font-size: 20px;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.sensitivity-label {
+    font-size: 12px;
+}
+
+.sensitivity-desc {
+    font-size: 11px;
+    color: #AAAAAA;
+}
+
+/* Custom force */
+.custom-force {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.custom-force.hidden {
+    display: none;
+}
+
+.custom-force label {
+    font-size: 14px;
+    color: #EEEEEE;
+}
+
+.custom-force input {
+    background-color: #1A1A2E;
+    border: 1px solid #444;
     border-radius: 8px;
-    transition:
-        width 0.05s ease-out,
-        background-color 0.1s;
+    padding: 10px;
+    color: #EEEEEE;
+    font-size: 16px;
+    width: 100%;
 }
 
-#volume-bar.yelling {
-    background-color: #f44336;
+.current-sensitivity {
+    margin-top: 12px;
+    background-color: #1A1A2E;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.current-sensitivity .highlight {
+    color: #E94560;
+    font-weight: bold;
+}
+
+/* ============================================
+   UTILIDADES
+   ============================================ */
+.hidden {
+    display: none !important;
+}
+
+/* Scrollbar personalizada para settings */
+.settings-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+    background: #0B1320;
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 600px) {
+    .controller-main {
+        gap: 24px;
+        padding: 8px 16px;
+    }
+    
+    .touchpad-container {
+        width: auto;
+        height: 196px; /* 2 botones (90px) + gap (16px) */
+        max-width: 60vw;
+        aspect-ratio: 380 / 256;
+    }
+    
+    .btn-action {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .btn-action .btn-letter {
+        font-size: 24px;
+    }
+    
+    .d-pad {
+        grid-template-columns: 50px 50px 50px;
+        grid-template-rows: 50px 50px 50px;
+    }
+    
+    .d-pad button {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 360px) {
+    .controller-main {
+        gap: 16px;
+    }
+    
+    .touchpad-container {
+        width: auto;
+        height: 156px; /* 2 botones (70px) + gap (16px) */
+        max-width: 60vw;
+        aspect-ratio: 380 / 256;
+    }
+    
+    .btn-action {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .btn-action .btn-letter {
+        font-size: 20px;
+    }
+    
+    .btn-action .btn-label {
+        font-size: 9px;
+    }
+    
+    .d-pad {
+        grid-template-columns: 45px 45px 45px;
+        grid-template-rows: 45px 45px 45px;
+        gap: 3px;
+    }
+}
+
+/* ============================================
+   ORIENTACIÓN VERTICAL (PORTRAIT)
+   ============================================ */
+@media (orientation: portrait) {
+    .controller-main {
+        flex-direction: column;
+        gap: 24px;
+        padding: 16px;
+    }
+    
+    /* Touchpad/D-Pad arriba */
+    .control-area {
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+    }
+    
+    .touchpad-container {
+        width: 224px; /* 2 botones (100px) + gap (24px) */
+        height: 100%;
+        max-width: 100%;
+        max-height: 55vh;
+        aspect-ratio: unset;
+    }
+    
+    .touchpad {
+        border-radius: 20px;
+    }
+    
+    /* Botones A/B abajo en horizontal */
+    .action-buttons {
+        flex-direction: row;
+        gap: 24px;
+        flex-shrink: 0;
+        padding-bottom: 16px;
+    }
+    
+    .btn-action {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+@media (orientation: portrait) and (max-height: 700px) {
+    .btn-action {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .btn-action .btn-letter {
+        font-size: 28px;
+    }
 }

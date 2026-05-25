@@ -7,55 +7,210 @@
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
         <title>Control WiiCell</title>
+        <link rel="icon" type="image/svg+xml" href="/resources/logo_wiicell.svg" />
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <div id="status" class="disconnected">Desconectado</div>
 
-        <div id="server-config">
-            <div style="font-size: 12px; color: #aaa; margin-bottom: 4px;">Dirección del Servidor WebSocket</div>
-            <input type="text" id="ws-address-input" placeholder="ws://localhost:3003" />
-            <button id="connect-btn">Conectar</button>
-        </div>
-
-        <div class="controller-layout">
-            <!-- Pad Direccional -->
-            <div class="d-pad">
-                <button class="btn-up" data-x="0" data-y="1">W</button>
-                <button class="btn-left" data-x="-1" data-y="0">A</button>
-                <button class="btn-right" data-x="1" data-y="0">D</button>
-                <button class="btn-down" data-x="0" data-y="-1">S</button>
-            </div>
-
-            <!-- Botones de Acción -->
-            <div class="action-pad">
-                <button class="btn-b">B</button>
-                <button class="btn-a">A</button>
-            </div>
-        </div>
-
-        <div id="log">Esperando inputs...</div>
-
-        <div id="mic-section">
-            <div id="mic-label">
-                Volumen: <span id="mic-status">inactivo</span>
-            </div>
-            <div id="volume-bar-container">
-                <div id="volume-bar"></div>
-            </div>
-        </div>
-
-        <div id="sensor-section">
-            <div id="sensor-btn-container">
-                <button id="start-sensor-btn">
-                    Activar Sensores para Jugar
+    <!-- PANTALLA CONTROLLER -->
+        <section id="screen-controller" class="screen active">
+            <!-- TopBar -->
+            <header class="top-bar">
+                <div class="status-info">
+                    <div id="socket-status" class="socket-status">Socket: desconectado</div>
+                    <div id="player-status" class="player-status">Sin rol</div>
+                </div>
+                
+                <button id="toggle-sensors-btn" class="btn-toggle-sensors">
+                    Activar sensores
                 </button>
+                
+                <div class="top-actions">
+                    <button id="toggle-mic-btn" class="icon-btn" title="Micrófono">
+                        <span id="mic-icon">🎙️</span>
+                    </button>
+                    <button id="test-vibration-btn" class="icon-btn" title="Test vibración">
+                        📳
+                    </button>
+                    <button id="open-settings-btn" class="icon-btn" title="Configuración">
+                        ⚙️
+                    </button>
+                    <button id="disconnect-btn" class="btn-disconnect">
+                        Desconectar
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Calibración -->
+            <div id="calibration-panel" class="calibration-panel hidden">
+                <div class="calibration-text">Calibrando sensores...</div>
+                <div class="calibration-bar">
+                    <div id="calibration-progress" class="calibration-progress"></div>
+                </div>
+                <div id="calibration-percent" class="calibration-percent">0%</div>
             </div>
-            <div id="sensor-data">
-                γ <span id="sensor-gamma">--</span> &nbsp; β
-                <span id="sensor-beta">--</span>
+            
+            <!-- Debug info -->
+            <div id="debug-info" class="debug-info hidden">
+                tiltX: <span id="debug-tilt-x">0.00</span> | tiltY: <span id="debug-tilt-y">0.00</span>
             </div>
-        </div>
+            
+            <!-- Panel de micrófono -->
+            <div id="mic-panel" class="mic-panel hidden">
+                <div class="mic-header">
+                    <span>Micrófono</span>
+                    <div class="volume-display">
+                        <div id="mic-volume-bar" class="volume-bar"></div>
+                        <span id="mic-rms" class="rms-text">0%</span>
+                    </div>
+                </div>
+                <div id="blow-indicator" class="blow-indicator hidden">SOPLO!</div>
+                <div class="mic-sliders">
+                    <div class="slider-group">
+                        <label>Sensib.</label>
+                        <input type="range" id="threshold-slider" min="5" max="50" value="10" />
+                        <span id="threshold-value">0.10</span>
+                    </div>
+                    <div class="slider-group">
+                        <label>Cooldown</label>
+                        <input type="range" id="cooldown-slider" min="200" max="2000" value="800" />
+                        <span id="cooldown-value">800ms</span>
+                    </div>
+                    <div class="slider-group">
+                        <label>Escala</label>
+                        <input type="range" id="scale-slider" min="1" max="10" value="3.33" step="0.1" />
+                        <span id="scale-value">3.3x</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Área principal del controller -->
+            <main class="controller-main">
+                <!-- D-Pad / Touchpad -->
+                <div id="control-area" class="control-area">
+                    <!-- Modo Touchpad -->
+                    <div id="touchpad-mode" class="touchpad-container hidden">
+                        <div id="touchpad" class="touchpad">
+                            <div id="touchpad-dot" class="touchpad-dot"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Modo Botones -->
+                    <div id="buttons-mode" class="d-pad">
+                        <button class="btn-up" data-x="0" data-y="1">W</button>
+                        <button class="btn-left" data-x="-1" data-y="0">A</button>
+                        <button class="btn-right" data-x="1" data-y="0">D</button>
+                        <button class="btn-down" data-x="0" data-y="-1">S</button>
+                    </div>
+                </div>
+                
+                <!-- Botones de Acción -->
+                <div class="action-buttons">
+                    <button class="btn-action btn-a">
+                        <span class="btn-letter">A</span>
+                        <span class="btn-label">SALTAR</span>
+                    </button>
+                    <button class="btn-action btn-b">
+                        <span class="btn-letter">B</span>
+                        <span class="btn-label">VALIDAR</span>
+                    </button>
+                </div>
+            </main>
+            
+            <!-- Log de eventos -->
+            <div id="event-log" class="event-log"></div>
+            
+            <!-- Mensaje de error -->
+            <div id="error-message" class="error-message hidden"></div>
+        </section>
+
+ <!-- PANTALLA SETTINGS -->
+        <section id="screen-settings" class="screen">
+            <header class="settings-header">
+                <button id="back-btn" class="icon-btn">←</button>
+                <h2>Configuración</h2>
+            </header>
+            
+            <div class="settings-content">
+                <!-- Apariencia -->
+                <div class="settings-card">
+                    <h3>Apariencia</h3>
+                    <div class="theme-toggle">
+                        <button id="theme-light" class="theme-btn">
+                            <span>☀️</span> Claro
+                        </button>
+                        <button id="theme-dark" class="theme-btn active">
+                            <span>🌙</span> Oscuro
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Modo de Control -->
+                <div class="settings-card">
+                    <h3>Modo de Control</h3>
+                    <div class="control-mode-options">
+                        <button id="mode-touchpad" class="mode-btn active">
+                            <span class="mode-icon">🎮</span>
+                            <span class="mode-label">Touchpad</span>
+                        </button>
+                        <button id="mode-buttons" class="mode-btn">
+                            <span class="mode-icon">🔘</span>
+                            <span class="mode-label">Botones</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Orientación -->
+                <div class="settings-card">
+                    <h3>Orientación</h3>
+                    <div class="orientation-options">
+                        <button id="orientation-landscape" class="orientation-btn active">
+                            <span class="orientation-icon">📱↔️</span>
+                            <span class="orientation-label">Horizontal</span>
+                        </button>
+                        <button id="orientation-portrait" class="orientation-btn">
+                            <span class="orientation-icon">📱↕️</span>
+                            <span class="orientation-label">Vertical</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Sensibilidad -->
+                <div class="settings-card">
+                    <h3>Sensibilidad del Control</h3>
+                    <div class="sensitivity-grid">
+                        <button class="sensitivity-btn" data-level="low">
+                            <span class="sensitivity-icon">&gt;</span>
+                            <span class="sensitivity-label">Bajo</span>
+                            <span class="sensitivity-desc">0.8</span>
+                        </button>
+                        <button class="sensitivity-btn active" data-level="medium">
+                            <span class="sensitivity-icon">&gt;&gt;</span>
+                            <span class="sensitivity-label">Medio</span>
+                            <span class="sensitivity-desc">4.5</span>
+                        </button>
+                        <button class="sensitivity-btn" data-level="high">
+                            <span class="sensitivity-icon">&gt;&gt;&gt;</span>
+                            <span class="sensitivity-label">Alto</span>
+                            <span class="sensitivity-desc">10.0</span>
+                        </button>
+                        <button class="sensitivity-btn" data-level="custom">
+                            <span class="sensitivity-icon">⚙</span>
+                            <span class="sensitivity-label">Custom</span>
+                            <span class="sensitivity-desc">Personalizado</span>
+                        </button>
+                    </div>
+                    <div id="custom-force-container" class="custom-force hidden">
+                        <label>Fuerza personalizada (1-100):</label>
+                        <input type="number" id="custom-force-input" min="1" max="100" value="45" />
+                    </div>
+                    <div class="current-sensitivity">
+                        <div>Nivel: <span id="current-level" class="highlight">Medio</span></div>
+                        <div>Fuerza: <span id="current-force" class="highlight">4.5</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
         
         <script src="script.js"></script>
     </body>
