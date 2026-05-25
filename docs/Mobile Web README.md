@@ -1,48 +1,132 @@
-# WiiCell Web Controller - Análisis y Propuesta de Modernización
+# WiiCell Web Controller - Documentación Técnica
 
-## 📋 Estado Actual (index.html)
+## 📋 Estado Actual
 
-La web actual es un **monolito de 631 líneas** con toda la lógica mezclada:
+La web ha sido modernizada desde un monolito HTML de 631 líneas a una **SPA modular** con arquitectura separada y diseño responsive.
 
-- **HTML, CSS y JavaScript en un único archivo**
-- Estilos embebidos en `<style>` (~200 líneas)
-- Lógica de negocio, UI, networking y sensores en `<script>` (~365 líneas)
-- Sin modularidad, tests ni escalabilidad
+### Estructura de Archivos
 
-### Funcionalidades Actuales
+```
+mobile-web/
+├── index.html              # Estructura HTML con 2 pantallas
+├── style.css               # Estilos completos (~800 líneas)
+├── script.js               # Lógica de la aplicación (~1000 líneas)
+└── resources/
+    ├── logo_wiicell.png    # Logo de la app
+    └── logo_wiicell.svg    # Logo vectorial
+```
+
+### Funcionalidades Implementadas
 
 | Feature | Descripción |
 |---------|-------------|
 | 🌐 **WebSocket Client** | Conexión bidireccional con reconexión automática (2s) |
-| 🎮 **D-Pad Virtual** | Controles direccionales táctiles (W/A/S/D) |
-| 🔘 **Botones A/B** | Acciones de salto y validación |
-| 📱 **Sensores de Movimiento** | DeviceOrientation (gamma/beta), muestreo a 20 FPS, rango ±40° |
-| 🎙️ **Micrófono** | Detección de volumen RMS, umbral de grito configurable (~20/255) |
+| 🎮 **D-Pad Virtual** | Controles direccionales táctiles (W/A/S/D) con bolita visual |
+| 🔘 **Botones A/B** | Acciones de salto y validación, independientes de sensores |
+| 📱 **Sensores de Movimiento** | DeviceOrientation (gamma/beta), calibración simple, muestreo a 20 FPS |
+| 🎙️ **Micrófono** | Detección de volumen RMS con panel de ajustes (threshold, cooldown, scale) |
 | 📳 **Vibración** | Patrones para eventos del servidor (colisión, muerte, pickup) |
 | ✨ **Efectos Visuales** | Flash de pantalla en eventos del servidor |
-| 🧩 **Puzzles** | Sistema de puzzle_action para interacciones del juego |
-| 🎨 **UI Responsiva** | Layout flexible con CSS Grid/Flexbox |
+| 🎨 **UI Responsiva** | Layout adaptable a móviles, tablets, landscape y portrait |
+| 🔄 **Modo Botones/Touchpad** | Alternancia entre D-Pad (int) y Touchpad ovalado (float) |
+| ⚙️ **Settings** | Pantalla de configuración con persistencia en localStorage |
 
-### Flujo de Conexión
-
-```
-[Configuración IP] → [Conectar WS] → [assignRole (P1/P2)] → [Pantalla de Control]
-                                        ↓
-                              [Reconexión automática cada 2s]
-```
-
-### Mensajes del Servidor Soportados
+### Arquitectura
 
 ```
-assignRole    → Asigna playerId (1=Azul, 2=Rojo), oculta config
-collision     → Flash rojo 150ms + vibración 1s
-death         → Flash rojo 400ms + vibración [500,100,400]ms
-pickup        → Flash verde 150ms + vibración 1s
-ui_update     → Muestra datos en log
-screen_effect → Flash color + vibración opcional
-puzzle_start  → Muestra puzzleId + vibración 1s
-custom        → Mensaje genérico + vibración 1s
+mobile-web/
+├── index.html
+│   ├── screen-controller      # Pantalla principal del mando
+│   │   ├── top-bar            # Estado WS, Player ID, acciones
+│   │   ├── touchpad-area      # Touchpad ovalado (modo touchpad)
+│   │   ├── dpad-area          # D-Pad direccional (modo botones)
+│   │   ├── action-buttons     # Botones A/B
+│   │   ├── bottom-bar-mobile  # Acciones rápidas (portrait)
+│   │   └── event-log          # Log de eventos del servidor
+│   └── screen-settings        # Pantalla de configuración
+│       ├── connection-status  # Estado de conexión
+│       ├── control-mode       # Botones vs Touchpad
+│       ├── sensitivity        # Low/Medium/High/Custom
+│       └── mic-settings       # Threshold, cooldown, scale
+├── style.css
+│   ├── Variables CSS          # Paleta de colores WiiCell
+│   ├── Layout base            # Flexbox/Grid responsive
+│   ├── Componentes            # Botones, paneles, barras
+│   ├── Modos de control       # Touchpad vs D-Pad
+│   ├── Orientaciones          # Landscape y portrait
+│   └── Media queries          # Breakpoints 1024/768/480px
+└── script.js
+    ├── AppState               # Estado global de la aplicación
+    ├── Navegación             # showScreen() entre pantallas
+    ├── controllerScreen       # Lógica del mando
+    │   ├── WebSocket          # Conexión, mensajes, reconexión
+    │   ├── Sensores           # DeviceOrientation, calibración
+    │   ├── Touchpad           # Eventos táctiles, bolita
+    │   ├── D-Pad              # Botones W/A/S/D
+    │   ├── Botones A/B        | Eventos táctiles
+    │   ├── Micrófono          | Web Audio API, detección RMS
+    │   └── Eventos servidor   | Flash, vibración, log
+    └── settingsScreen         | Lógica de configuración
+        ├── Persistencia       | localStorage
+        └── UI                 | Sliders, toggles, selectores
 ```
+
+---
+
+## 🎮 Pantallas
+
+### 1. Controller (Pantalla Principal)
+
+Layout adaptativo según orientación:
+
+**Landscape (horizontal):**
+- Barra superior simplificada (estado + acciones desktop)
+- Touchpad ovalado a la izquierda (modo touchpad)
+- D-Pad grande a la izquierda (modo botones)
+- Botones A/B a la derecha
+- Log de eventos abajo
+
+**Portrait (vertical):**
+- Barra superior mínima (solo estado)
+- Touchpad/D-Pad centrado arriba
+- Botones A/B apilados (B desplazado a la derecha)
+- Barra inferior con acciones rápidas:
+  - Activar/Desactivar sensores
+  - Micrófono
+  - Vibración de test
+  - Desconectar
+
+### 2. Settings (Configuración)
+
+- **Estado de conexión**: Muestra URL actual y estado del WebSocket
+- **Modo de control**: Toggle entre Botones y Touchpad
+- **Sensibilidad**: Low / Medium / High / Custom (con slider)
+- **Micrófono**: Sliders para threshold, cooldown y scale
+- **Debug**: Información de sensores calibrados
+
+---
+
+## 🕹️ Controles
+
+### Modo Botones (D-Pad)
+- Envía `dpadX` y `dpadY` como enteros `{-1, 0, 1}`
+- Botones táctiles W/A/S/D con bolita visual que se mueve
+- Compatible con sensores activos (la bolita refleja la inclinación)
+
+### Modo Touchpad
+- Envía `gamma` y `beta` como floats `[-1.0, 1.0]`
+- Área ovalada táctil con bolita que sigue el dedo
+- Centro automático al soltar
+- Calibración: posición actual se convierte en centro al activar
+
+### Botones A/B
+- **A (Saltar)**: Rojo, independiente del modo de control
+- **B (Validar)**: Azul, independiente del modo de control
+- En portrait: apilados verticalmente con B desplazado 30px a la derecha
+
+---
+
+## 📡 Comunicación WebSocket
 
 ### Mensajes al Servidor
 
@@ -50,10 +134,10 @@ custom        → Mensaje genérico + vibración 1s
 // Input del jugador (20 FPS cuando hay cambios)
 {
   type: "input",
-  gamma: float,    // [-1.0, 1.0] inclinación lateral
-  beta: float,     // [-1.0, 1.0] inclinación adelante/atrás
-  dpadX: int,      // {-1, 0, 1}
-  dpadY: int,      // {-1, 0, 1}
+  gamma: float,    // [-1.0, 1.0] inclinación lateral (touchpad)
+  beta: float,     // [-1.0, 1.0] inclinación adelante/atrás (touchpad)
+  dpadX: int,      // {-1, 0, 1} (modo botones)
+  dpadY: int,      // {-1, 0, 1} (modo botones)
   btnA: boolean,
   btnB: boolean,
   isYelling: boolean
@@ -67,214 +151,52 @@ custom        → Mensaje genérico + vibración 1s
 }
 ```
 
----
-
-## 🎯 Objetivo: Paridad con mobile-app/
-
-La app móvil (`mobile-app/`) implementa exactamente las mismas funcionalidades pero con una **arquitectura moderna y modular**:
-
-- **Clean Architecture** (Presentation / Domain / Data)
-- **MVVM** con ViewModels y StateFlows
-- **Inyección de Dependencias** (Hilt)
-- **Navegación** por pantallas (Connection → Controller → Settings)
-- **Persistencia** de configuración (DataStore)
-- **UI Declarativa** (Jetpack Compose)
-- **Módulos separados**: WebSocket, Sensores, Audio, Vibration, Settings
-
-### Arquitectura mobile-app
+### Mensajes del Servidor
 
 ```
-mobile-app/
-├── di/              # Inyección de dependencias (Hilt)
-├── domain/
-│   ├── model/       # Modelos puros (ConnectionState, GameSettings...)
-│   └── repository/  # Interfaces/Abstracciones
-├── data/
-│   ├── network/     # WebSocketClient, Mensajes
-│   ├── sensor/      # SensorDataSource, SensorData
-│   ├── audio/       # AudioRecorder, BlowDetector
-│   └── local/       # SettingsDataStore, VibrationManager
-└── presentation/
-    ├── connection/  # ConnectionScreen + ConnectionViewModel
-    ├── controller/  # ControllerScreen + ControllerViewModel
-    └── settings/    # SettingsScreen + SettingsViewModel
+assignRole    → Asigna playerId (1=Azul, 2=Rojo), oculta config
+collision     → Flash rojo 150ms + vibración 1s
+death         → Flash rojo 400ms + vibración [500,100,400]ms
+pickup        → Flash verde 150ms + vibración 1s
+ui_update     → Muestra datos en log
+screen_effect → Flash color + vibración opcional
+puzzle_start  → Muestra puzzleId + vibración 1s
+custom        → Mensaje genérico + vibración 1s
 ```
 
 ---
 
-## 🏗️ Propuesta de Estructura para mobile-web/
+## 📱 Responsive Design
 
-Migrar de monolito HTML a una **SPA moderna** con arquitectura modular equivalente:
+### Breakpoints
 
-```
-mobile-web/
-├── public/
-│   ├── index.html              # Entry point mínimo (<div id="root">)
-│   └── manifest.json           # PWA manifest
-├── src/
-│   ├── main.tsx / main.js      # Entry point de la aplicación
-│   ├── App.tsx / App.js        # Router + Theme provider
-│   │
-│   ├── domain/
-│   │   ├── models/
-│   │   │   ├── ConnectionState.ts   # ConnectionStatus, SocketState
-│   │   │   ├── GameSettings.ts      # SensitivityLevel, darkMode
-│   │   │   └── SensorValues.ts      # gamma, beta calibrados
-│   │   └── repositories/
-│   │       └── GameRepository.ts    # Interfaz abstracta
-│   │
-│   ├── data/
-│   │   ├── network/
-│   │   │   ├── WebSocketClient.ts   # OkHttp equivalent (WebSocket nativo)
-│   │   │   └── messages.ts          # Tipos de mensajes (Join, Input, Server...)
-│   │   ├── sensors/
-│   │   │   ├── SensorDataSource.ts  # DeviceOrientation wrapper
-│   │   │   └── calibration.ts       # Lógica de calibración (30 frames)
-│   │   ├── audio/
-│   │   │   ├── AudioRecorder.ts     # Web Audio API (getUserMedia + Analyser)
-│   │   │   └── BlowDetector.ts      # Detección de soplido por RMS
-│   │   └── local/
-│   │       ├── SettingsStore.ts     # localStorage wrapper (DataStore equiv.)
-│   │       └── VibrationManager.ts  # navigator.vibrate wrapper
-│   │
-│   ├── presentation/
-│   │   ├── connection/
-│   │   │   ├── ConnectionScreen.tsx     # UI de conexión (IP, estado, logo)
-│   │   │   ├── ConnectionViewModel.ts   # Estado + lógica de conexión
-│   │   │   └── components/
-│   │   │       └── ServerConfig.tsx     # Input IP + botón conectar
-│   │   ├── controller/
-│   │   │   ├── ControllerScreen.tsx     # UI del mando (landscape)
-│   │   │   ├── ControllerViewModel.ts   # Estado + lógica del gamepad
-│   │   │   └── components/
-│   │   │       ├── DPad.tsx             # Botones direccionales
-│   │   │       ├── ActionButtons.tsx    # Botones A (SALTAR) / B (VALIDAR)
-│   │   │       ├── SensorPanel.tsx      # Visualización gamma/beta
-│   │   │       ├── MicPanel.tsx         # Barra de volumen + controles
-│   │   │       ├── StatusBar.tsx        # Estado WS, Player ID, reconexión
-│   │   │       └── GameEventLog.tsx     # Log de eventos del servidor
-│   │   └── settings/
-│   │       ├── SettingsScreen.tsx       # Configuración (tema, sensibilidad)
-│   │       ├── SettingsViewModel.ts     # Estado de settings
-│   │       └── components/
-│   │           ├── ThemeToggle.tsx      # Dark/Light mode
-│   │           └── SensitivityGrid.tsx  # Low/Medium/High/Custom
-│   │
-│   ├── ui/
-│   │   ├── theme/
-│   │   │   ├── colors.ts          # Paleta: #1A1A2E, #E94560, #007ACC...
-│   │   │   ├── ThemeProvider.tsx  # Context + CSS variables / Theme
-│   │   │   └── typography.ts      # Escala de tipografías
-│   │   └── components/
-│   │       └── Button.tsx         # Botón reutilizable con variantes
-│   │
-│   └── utils/
-│       ├── constants.ts           # SENSOR_TICK_RATE (50ms), umbral grito...
-│       └── helpers.ts             # flashScreen, clamp, format...
-│
-├── package.json
-├── tsconfig.json
-├── vite.config.ts / webpack.config.js
-└── README.md (este archivo)
-```
+| Dispositivo | Ancho | Touchpad | D-Pad | Botones A/B |
+|-------------|-------|----------|-------|-------------|
+| Desktop/Tablet (landscape) | >1024px | 256px | 196px | 90px |
+| Tablet (landscape) | 768-1024px | - | 156px | 80px |
+| Móvil (landscape) | <768px | 180px | - | 70px |
+| Móvil (portrait) | <768px | 260px ancho | 275x275px / 226x226px | 90px / 80px |
+
+### Orientación
+- **Detección automática**: No se fuerza landscape
+- **Mensaje de giro**: Aparece cuando la orientación no coincide con el diseño óptimo
+- **Adaptación CSS**: Las media queries `@media (orientation: landscape/portrait)` ajustan el layout
 
 ---
 
-## 🛠️ Stack Tecnológico Recomendado
-
-### Opción A: React + TypeScript (Recomendada)
-
-| Capa | Tecnología | Equivalente mobile-app |
-|------|-----------|----------------------|
-| **Framework** | React 18+ | Jetpack Compose |
-| **Lenguaje** | TypeScript | Kotlin |
-| **Build** | Vite | Gradle |
-| **Estado** | Zustand / React Query | ViewModel + StateFlow |
-| **Routing** | React Router | Navigation Compose |
-| **Estilos** | Tailwind CSS / Styled Components | Compose Theme |
-| **Persistencia** | localStorage / IndexedDB | DataStore |
-| **WebSocket** | Nativo WebSocket API | OkHttp WebSocket |
-| **Audio** | Web Audio API | AudioRecord |
-| **Sensores** | DeviceOrientationEvent | SensorManager |
-| **PWA** | vite-plugin-pwa | Android APK |
-
-### Opción B: Vanilla TypeScript (Más ligero)
-
-Si se prefiere evitar dependencias pesadas, se puede usar:
-- **Vanilla TS** con módulos ES6
-- **Custom Store** (Patrón Observable/PubSub como StateFlow)
-- **CSS Modules** o **Tailwind CDN**
-- **Vite** para bundling
-
----
-
-## 📊 Comparativa Feature por Feature
-
-| Feature | mobile-app (Android) | mobile-web (Actual) | mobile-web (Objetivo) |
-|---------|---------------------|---------------------|----------------------|
-| **Arquitectura** | Clean + MVVM | Monolito HTML | Clean + MVVM web |
-| **UI** | Jetpack Compose | CSS inline | React / Web Components |
-| **Estado** | StateFlow | Variables globales | Zustand / Redux |
-| **Navegación** | Compose Navigation | N/A (1 pantalla) | React Router |
-| **Pantallas** | 3 (Connection, Controller, Settings) | 1 (todo junto) | 3 pantallas |
-| **Sensores** | SensorManager + calibración | Directo, sin calibrar | Módulo con calibración |
-| **Audio** | AudioRecord + BlowDetector | AnalyserNode simple | BlowDetector completo |
-| **Vibración** | VibratorManager | navigator.vibrate | VibrationManager |
-| **Persistencia** | DataStore | localStorage (solo IP) | SettingsStore completo |
-| **Tema** | Material3 Dark/Light | Solo dark | Toggle Dark/Light |
-| **PWA** | APK nativo | N/A | Service Worker + Manifest |
-| **Tests** | JUnit + Espresso | Ninguno | Jest + React Testing Library |
-
----
-
-## 🚀 Plan de Migración
-
-### Fase 1: Estructura Base
-1. Inicializar proyecto con Vite + React + TS
-2. Configurar Tailwind CSS
-3. Crear sistema de rutas (React Router)
-4. Implementar ThemeProvider (dark/light)
-
-### Fase 2: Capa de Dominio
-1. Definir modelos TypeScript (ConnectionState, GameSettings, etc.)
-2. Crear interfaz GameRepository
-
-### Fase 3: Capa de Datos
-1. Implementar WebSocketClient con reconexión
-2. Crear SensorDataSource con calibración
-3. Implementar AudioRecorder + BlowDetector
-4. Crear SettingsStore (localStorage wrapper)
-5. Implementar VibrationManager
-
-### Fase 4: Capa de Presentación
-1. **ConnectionScreen**: Logo, input IP, botón conectar, estado
-2. **ControllerScreen**: Landscape, D-Pad, botones A/B, sensores, micrófono
-3. **SettingsScreen**: Tema, sensibilidad, calibración, debug
-
-### Fase 5: PWA
-1. Generar manifest.json e iconos
-2. Configurar Service Worker (offline page)
-3. Implementar Add to Home Screen
-
-### Fase 6: Testing
-1. Tests unitarios (Jest) para ViewModels
-2. Tests de integración para WebSocket
-3. Tests E2E (Playwright/Cypress) para flujos completos
-
----
-
-## 🎨 Paleta de Colores (Consistente con mobile-app)
+## 🎨 Paleta de Colores
 
 ```css
 /* Colores WiiCell */
 --background: #1A1A2E;        /* Fondo principal */
 --surface: #16213E;           /* Tarjetas/paneles */
---primary: #E94560;           /* Acentos, botón A */
---primary-dark: #0F3460;      /* Botón B, elementos secundarios */
---accent: #007ACC;            /* Jugador 1 (Azul) */
---accent-p2: #E84118;         /* Jugador 2 (Rojo) */
---success: #4CAF50;           /* Conectado, pickup */
---error: #F44336;             /* Desconectado, muerte */
+--primary: #9333EA;           /* Púrpura (acentos) */
+--accent-orange: #EA580C;     /* Naranja (botón A) */
+--accent-red: #E94560;        /* Rojo (muerte, error) */
+--accent-blue: #007ACC;       /* Azul (jugador 1, botón B) */
+--accent-p2: #E84118;         /* Rojo (jugador 2) */
+--success: #4CAF50;           /* Verde (conectado, pickup) */
+--error: #F44336;             /* Desconectado */
 --text-primary: #FFFFFF;
 --text-secondary: #AAAAAA;
 --border: #444444;
@@ -282,41 +204,81 @@ Si se prefiere evitar dependencias pesadas, se puede usar:
 
 ---
 
+## 🔧 Configuración y Persistencia
+
+### localStorage
+
+Clave: `wiicell_settings`
+
+```json
+{
+  "darkMode": true,
+  "controlMode": "touchpad",
+  "sensitivity": "medium",
+  "customForce": 45,
+  "wsUrl": "ws://localhost:8080"
+}
+```
+
+### Modo de Control
+- Se guarda automáticamente al cambiar
+- Se carga antes de inicializar el controller
+- Al cambiar entre modos, se resetean los valores cruzados (gamma/beta → 0 o dpadX/Y → 0)
+
+---
+
 ## 📱 Consideraciones Mobile Web
 
-### iOS Safari (Limitaciones críticas)
+### iOS Safari (Limitaciones)
 - **DeviceOrientation**: Requiere `requestPermission()` en iOS 13+ (ya implementado)
 - **AudioContext**: Requiere interacción del usuario para iniciar
 - **Vibration**: No soportado en iOS Safari (`navigator.vibrate` undefined)
-- **Fullscreen**: No soporta Fullscreen API, usar `standalone` mode PWA
-- **WebSocket**: Sin problemas, funciona perfecto
+- **Fullscreen**: No soporta Fullscreen API nativa
+- **WebSocket**: Funciona correctamente
 
 ### Android Chrome
 - Todo funciona correctamente
-- PWA puede instalarse como app nativa (Trusted Web Activity)
+- PWA puede instalarse como app nativa
 - Vibration y sensores sin restricciones (con permisos HTTPS)
 
 ### Requisitos HTTPS
 - DeviceOrientation y Microphone requieren contexto seguro (HTTPS o localhost)
-- Para desarrollo local, usar `vite --host` + certificado auto-firmado o ngrok
+- Para desarrollo local, usar `localhost` o certificado auto-firmado
+
+---
+
+## 🚀 Flujo de Uso
+
+1. **Servidor**: El servidor debe estar ejecutándose (`node server.js`)
+2. **Conexión**: La web se conecta automáticamente al WebSocket del servidor
+3. **Rol**: El servidor asigna P1 (Azul) o P2 (Rojo)
+4. **Juego**: Usar touchpad/d-pad + botones A/B para controlar
+5. **Ajustes**: Abrir ⚙️ para cambiar modo de control, sensibilidad, etc.
+
+---
+
+## ✅ Checklist de Paridad con mobile-app
+
+- [x] Navegación: 2 pantallas separadas (Controller + Settings)
+- [x] D-Pad con bolita visual
+- [x] Touchpad ovalado con bolita móvil
+- [x] Botones A/B independientes
+- [x] Calibración de sensores (offset simple)
+- [x] Detección automática de orientación
+- [x] Layout responsive (landscape/portrait)
+- [x] Panel de micrófono con ajustes
+- [x] Vibración en eventos del servidor
+- [x] Flash de pantalla en eventos
+- [x] Persistencia de settings (localStorage)
+- [x] Paleta de colores consistente
+- [ ] PWA: manifest, service worker, offline page
+- [ ] Tema Dark/Light toggle
+- [ ] Tests unitarios
 
 ---
 
 ## 🔗 Referencias
 
 - **mobile-app/**: Ver implementación nativa Android completa
-- **Servidor**: El servidor WebSocket espera los mismos mensajes JSON en ambas plataformas
-- **Protocolo**: Ver `data/network/messages.kt` en mobile-app para estructura exacta
-
----
-
-## ✅ Checklist de Paridad
-
-- [ ] Navegación: 3 pantallas separadas (Connection / Controller / Settings)
-- [ ] Calibración de sensores (30 frames offset)
-- [ ] BlowDetector completo (threshold, cooldown, scale)
-- [ ] Persistencia: tema, sensibilidad, IP, custom force
-- [ ] Tema Dark/Light toggle
-- [ ] PWA: manifest, service worker, offline page
-- [ ] Tests unitarios
-- [ ] CI/CD para deploy automático
+- **Servidor**: `server.js` - Servidor HTTP + WebSocket
+- **Protocolo**: Los mensajes JSON son idénticos en ambas plataformas

@@ -21,11 +21,11 @@
                     <div id="player-status" class="player-status">Sin rol</div>
                 </div>
                 
-                <button id="toggle-sensors-btn" class="btn-toggle-sensors">
-                    Activar sensores
-                </button>
-                
-                <div class="top-actions">
+                <div class="top-actions-desktop">
+                    <button id="toggle-sensors-btn" class="btn-toggle-sensors">
+                        Activar sensores
+                    </button>
+                    
                     <button id="toggle-mic-btn" class="icon-btn" title="Micrófono">
                         <span id="mic-icon">🎙️</span>
                     </button>
@@ -39,7 +39,30 @@
                         Desconectar
                     </button>
                 </div>
+                
+                <!-- Botones solo para móvil (se muestran en portrait) -->
+                <div class="top-actions-mobile">
+                    <button id="toggle-mic-btn-mobile" class="icon-btn" title="Micrófono">
+                        <span id="mic-icon-mobile">🎙️</span>
+                    </button>
+                    <button id="test-vibration-btn-mobile" class="icon-btn" title="Test vibración">
+                        📳
+                    </button>
+                    <button id="open-settings-btn-mobile" class="icon-btn" title="Configuración">
+                        ⚙️
+                    </button>
+                </div>
             </header>
+            
+            <!-- Barra inferior para móvil (solo portrait) -->
+            <div class="bottom-bar">
+                <button id="toggle-sensors-btn-mobile" class="btn-toggle-sensors">
+                    Activar sensores
+                </button>
+                <button id="disconnect-btn-mobile" class="btn-disconnect">
+                    Desconectar
+                </button>
+            </div>
             
             <!-- Calibración -->
             <div id="calibration-panel" class="calibration-panel hidden">

@@ -1,6 +1,4 @@
-/* ============================================
-   RESET Y BASE
-   ============================================ */
+/* RESET Y BASE */
 * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
@@ -19,9 +17,7 @@ body {
     user-select: none;
 }
 
-/* ============================================
-   SISTEMA DE PANTALLAS
-   ============================================ */
+/* SISTEMA DE PANTALLAS */
 .screen {
     display: none;
     width: 100%;
@@ -34,162 +30,7 @@ body {
     flex-direction: column;
 }
 
-/* ============================================
-   PANTALLA 1: CONEXIÓN
-   ============================================ */
-#screen-connection {
-    justify-content: center;
-    align-items: center;
-    padding: 24px;
-}
-
-.connection-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    width: 100%;
-    max-width: 400px;
-}
-
-.logo {
-    width: 120px;
-    height: 120px;
-    border-radius: 16px;
-    object-fit: contain;
-}
-
-.connection-container h1 {
-    color: #E94560;
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0;
-}
-
-.subtitle {
-    color: #AAAAAA;
-    font-size: 16px;
-    margin: 0;
-    margin-top: -8px;
-}
-
-.connection-card {
-    background-color: #0B1320;
-    border-radius: 16px;
-    padding: 20px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 8px;
-}
-
-.connection-card label {
-    color: #E94560;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-#ws-address-input {
-    background-color: #1A1A2E;
-    border: 1px solid #444;
-    border-radius: 12px;
-    padding: 12px 16px;
-    color: #EEEEEE;
-    font-size: 16px;
-    font-family: monospace;
-    width: 100%;
-}
-
-#ws-address-input::placeholder {
-    color: #666;
-}
-
-.port-info {
-    color: #AAAAAA;
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.port-info::before {
-    content: "ℹ️";
-    font-size: 14px;
-}
-
-.btn-primary {
-    background-color: #E94560;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color 0.2s;
-}
-
-.btn-primary:hover {
-    background-color: #FF6B6B;
-}
-
-.btn-primary:disabled {
-    background-color: #555;
-    cursor: not-allowed;
-}
-
-.status-text {
-    text-align: center;
-    font-size: 14px;
-    min-height: 20px;
-}
-
-.status-text.connecting {
-    color: #E94560;
-}
-
-.status-text.error {
-    color: #EF4444;
-}
-
-.info-card {
-    background-color: rgba(233, 69, 96, 0.1);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-    width: 100%;
-}
-
-.info-card strong {
-    color: #E94560;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.info-card p {
-    margin: 0;
-    font-size: 14px;
-    color: #EEEEEE;
-}
-
-.info-card .example {
-    color: #E94560;
-    font-weight: 500;
-    margin-top: 4px;
-}
-
-.footer-text {
-    color: #AAAAAA;
-    font-size: 12px;
-    text-align: center;
-    margin: 0;
-}
-
-/* ============================================
-   PANTALLA 2: CONTROLLER
-   ============================================ */
+/* CONTROLLER */
 #screen-controller {
     background-color: #1A1A2E;
 }
@@ -249,10 +90,23 @@ body {
     background-color: #EF4444;
 }
 
-.top-actions {
+.top-actions-desktop {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.top-actions-mobile {
+    display: none;
+}
+
+.bottom-bar {
+    display: none;
+    background-color: #16213E;
+    padding: 8px 12px;
+    justify-content: center;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .icon-btn {
@@ -459,7 +313,7 @@ body {
     justify-content: center;
 }
 
-/* Touchpad - Altura = 2 botones (120px) + gap (16px) = 256px */
+/* Touchpad - Altura = 2 botones + gap = height */
 .touchpad-container {
     width: auto;
     height: 256px;
@@ -929,8 +783,8 @@ body {
 @media (orientation: portrait) {
     .controller-main {
         flex-direction: column;
-        gap: 24px;
-        padding: 16px;
+        gap: 32px;
+        padding: 8px 16px;
     }
     
     /* Touchpad/D-Pad arriba */
@@ -941,10 +795,10 @@ body {
     }
     
     .touchpad-container {
-        width: 224px; /* 2 botones (100px) + gap (24px) */
+        width: 260px; /* más ancho para aprovechar espacio */
         height: 100%;
-        max-width: 100%;
-        max-height: 55vh;
+        max-width: 90%;
+        max-height: 58vh;
         aspect-ratio: unset;
     }
     
@@ -952,13 +806,13 @@ body {
         border-radius: 20px;
     }
     
-    /* D-Pad en orientación vertical - ancho = 2 botones A/B + gap */
+    /* D-Pad en orientación vertical - más grande */
     .d-pad {
-        grid-template-columns: 70px 70px 70px;
-        grid-template-rows: 70px 70px 70px;
-        gap: 7px;
-        width: 224px;  /* 100*2 + 24 */
-        height: 224px; /* 100*2 + 24 */
+        grid-template-columns: 85px 85px 85px;
+        grid-template-rows: 85px 85px 85px;
+        gap: 10px;
+        width: 275px;
+        height: 275px;
     }
     
     .d-pad button {
@@ -966,39 +820,125 @@ body {
         border-radius: 12px;
     }
     
-    /* Botones A/B abajo en horizontal */
+    /* TopBar simplificada */
+    .top-actions-desktop {
+        display: none;
+    }
+    
+    .top-actions-mobile {
+        display: flex;
+        align-items: center;
+    }
+    
+    /* TopBar con mismo margen que bottom bar */
+    .top-bar {
+        padding: 8px 24px;
+    }
+    
+    /* Barra inferior */
+    .bottom-bar {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 24px;
+    }
+    
+    .bottom-bar .btn-toggle-sensors,
+    .bottom-bar .btn-disconnect {
+        width: auto;
+    }
+    
+    /* Botones A/B abajo en vertical - centrados */
     .action-buttons {
-        flex-direction: row;
-        gap: 24px;
+        flex-direction: column;
+        gap: 10px;
         flex-shrink: 0;
         padding-bottom: 16px;
+        align-items: center;
     }
     
     .btn-action {
-        width: 100px;
-        height: 100px;
+        width: 130px;
+        height: 130px;
+    }
+    
+    .btn-action .btn-letter {
+        font-size: 36px;
+    }
+    
+    .btn-action .btn-label {
+        font-size: 14px;
+    }
+    
+    /* Botón A */
+    .action-buttons .btn-a {
+        position: relative;
+        right: 50px;
+    }
+    
+    /* Botón B */
+    .action-buttons .btn-b {
+        position: relative;
+        left: 50px;
     }
 }
 
 @media (orientation: portrait) and (max-height: 700px) {
+    .controller-main {
+        gap: 24px;
+        padding: 6px 12px;
+    }
+    
+    .touchpad-container {
+        max-height: 52vh;
+    }
+    
     .btn-action {
-        width: 80px;
-        height: 80px;
+        width: 110px;
+        height: 110px;
     }
     
     .btn-action .btn-letter {
-        font-size: 28px;
+        font-size: 32px;
+    }
+    
+    /* Botón A centrado (sin desplazamiento) */
+    .action-buttons .btn-a {
+        position: relative;
+        left: 0;
+    }
+    
+    /* Botón B desplazado a la derecha */
+    .action-buttons .btn-b {
+        position: relative;
+        left: 25px;
+    }
+    
+    .action-buttons {
+        gap: 24px;
     }
     
     .d-pad {
-        grid-template-columns: 58px 58px 58px;
-        grid-template-rows: 58px 58px 58px;
-        gap: 5px;
-        width: 184px;  /* 80*2 + 24 */
-        height: 184px; /* 80*2 + 24 */
+        grid-template-columns: 70px 70px 70px;
+        grid-template-rows: 70px 70px 70px;
+        gap: 8px;
+        width: 226px;
+        height: 226px;
     }
     
     .d-pad button {
         font-size: 18px;
+    }
+    
+    /* Barra inferior más compacta */
+    .bottom-bar {
+        padding: 6px 16px;
+    }
+    
+    .bottom-bar .btn-toggle-sensors,
+    .bottom-bar .btn-disconnect {
+        padding: 4px 10px;
+        font-size: 11px;
+        height: 32px;
+        max-width: 120px;
     }
 }

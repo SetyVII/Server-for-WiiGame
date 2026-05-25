@@ -113,11 +113,16 @@ const controllerScreen = {
             socketStatus: document.getElementById('socket-status'),
             playerStatus: document.getElementById('player-status'),
             toggleSensorsBtn: document.getElementById('toggle-sensors-btn'),
+            toggleSensorsBtnMobile: document.getElementById('toggle-sensors-btn-mobile'),
             toggleMicBtn: document.getElementById('toggle-mic-btn'),
+            toggleMicBtnMobile: document.getElementById('toggle-mic-btn-mobile'),
             micIcon: document.getElementById('mic-icon'),
             testVibrationBtn: document.getElementById('test-vibration-btn'),
+            testVibrationBtnMobile: document.getElementById('test-vibration-btn-mobile'),
             openSettingsBtn: document.getElementById('open-settings-btn'),
+            openSettingsBtnMobile: document.getElementById('open-settings-btn-mobile'),
             disconnectBtn: document.getElementById('disconnect-btn'),
+            disconnectBtnMobile: document.getElementById('disconnect-btn-mobile'),
             calibrationPanel: document.getElementById('calibration-panel'),
             calibrationProgress: document.getElementById('calibration-progress'),
             calibrationPercent: document.getElementById('calibration-percent'),
@@ -163,20 +168,63 @@ const controllerScreen = {
             }
         });
         
-        // Test vibración
+        // Test vibración (desktop)
         this.elements.testVibrationBtn.addEventListener('click', () => {
             this.testVibration();
         });
         
-        // Settings
+        // Test vibración (mobile)
+        if (this.elements.testVibrationBtnMobile) {
+            this.elements.testVibrationBtnMobile.addEventListener('click', () => {
+                this.testVibration();
+            });
+        }
+        
+        // Micrófono (mobile)
+        if (this.elements.toggleMicBtnMobile) {
+            this.elements.toggleMicBtnMobile.addEventListener('click', () => {
+                if (AppState.micActive) {
+                    this.stopMicrophone();
+                } else {
+                    this.startMicrophone();
+                }
+            });
+        }
+        
+        // Settings (desktop)
         this.elements.openSettingsBtn.addEventListener('click', () => {
             showScreen('settings');
         });
         
-        // Desconectar
+        // Settings (mobile)
+        if (this.elements.openSettingsBtnMobile) {
+            this.elements.openSettingsBtnMobile.addEventListener('click', () => {
+                showScreen('settings');
+            });
+        }
+        
+        // Desconectar (desktop)
         this.elements.disconnectBtn.addEventListener('click', () => {
             this.disconnect();
         });
+        
+        // Desconectar (mobile)
+        if (this.elements.disconnectBtnMobile) {
+            this.elements.disconnectBtnMobile.addEventListener('click', () => {
+                this.disconnect();
+            });
+        }
+        
+        // Activar sensores (mobile)
+        if (this.elements.toggleSensorsBtnMobile) {
+            this.elements.toggleSensorsBtnMobile.addEventListener('click', () => {
+                if (AppState.sensorsActive) {
+                    this.stopSensors();
+                } else {
+                    this.startSensors();
+                }
+            });
+        }
         
         // Touchpad
         this.bindTouchpadEvents();
@@ -506,6 +554,9 @@ const controllerScreen = {
                 this.elements.micPanel.classList.remove('hidden');
                 this.elements.micIcon.textContent = '🎙️';
                 this.elements.toggleMicBtn.style.color = '#EF4444';
+                if (this.elements.toggleMicBtnMobile) {
+                    this.elements.toggleMicBtnMobile.style.color = '#EF4444';
+                }
                 
                 this.measureVolume();
             })
@@ -524,6 +575,9 @@ const controllerScreen = {
         this.elements.micPanel.classList.add('hidden');
         this.elements.micIcon.textContent = '🎙️';
         this.elements.toggleMicBtn.style.color = '';
+        if (this.elements.toggleMicBtnMobile) {
+            this.elements.toggleMicBtnMobile.style.color = '';
+        }
         AppState.currentInput.isYelling = false;
         this.sendInput();
     },
@@ -722,7 +776,7 @@ const controllerScreen = {
             this.elements.playerStatus.className = 'player-status';
         }
         
-        // Botón de sensores
+        // Botón de sensores (desktop)
         if (AppState.sensorsActive) {
             this.elements.toggleSensorsBtn.textContent = 'Desactivar sensores';
             this.elements.toggleSensorsBtn.classList.add('active');
@@ -731,6 +785,17 @@ const controllerScreen = {
             this.elements.toggleSensorsBtn.textContent = 'Activar sensores';
             this.elements.toggleSensorsBtn.classList.remove('active');
             this.elements.touchpad.classList.remove('disabled');
+        }
+        
+        // Botón de sensores (mobile)
+        if (this.elements.toggleSensorsBtnMobile) {
+            if (AppState.sensorsActive) {
+                this.elements.toggleSensorsBtnMobile.textContent = 'Desactivar sensores';
+                this.elements.toggleSensorsBtnMobile.classList.add('active');
+            } else {
+                this.elements.toggleSensorsBtnMobile.textContent = 'Activar sensores';
+                this.elements.toggleSensorsBtnMobile.classList.remove('active');
+            }
         }
     },
     
