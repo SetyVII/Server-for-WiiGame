@@ -79,11 +79,16 @@ body {
     color: white;
     border: none;
     border-radius: 8px;
-    padding: 6px 12px;
+    padding: 0 12px;
     font-size: 12px;
     cursor: pointer;
     white-space: nowrap;
     height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 36px;
+    margin: 0 auto; /* Centrado en la barra */
 }
 
 .btn-toggle-sensors.active {
@@ -302,7 +307,7 @@ body {
     align-items: center;
     gap: 48px;
     flex: 1;
-    padding: 16px 24px;
+    padding: 16px 124px 16px 24px; /* 100px extra a la derecha para compensar btn-b */
     min-height: 0;
 }
 
@@ -467,6 +472,8 @@ body {
 
 .btn-b {
     background-color: #EA580C;
+    position: relative;
+    left: 100px;
 }
 
 .btn-b:active {
@@ -792,6 +799,7 @@ body {
         width: 100%;
         flex: 1;
         min-height: 0;
+        margin-left: 0;
     }
     
     .touchpad-container {
@@ -821,7 +829,8 @@ body {
     }
     
     /* TopBar simplificada */
-    .top-actions-desktop {
+    .top-actions-desktop,
+    #toggle-sensors-btn {
         display: none;
     }
     
@@ -845,6 +854,7 @@ body {
     .bottom-bar .btn-toggle-sensors,
     .bottom-bar .btn-disconnect {
         width: auto;
+        margin: 0;
     }
     
     /* Botones A/B abajo en vertical - centrados */
