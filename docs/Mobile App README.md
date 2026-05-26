@@ -7,9 +7,12 @@ Aplicacion Android nativa que actua como mando virtual para el juego **WiiGames*
 - **Conexion WebSocket** al servidor Node.js (puerto 3000, sin SSL)
 - **Sensores nativos** de Android (giroscopio + acelerometro) con calibracion automatica
 - **D-Pad tactil** con bolita de 48.dp arrastrable para control manual
+- **Modo Botones** alternativo con D-Pad W/A/S/D clasico (envia dpadX/dpadY)
+- **Selector de modo** en Settings: Touchpad vs Botones con persistencia
 - **Control de velocidad variable** mediante gamma/beta segun distancia del centro
 - **D-Pad se desactiva** cuando los sensores estan activos (modo visual)
 - **Botones A/B** para saltar y accion secundaria (envio continuo de estado)
+- **Contador de pickups** flotante con icono de moneda y borde dorado
 - **Deteccion de soplado/grito** por microfono con panel de configuracion expandible
 - **Vibracion haptic** para feedback de eventos del juego (colisiones, muertes, pickups)
 - **Configuracion de sensibilidad** (Bajo/Medio/Alto/Custom) con grid 2x2
@@ -126,8 +129,8 @@ El servidor reenvia eventos de Unity al mando correspondiente:
 | `assignRole` | Asigna playerId (1 o 2) | Borde de color (Azul/Rojo) |
 | `error` | Error del servidor | Mensaje en rojo |
 | `collision` | Choque con objeto | Vibracion 1001ms + log |
-| `death` | Jugador muerto | Vibracion 500,100,401ms + log |
-| `pickup` | Recogio item | Vibracion 1001ms + log |
+| `death` | Jugador muerto | Vibracion [0, 1001]ms + log |
+| `pickup` | Recogio item | Vibracion 1001ms + log + contador+1 |
 | `ui_update` | Actualizacion de UI | Log en pantalla |
 | `screen_effect` | Efecto visual | Log + vibracion opcional |
 | `puzzle_start` | Inicio de puzzle | Vibracion 1001ms + log |
@@ -162,6 +165,8 @@ La app solicita los siguientes permisos:
 
 ### Fase 3: Mando completo
 - [x] D-Pad tactil interactivo con bolita arrastrable (48.dp)
+- [x] Modo Botones alternativo con D-Pad W/A/S/D
+- [x] Selector de modo Touchpad/Botones en Settings
 - [x] Control de velocidad variable mediante gamma/beta
 - [x] Desactivacion automatica del D-Pad cuando sensores activos
 - [x] Deteccion de soplado (AudioRecord + BlowDetector)
@@ -170,6 +175,7 @@ La app solicita los siguientes permisos:
 - [x] Barra superior con controles (sensores, microfono, vibracion, ajustes)
 - [x] Barra de estado oculta en pantalla del mando
 - [x] Log de eventos del juego en la UI
+- [x] Contador de pickups flotante con icono de moneda
 
 ### Fase 4: Reconexion robusta
 - [x] Deteccion de desconexion del servidor (DISCONNECTED y ERROR)

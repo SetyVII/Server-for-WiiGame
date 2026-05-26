@@ -149,6 +149,55 @@ fun SettingsScreen(
                 }
             }
 
+            // Modo de Control
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Modo de Control",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { viewModel.saveSettings(settings.copy(controlMode = com.tfg.motioncontroller.domain.model.ControlMode.TOUCHPAD)) },
+                            modifier = Modifier.weight(1f),
+                            colors = if (settings.controlMode == com.tfg.motioncontroller.domain.model.ControlMode.TOUCHPAD) {
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            } else {
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            }
+                        ) {
+                            Text("Touchpad")
+                        }
+                        Button(
+                            onClick = { viewModel.saveSettings(settings.copy(controlMode = com.tfg.motioncontroller.domain.model.ControlMode.BUTTONS)) },
+                            modifier = Modifier.weight(1f),
+                            colors = if (settings.controlMode == com.tfg.motioncontroller.domain.model.ControlMode.BUTTONS) {
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            } else {
+                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            }
+                        ) {
+                            Text("Botones")
+                        }
+                    }
+                }
+            }
+
             // Sensibilidad
             Card(
                 modifier = Modifier.fillMaxWidth(),

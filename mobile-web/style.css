@@ -371,6 +371,32 @@ body {
     flex: 1;
     padding: 16px 124px 16px 24px; /* 100px extra a la derecha para compensar btn-b */
     min-height: 0;
+    position: relative;
+}
+
+/* Contador de pickups flotante */
+.pickup-counter {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background-color: #0F3460;
+    border: 2px solid #FFD700;
+    border-radius: 12px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #FFD700;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    user-select: none;
+}
+
+.pickup-counter .material-symbols-rounded {
+    font-size: 20px;
+    color: #FFD700;
 }
 
 /* Control Area (D-Pad o Touchpad) */

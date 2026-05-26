@@ -11,6 +11,7 @@ import com.tfg.motioncontroller.data.network.InputMessage
 import com.tfg.motioncontroller.data.network.ServerMessage
 import com.tfg.motioncontroller.data.sensor.SensorDataSource
 import com.tfg.motioncontroller.domain.model.ConnectionStatus
+import com.tfg.motioncontroller.domain.model.ControlMode
 import com.tfg.motioncontroller.domain.model.GameSettings
 import com.tfg.motioncontroller.domain.model.MicrophoneState
 import com.tfg.motioncontroller.domain.model.SensorValues
@@ -49,6 +50,8 @@ class ControllerViewModel @Inject constructor(
     private val anguloMaximo = 40.0f
 
     init {
+        loadSettings()
+        
         viewModelScope.launch {
             var wasConnected = false
             
@@ -246,7 +249,9 @@ class ControllerViewModel @Inject constructor(
     fun setManualTilt(gamma: Float, beta: Float) {
         currentInput = currentInput.copy(
             gamma = gamma,
-            beta = beta
+            beta = beta,
+            dpadX = 0,
+            dpadY = 0
         )
         if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED) {
             gameRepository.sendInput(currentInput)
@@ -257,6 +262,46 @@ class ControllerViewModel @Inject constructor(
         currentInput = currentInput.copy(gamma = 0f, beta = 0f)
         if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED) {
             gameRepository.sendInput(currentInput)
+        }
+    }
+
+    // ===== MODO BOTONES (D-Pad) =====
+    fun setDPadButton(x: Int, y: Int) {
+        currentInput = currentInput.copy(
+            dpadX = x,
+            dpadY = y,
+            gamma = 0f,
+            beta = 0f
+        )
+        if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED) {
+            gameRepository.sendInput(currentInput)
+        }
+    }
+
+    fun resetDPadButton() {
+        currentInput = currentInput.copy(dpadX = 0, dpadY = 0)
+        if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED) {
+            gameRepository.sendInput(currentInput)
+        }
+    }
+
+    fun setControlMode(mode: ControlMode) {
+        val currentSettings = _uiState.value.settings
+        _uiState.value = _uiState.value.copy(
+            settings = currentSettings.copy(controlMode = mode)
+        )
+        // Resetear valores del modo anterior
+        currentInput = currentInput.copy(
+            gamma = 0f,
+            beta = 0f,
+            dpadX = 0,
+            dpadY = 0
+        )
+        if (_uiState.value.connectionStatus.socketState == SocketState.CONNECTED) {
+            gameRepository.sendInput(currentInput)
+        }
+        viewModelScope.launch {
+            settingsDataStore.saveSettings(currentSettings.copy(controlMode = mode))
         }
     }
 
@@ -305,7 +350,8 @@ class ControllerViewModel @Inject constructor(
             is ServerMessage.Pickup -> {
                 vibrationManager.vibrate(longArrayOf(0, 50))
                 _uiState.value = _uiState.value.copy(
-                    logMessage = "Objeto recogido!"
+                    pickupCount = _uiState.value.pickupCount + 1,
+                    logMessage = "${event.pickupType ?: "Objeto"} recogido!"
                 )
             }
             is ServerMessage.UIUpdate -> {
@@ -393,5 +439,6 @@ data class ControllerUiState(
     val logMessage: String? = null,
     val settings: GameSettings = GameSettings(),
     val reconnectCountdown: Int? = null,
-    val snackbarMessage: String? = null
+    val snackbarMessage: String? = null,
+    val pickupCount: Int = 0
 )

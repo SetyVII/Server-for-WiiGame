@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.tfg.motioncontroller.domain.model.ControlMode
 import com.tfg.motioncontroller.domain.model.GameSettings
 import com.tfg.motioncontroller.domain.model.SensitivityLevel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,6 +29,7 @@ class SettingsDataStore @Inject constructor(
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val SENSITIVITY = stringPreferencesKey("sensitivity")
         val CUSTOM_FORCE = intPreferencesKey("custom_force")
+        val CONTROL_MODE = stringPreferencesKey("control_mode")
         val LAST_SERVER_IP = stringPreferencesKey("last_server_ip")
     }
 
@@ -37,7 +39,12 @@ class SettingsDataStore @Inject constructor(
             sensitivity = SensitivityLevel.valueOf(
                 preferences[SENSITIVITY] ?: SensitivityLevel.MEDIUM.name
             ),
-            customForce = preferences[CUSTOM_FORCE] ?: 45
+            customForce = preferences[CUSTOM_FORCE] ?: 45,
+            controlMode = try {
+                ControlMode.valueOf(preferences[CONTROL_MODE] ?: ControlMode.TOUCHPAD.name)
+            } catch (e: IllegalArgumentException) {
+                ControlMode.TOUCHPAD
+            }
         )
     }
 
@@ -46,6 +53,7 @@ class SettingsDataStore @Inject constructor(
             preferences[DARK_MODE] = settings.darkMode
             preferences[SENSITIVITY] = settings.sensitivity.name
             preferences[CUSTOM_FORCE] = settings.customForce
+            preferences[CONTROL_MODE] = settings.controlMode.name
         }
     }
 
@@ -64,6 +72,12 @@ class SettingsDataStore @Inject constructor(
     suspend fun saveCustomForce(force: Int) {
         dataStore.edit { preferences ->
             preferences[CUSTOM_FORCE] = force.coerceIn(1, 100)
+        }
+    }
+
+    suspend fun saveControlMode(mode: ControlMode) {
+        dataStore.edit { preferences ->
+            preferences[CONTROL_MODE] = mode.name
         }
     }
 

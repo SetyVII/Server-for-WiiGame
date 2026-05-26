@@ -49,6 +49,9 @@ const AppState = {
     
     // Envío de datos
     sendingInput: true,
+    
+    // Contador de pickups (monedas)
+    pickupCount: 0,
 };
 
 // ============================================
@@ -153,6 +156,7 @@ const controllerScreen = {
             eventLog: document.getElementById('event-log'),
             errorMessage: document.getElementById('error-message'),
             controllerMain: document.querySelector('.controller-main'),
+            pickupCount: document.getElementById('pickup-count'),
         };
     },
     
@@ -659,24 +663,24 @@ const controllerScreen = {
     
     testVibration() {
         console.log('[testVibration] Intentando vibrar...');
-        
+
         // Feedback visual inmediato (parpadeo del botón)
         const btns = [
             this.elements.testVibrationBtn,
             this.elements.testVibrationBtnMobile
         ].filter(Boolean);
-        
+
         btns.forEach(btn => {
             btn.style.backgroundColor = '#E94560';
             setTimeout(() => {
                 btn.style.backgroundColor = '';
             }, 200);
         });
-        
-        // Intentar vibrar con patrón complejo (ritmo de prueba)
+
+        // Vibración larga para gama baja (1001ms para no ignorarla)
         if ('vibrate' in navigator) {
             try {
-                const result = navigator.vibrate([0, 1000, 500, 100, 50, 100, 50, 100, 50, 100, 500, 1000]);
+                const result = navigator.vibrate(1001);
                 console.log('[testVibration] navigator.vibrate() devolvió:', result);
                 this.logEvent('📳 Vibración de prueba');
             } catch (err) {
@@ -689,49 +693,59 @@ const controllerScreen = {
         }
     },
     
+    // ── Eventos de Unity ──────────────────────────────────────────
+    //    Los usaremos para mostrar feedback visual, vibración, y eventos de juego específicos (como inicio de puzzles) mientras jugamos.  
     handleServerMessage(data) {
         switch (data.type) {
+            // Rol asignado por el servidor
             case 'assignRole':
                 AppState.myPlayerId = data.playerId;
                 this.logEvent(`Asignado como Jugador ${data.playerId}`);
                 this.updateUI();
                 break;
+            // Eventos de juego enviados desde Unity
             case 'collision':
                 this.logEvent('💥 Choque!');
-                this.flashScreen('#ff0000', 150);
-                this.vibrate(100);
+                this.flashScreen('#ff5151', 150);
+                this.vibrate(1001);
                 break;
             case 'death':
                 this.logEvent('💀 Has muerto!');
-                this.flashScreen('#ff0000', 400);
-                this.vibrate([0, 500, 200, 500]);
+                this.flashScreen('#960000', 400);
+                this.vibrate([0, 1001]);
                 break;
             case 'pickup':
-                this.logEvent('✨ Objeto recogido!');
+                AppState.pickupCount++;
+                this.elements.pickupCount.textContent = AppState.pickupCount;
+                this.logEvent(`✨ ${data.pickupType || 'Objeto'} recogido!`);
                 this.flashScreen('#00ff88', 150);
-                this.vibrate(50);
+                this.vibrate(1001);
                 break;
             case 'ui_update':
                 this.logEvent(`🖥️ ${data.data || 'Update'}`);
                 break;
             case 'screen_effect':
                 this.flashScreen(data.color || '#ffffff', data.duration || 200);
-                if (data.vibrate) this.vibrate(Math.max(data.duration || 150, 100));
+                if (data.vibrate) this.vibrate(1001);
                 break;
             case 'puzzle_start':
                 this.logEvent(`🧩 Puzzle: ${data.puzzleId}`);
-                this.vibrate(100);
+                this.vibrate(1001);
                 break;
+            // Eventos personalizados que Unity puede enviar
             case 'custom':
                 this.logEvent(`📨 ${data.data || 'Evento'}`);
-                this.vibrate(100);
+                this.vibrate(1001);
                 break;
+            // Errores enviados desde el servidor
             case 'error':
                 this.showError(data.message);
                 break;
         }
     },
     
+    // ── Manejo de desconexiones ──────────────────────────────────────────
+    //    Si la conexión se pierde, mostramos un mensaje de error y tratamos de reconectar automáticamente cada 2 segundos. Esto es útil para conexiones inestables o si el servidor se reinicia.
     handleDisconnect() {
         AppState.myPlayerId = null;
         this.elements.socketStatus.textContent = 'Socket: desconectado';
@@ -750,6 +764,8 @@ const controllerScreen = {
         }, 2000);
     },
     
+    // ── Alternar Entrada ──────────────────────────────────────────
+    //    Permite activar o desactivar el envío de datos al servidor. Cuando se desactiva, se envía un último mensaje con todos los valores a 0 para evitar que el personaje quede "atorado" con una entrada previa. También muestra un mensaje persistente indicando que el envío está desactivado.
     toggleInput() {
         const screenController = document.getElementById('screen-controller');
         
@@ -808,6 +824,8 @@ const controllerScreen = {
         this.updateUI();
     },
     
+    // ── Enviar Entrada ──────────────────────────────────────────
+    //    Esta función se encarga de enviar el estado actual de los controles al servidor. Dependiendo del modo de control (touchpad o botones), enviará diferentes datos. También incluye el estado de los botones A/B y si el jugador está "gritando" (soplando el micrófono).
     sendInput() {
         if (!AppState.sendingInput || !AppState.ws || AppState.ws.readyState !== WebSocket.OPEN || !AppState.myPlayerId) return;
         
@@ -981,11 +999,18 @@ const controllerScreen = {
     },
     
     flashScreen(color, duration) {
-        const computedStyle = getComputedStyle(document.body);
-        const original = document.body.style.backgroundColor || computedStyle.backgroundColor;
+        if (this._flashTimeout) {
+            clearTimeout(this._flashTimeout);
+        }
+        const original = document.body.style.backgroundColor;
         document.body.style.backgroundColor = color;
-        setTimeout(() => {
-            document.body.style.backgroundColor = original;
+        this._flashTimeout = setTimeout(() => {
+            if (original) {
+                document.body.style.backgroundColor = original;
+            } else {
+                document.body.style.backgroundColor = '';
+            }
+            this._flashTimeout = null;
         }, duration);
     },
     

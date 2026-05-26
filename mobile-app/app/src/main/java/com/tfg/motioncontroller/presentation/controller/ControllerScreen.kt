@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Settings
@@ -223,36 +225,56 @@ fun ControllerScreen(
         }
 
         // Area principal del mando
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
-            // D-Pad (izquierda) - ovalado y grande
-            DPad(
-                tiltX = uiState.sensorValues.gamma,
-                tiltY = uiState.sensorValues.beta,
-                isCalibrating = uiState.isCalibrating,
-                sensorsActive = uiState.sensorsActive,
-                onTiltChange = { gamma, beta -> viewModel.setManualTilt(gamma, beta) },
-                onTiltReset = { viewModel.resetManualTilt() },
-                modifier = Modifier
-                    .width(380.dp)
-                    .height(250.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Control area (Touchpad o Botones)
+                if (uiState.settings.controlMode == com.tfg.motioncontroller.domain.model.ControlMode.TOUCHPAD) {
+                    DPad(
+                        tiltX = uiState.sensorValues.gamma,
+                        tiltY = uiState.sensorValues.beta,
+                        isCalibrating = uiState.isCalibrating,
+                        sensorsActive = uiState.sensorsActive,
+                        onTiltChange = { gamma, beta -> viewModel.setManualTilt(gamma, beta) },
+                        onTiltReset = { viewModel.resetManualTilt() },
+                        modifier = Modifier
+                            .width(380.dp)
+                            .height(250.dp)
+                    )
+                } else {
+                    ButtonsPad(
+                        onButtonPress = { x, y -> viewModel.setDPadButton(x, y) },
+                        onButtonRelease = { viewModel.resetDPadButton() },
+                        modifier = Modifier
+                            .width(380.dp)
+                            .height(250.dp)
+                    )
+                }
 
-            Spacer(modifier = Modifier.width(48.dp))
+                Spacer(modifier = Modifier.width(48.dp))
 
-            // Botones A y B (derecha)
-            ActionButtons(
-                onButtonAPress = { viewModel.setButtonA(true) },
-                onButtonARelease = { viewModel.setButtonA(false) },
-                onButtonBPress = { viewModel.setButtonB(true) },
-                onButtonBRelease = { viewModel.setButtonB(false) },
-                modifier = Modifier.padding(start = 16.dp)
+                // Botones A y B (derecha)
+                ActionButtons(
+                    onButtonAPress = { viewModel.setButtonA(true) },
+                    onButtonARelease = { viewModel.setButtonA(false) },
+                    onButtonBPress = { viewModel.setButtonB(true) },
+                    onButtonBRelease = { viewModel.setButtonB(false) },
+                    modifier = Modifier.padding(start = 16.dp)
+                )
+            }
+
+            // Contador de pickups flotante
+            PickupCounter(
+                count = uiState.pickupCount,
+                modifier = Modifier.align(Alignment.TopEnd)
             )
         }
 
@@ -566,6 +588,100 @@ private fun DPad(
 }
 
 @Composable
+private fun ButtonsPad(
+    onButtonPress: (Int, Int) -> Unit,
+    onButtonRelease: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val buttons = listOf(
+        Triple("W", 0, 1),
+        Triple("A", -1, 0),
+        Triple("D", 1, 0),
+        Triple("S", 0, -1)
+    )
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Fila superior: W
+            DPadButton(
+                text = "W",
+                onPress = { onButtonPress(0, 1) },
+                onRelease = onButtonRelease
+            )
+            // Fila media: A, espacio, D
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DPadButton(
+                    text = "A",
+                    onPress = { onButtonPress(-1, 0) },
+                    onRelease = onButtonRelease
+                )
+                Spacer(modifier = Modifier.size(80.dp))
+                DPadButton(
+                    text = "D",
+                    onPress = { onButtonPress(1, 0) },
+                    onRelease = onButtonRelease
+                )
+            }
+            // Fila inferior: S
+            DPadButton(
+                text = "S",
+                onPress = { onButtonPress(0, -1) },
+                onRelease = onButtonRelease
+            )
+        }
+    }
+}
+
+@Composable
+private fun DPadButton(
+    text: String,
+    onPress: () -> Unit,
+    onRelease: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            onPress()
+        } else {
+            onRelease()
+        }
+    }
+
+    Button(
+        onClick = { /* handled by interactionSource */ },
+        modifier = modifier.size(80.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = DPadBackground,
+            disabledContainerColor = Color(0xFF333333)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            width = 2.dp,
+            color = DPadBorder
+        ),
+        interactionSource = interactionSource
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge,
+            color = Color.White,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 private fun MicPanel(
     rmsLevel: Float,
     isBlowing: Boolean,
@@ -801,6 +917,41 @@ private fun SensorDebugInfo(
         textAlign = TextAlign.Center,
         modifier = modifier.fillMaxWidth()
     )
+}
+
+@Composable
+private fun PickupCounter(
+    count: Int,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .background(
+                color = Color(0xFF1A1A2E),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(
+                width = 2.dp,
+                color = Color(0xFFFFD700),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 14.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Filled.AttachMoney,
+            contentDescription = "Monedas",
+            tint = Color(0xFFFFD700),
+            modifier = Modifier.size(24.dp)
+        )
+        Text(
+            text = count.toString(),
+            color = Color(0xFFFFD700),
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold
+        )
+    }
 }
 
 private fun Float.format(digits: Int): String = "%.${digits}f".format(this)

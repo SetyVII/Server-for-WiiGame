@@ -26,8 +26,14 @@ enum class SocketState {
 data class GameSettings(
     val sensitivity: SensitivityLevel = SensitivityLevel.MEDIUM,
     val customForce: Int = 45,
-    val darkMode: Boolean = true
+    val darkMode: Boolean = true,
+    val controlMode: ControlMode = ControlMode.TOUCHPAD
 )
+
+enum class ControlMode(val label: String) {
+    TOUCHPAD("Touchpad"),
+    BUTTONS("Botones")
+}
 
 enum class SensitivityLevel(val force: Int, val label: String, val description: String) {
     LOW(8, "Bajo", "0.8"),

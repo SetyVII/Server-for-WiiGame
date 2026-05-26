@@ -116,7 +116,7 @@
             
             <!-- Área principal del controller -->
             <main class="controller-main">
-                <!-- D-Pad / Touchpad -->
+                <!-- Touchpad / Botones -->
                 <div id="control-area" class="control-area">
                     <!-- Modo Touchpad -->
                     <div id="touchpad-mode" class="touchpad-container hidden">
@@ -132,6 +132,12 @@
                         <button class="btn-right" data-x="1" data-y="0">D</button>
                         <button class="btn-down" data-x="0" data-y="-1">S</button>
                     </div>
+                </div>
+                
+                <!-- Contador de pickups (monedas) flotante -->
+                <div class="pickup-counter">
+                    <span class="material-symbols-rounded">monetization_on</span>
+                    <span id="pickup-count">0</span>
                 </div>
                 
                 <!-- Botones de Acción -->

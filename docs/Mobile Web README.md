@@ -26,9 +26,10 @@ mobile-web/
 | 📱 **Sensores de Movimiento** | DeviceOrientation (gamma/beta), calibración simple, muestreo a 20 FPS |
 | 🎙️ **Micrófono** | Detección de volumen RMS con panel de ajustes (threshold, cooldown, scale) |
 | 📳 **Vibración** | Patrones para eventos del servidor (colisión, muerte, pickup) |
-| ✨ **Efectos Visuales** | Flash de pantalla en eventos del servidor |
+| ✨ **Efectos Visuales** | Flash de pantalla en eventos del servidor (sin romper el tema) |
 | 🎨 **UI Responsiva** | Layout adaptable a móviles, tablets, landscape y portrait |
 | 🔄 **Modo Botones/Touchpad** | Alternancia entre D-Pad (int) y Touchpad ovalado (float) |
+| 🪙 **Contador de Pickups** | Badge flotante con icono de moneda, incremento automático |
 | ⚙️ **Settings** | Pantalla de configuración con persistencia en localStorage |
 
 ### Arquitectura
@@ -155,11 +156,11 @@ Layout adaptativo según orientación:
 
 ```
 assignRole    → Asigna playerId (1=Azul, 2=Rojo), oculta config
-collision     → Flash rojo 150ms + vibración 1s
-death         → Flash rojo 400ms + vibración [500,100,400]ms
-pickup        → Flash verde 150ms + vibración 1s
+collision     → Flash rojo 150ms + vibración 1001ms
+death         → Flash rojo 400ms + vibración [0, 1001]ms
+pickup        → Flash verde 150ms + vibración 1001ms + contador+1
 ui_update     → Muestra datos en log
-screen_effect → Flash color + vibración opcional
+screen_effect → Flash color + vibración 1001ms
 puzzle_start  → Muestra puzzleId + vibración 1s
 custom        → Mensaje genérico + vibración 1s
 ```
@@ -268,12 +269,11 @@ Clave: `wiicell_settings`
 - [x] Layout responsive (landscape/portrait)
 - [x] Panel de micrófono con ajustes
 - [x] Vibración en eventos del servidor
-- [x] Flash de pantalla en eventos
+- [x] Flash de pantalla en eventos (sin romper tema)
 - [x] Persistencia de settings (localStorage)
 - [x] Paleta de colores consistente
-- [ ] PWA: manifest, service worker, offline page
-- [ ] Tema Dark/Light toggle
-- [ ] Tests unitarios
+- [x] Contador de pickups flotante
+- [x] Tests unitarios
 
 ---
 
