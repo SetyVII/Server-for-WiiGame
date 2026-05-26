@@ -6,626 +6,2521 @@
             name="viewport"
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
-        <title>Mando de Pruebas Web</title>
+        <title>Control WiiCell</title>
+        <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTAiIGhlaWdodD0iMjUwIiB2aWV3Qm94PSIwIDAgMjUwIDI1MCIgZmlsbD0ibm9uZSI+CjxyZWN0IHdpZHRoPSIyNTAiIGhlaWdodD0iMjUwIiBmaWxsPSIjRkVGRkZFIi8+CjxwYXRoIGQ9Ik0gMTI3LjQ2LDE4MS45MiBMIDg2Ljg3LDIwMC45MiBMIDg5LjgxLDIzOS45MSBMIDEyNy40NiwyMTUuNzcgViAxODEuOTIgWiIgZmlsbD0iIzg2OTE5MyIvPgo8cGF0aCBkPSJNIDI4LjI5LDE5Ny40OCBMIDMwLjA2LDE5NS4yNyBMIDMzLjE1LDE5NC4wMyBMIDg3LjE5LDE5OS45MSBMIDg5LjczLDIwMC44MiBMIDg5LjU2LDIzOS45MSBMIDc4Ljc2LDI0Mi41IEwgMjcuNDEsMjM4LjgxIEwgMjcsMjM3LjcyIEwgMjguMjksMTk3LjQ4IFoiIGZpbGw9IiM3NTgxODIiLz4KPHBhdGggZD0iTSAyOC43OSwxOTguMTYgTCA4MC4wNSwyMDAuOSBMIDc4Ljc2LDI0Mi41IEwgMjcuNDEsMjM4LjgxIEwgMjguNzksMTk4LjE2IFoiIGZpbGw9IiM4NjkxOTMiLz4KPHBhdGggZD0iTSA5MC4yMiwxMC44NCBMIDEyNy40Niw1NC42NSBWIDE4MS45MiBMIDg2Ljc1LDIwMC45MiBMIDg1LjE0LDE5OS4xOSBMIDg3LjQyLDEwLjAzIEwgOTAuMjIsMTAuODQgWiIgZmlsbD0iI0M4RDZEOSIvPgo8cGF0aCBkPSJNIDM5LjYxLDEyLjE4IEwgODEuMTQsNi41IEwgODkuMjUsOS42MiBMIDg2LjI2LDIwMC4xOSBMIDMyLjkxLDE5Ny40NiBMIDM5LjYxLDEyLjE4IFoiIGZpbGw9IiNGOUZFRjUiLz4KPHBhdGggZD0iTSA4MS4xNCw2LjUgTCA4OC44MSw5Ljc5IEwgODUuODIsMjAwLjE5IEwgODAuMDUsMTk5LjkxIEwgODEuMTQsNi41IFoiIGZpbGw9IiNDOEQ2RDkiLz4KPHBhdGggZD0iTSA4OS44NywxMS4xMiBMIDkwLjg0LDExLjc3IEwgODYuNjEsMTk5LjYzIEwgODUuMjgsMjAwLjE5IEwgODkuODcsMTEuMTIgWiIgZmlsbD0iI0U0RUJFRCIvPgo8cGF0aCBkPSJNIDQ0Ljc4LDI4LjcxIEwgNDguMzksMjguNiBDIDUwLjMzLDI4LjUzIDUwLjYyLDMwLjE0IDUwLjYyLDMxLjI2IFYgMzUuMTMgQyA1MC42MiwzNy4yMSA0OS42MSwzOC4zMyA0Ny45MSwzOC4zMyBIIDQ1LjA0IEMgNDIuOTEsMzguMzMgNDIuNDksMzYuODIgNDIuNDksMzUuMDYgViAzMS44MSBDIDQyLjQ5LDMwLjA1IDQzLjI4LDI4Ljc4IDQ0Ljc4LDI4LjcxIFoiIGZpbGw9IiMxQjkyQjIiLz4KPHBhdGggZD0iTSAzNy41Miw1Mi4xMSBMIDQ3Ljc4LDUxLjQzIEMgNTAuMTIsNTEuMjcgNTAuNjIsNTIuOTMgNTAuNTYsNTQuNiBMIDQ3Ljg0LDEzNy40NyBDIDQ3Ljc4LDEzOS42MSA0Ni43OCwxNDAuMDggNDUuMDYsMTQwLjA4IEwgMzQuOTEsMTQwLjIxIEwgMzUuMDQsMTM5LjYxIEwgNDQuODIsMTM5LjM5IEMgNDYuNjEsMTM5LjM1IDQ3LjMzLDEzOC40NiA0Ny40MSwxMzYuNjYgTCA0OS45OCw1NC45MSBDIDUwLjA2LDUzLjA2IDQ5LjEyLDUyLjAxIDQ3LjM5LDUyLjExIEwgMzcuNTIsNTIuNjEgViA1Mi4xMSBaIiBmaWxsPSIjQTlCOEJDIi8+CjxwYXRoIGQ9Ik0gMzcuMjEsMTczLjY4IEwgMzYuOTYsMTc4LjMxIEMgMzYuODgsMTc5LjcyIDM3Ljc0LDE4MC40MSAzOC42NCwxODAuNDEgSCA0NS45OSBDIDQ3LjQxLDE4MC40MSA0Ny43OCwxNzkuMjkgNDcuNzgsMTc3LjkyIFYgMTc0LjAxIEMgNDcuNzgsMTcyLjcxIDQ3LjIxLDE3MS45MSA0NS44NSwxNzEuOTEgSCAzOC44MSBDIDM3LjY4LDE3MS45MSAzNy4yNywxNzIuNjggMzcuMjEsMTczLjY4IFoiIGZpbGw9IiMxQjkyQjIiLz4KPHBhdGggZD0iTSA2Ni4xMSwyNy4xMiBMIDYxLjc0LDE3Ny44MSBDIDYxLjYyLDE4MS42NiA2My42MSwxODMuMjkgNjUuOTEsMTgzLjI5IEggNjYuNzEgQyA2OS42MSwxODMuMjkgNzAuNzEsMTgwLjk0IDcwLjc3LDE3OC4xNCBMIDc0Ljg0LDI0LjQyIEMgNzQuOTIsMjEuOTcgNzQuMTgsMjEuNCA3Mi44MSwyMS40IEggNzAuNjUgQyA2Ny45NywyMS40IDY2LjIxLDIzLjQ4IDY2LjExLDI3LjEyIFoiIGZpbGw9IiMxMzYxN0QiLz4KPHBhdGggZD0iTSA2Ny4xMiwyNy4yOSBMIDYyLjgzLDE3Ny42NSBDIDYyLjY5LDE4Mi4wOSA2NC4zOCwxODIuODEgNjYuMTEsMTgyLjgxIEggNjYuNzEgQyA2OC45MywxODIuODEgNjkuODksMTgwLjY5IDY5Ljk5LDE3Ny42MSBMIDc0LjUxLDI1LjEyIEMgNzQuNjEsMjIuMzYgNzMuNSwyMS40IDcyLjA2LDIxLjQgSCA3MS4xNiBDIDY4LjkzLDIxLjQgNjcuMjQsMjMuNDggNjcuMTIsMjcuMjkgWiIgZmlsbD0iIzFCOTJCMiIvPgo8cGF0aCBkPSJNIDE0Mi40MSwzNy41MyBIIDIwNy43OCBDIDIxNi42MSwzNy41MyAyMjEuNjEsNDUuNzcgMjIxLjYxLDUyLjM1IFYgMjE4LjA2IEMgMjIxLjYxLDIyNi4xOCAyMTQuNzEsMjMyLjM1IDIwNy42OCwyMzIuMzUgSCAxNDIuODggQyAxMzMuNzgsMjMyLjM1IDEyNy43MiwyMjUuMzggMTI3LjcyLDIxNy40MSBWIDUyLjYxIEMgMTI3LjcyLDQzLjU3IDEzNC42MywzNy41MyAxNDIuNDEsMzcuNTMgWiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTSAxNDMuNDUsNDMuNjEgSCAyMDcuMjEgQyAyMTMuNDEsNDMuNjEgMjE1LjI5LDUwLjQxIDIxNS4yOSw1My4zMyBWIDIxNy4wMSBDIDIxNS4yOSwyMjMuODEgMjEwLjA4LDIyNi4yOCAyMDYuNzEsMjI2LjI4IEggMTQzLjc4IEMgMTM3LjExLDIyNi4yOCAxMzMuNTEsMjIyLjI2IDEzMy41MSwyMTYuMzEgViA1My4yIEMgMTMzLjUxLDQ3LjcyIDEzNy4wOSw0My42MSAxNDMuNDUsNDMuNjEgWiIgZmlsbD0iIzUxQTZDQSIvPgo8cGF0aCBkPSJNIDE3MC4xMSw3OC43NiBWIDkyLjMyIEggMTU1LjM3IEMgMTUzLjk5LDkyLjMyIDE1My4zMSw5My4yOCAxNTMuMzEsOTQuNDQgViAxMDIuNTYgQyAxNTMuMzEsMTAzLjYyIDE1NC4xMSwxMDQuNDUgMTU1LjQ3LDEwNC40NSBIIDE2OS4zOSBWIDExOC4yMiBDIDE2OS4zOSwxMTkuMzQgMTcwLjExLDExOS45MSAxNzEuMTEsMTE5LjkxIEggMTc5LjU2IEMgMTgwLjU2LDExOS45MSAxODEuMDEsMTE5LjE5IDE4MS4wMSwxMTguMTMgViAxMDQuNDUgSCAxOTQuNDUgQyAxOTUuNzIsMTA0LjQ1IDE5Ni4zNCwxMDMuNDUgMTk2LjM0LDEwMi4zOSBWIDk0LjQ0IEMgMTk2LjM0LDkzLjI4IDE5NS41NCw5Mi4zMiAxOTQuMzEsOTIuMzIgSCAxODEuMDEgViA3OC43NiBDIDE4MS4wMSw3Ny43IDE4MC4yMSw3Ni44NyAxNzkuMTEsNzYuODcgSCAxNzEuNDkgQyAxNzAuNTksNzYuODcgMTcwLjExLDc3LjcgMTcwLjExLDc4Ljc2IFoiIGZpbGw9IiNGOUZGRjAiLz4KPHBhdGggZD0iTSAxNzUuMzIsMTUxLjI2IEggMTc1LjQyIEMgMTgxLjEzLDE1MS4yNiAxODMuNDEsMTU2LjMxIDE4My40MSwxNjAuMDQgQyAxODMuNDEsMTY1LjA5IDE3OC45MSwxNjguMDEgMTc1LjMyLDE2OC4wMSBDIDE3MC4wOSwxNjguMDEgMTY3LjQzLDE2My43NCAxNjcuNDMsMTYwLjA0IEMgMTY3LjQzLDE1NS43MSAxNzAuNDcsMTUxLjI2IDE3NS4zMiwxNTEuMjYgWiIgZmlsbD0iI0Y5RkZGMCIvPgo8cGF0aCBkPSJNIDE1OS4yOCwxNjguNjEgSCAxNTkuMzggQyAxNjUuMDksMTY4LjYxIDE2Ny4zNywxNzMuNjYgMTY3LjM3LDE3NS45OCBDIDE2Ny4zNywxODEuNzIgMTYyLjMxLDE4My45OCAxNTkuMjgsMTgzLjk4IEMgMTU0LjYsMTgzLjk4IDE1MC44OSwxODAuMTEgMTUwLjg5LDE3Ni40MSBDIDE1MC44OSwxNzEuNzEgMTU0LjQyLDE2OC42MSAxNTkuMjgsMTY4LjYxIFoiIGZpbGw9IiNGOUZGRjAiLz4KPHBhdGggZD0iTSAxOTEuMjIsMTY4LjYxIEggMTkxLjMyIEMgMTk3LjAzLDE2OC42MSAxOTguODksMTc0LjQxIDE5OC44OSwxNzYuMDggQyAxOTguODksMTgxLjQ2IDE5NC4zOSwxODQuMDggMTkxLjIyLDE4My45OCBDIDE4Ni41NCwxODMuODQgMTgzLjQxLDE3OS43MiAxODMuNDEsMTc2LjAyIEMgMTgzLjQxLDE3MS42OSAxODcuMzgsMTY4LjYxIDE5MS4yMiwxNjguNjEgWiIgZmlsbD0iI0Y5RkZGMCIvPgo8cGF0aCBkPSJNIDE3NC44MSwxODQuNjYgSCAxNzQuOTEgQyAxODAuNjIsMTg0LjY2IDE4My4xMSwxODkuOTEgMTgzLjExLDE5Mi43IEMgMTgzLjExLDE5OC40NCAxNzguNDEsMjAwLjQyIDE3NS4zOCwyMDAuNDIgQyAxNzAuMTUsMjAwLjQyIDE2Ny40MywxOTUuOTEgMTY3LjQzLDE5Mi45OSBDIDE2Ny40MywxODguNjYgMTcwLjQxLDE4NC42NiAxNzQuODEsMTg0LjY2IFoiIGZpbGw9IiNGOUZGRjAiLz4KPC9zdmc+" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
         <style>
-            body {
-                font-family: Arial, sans-serif;
-                background-color: #1e1e1e;
-                color: #ffffff;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: 100vh;
-                margin: 0;
-            }
-            #status {
-                margin-bottom: 20px;
-                padding: 10px;
-                border-radius: 5px;
-                background-color: #333;
-            }
-            .connected {
-                color: #4caf50;
-            }
-            .disconnected {
-                color: #f44336;
-            }
+/* ============================================
+   VARIABLES CSS - TEMAS
+   ============================================ */
+:root {
+    /* Tema Oscuro (default) */
+    --bg-primary: #1A1A2E;
+    --bg-surface: #16213E;
+    --bg-surface-variant: #0B1320;
+    --text-primary: #EEEEEE;
+    --text-secondary: #AAAAAA;
+    --border-color: #444;
+    
+    /* Colores fijos (no cambian con tema) */
+    --color-primary: #E94560;
+    --color-primary-hover: #C73E54;
+    --color-secondary: #0F3460;
+    --color-tertiary: #9333EA;
+    --color-button-b: #EA580C;
+    --color-success: #22C55E;
+    --color-error: #EF4444;
+    --color-info: #00A8FF;
+    --color-player-2: #E84118;
+    
+    /* TopBar siempre oscuro */
+    --topbar-bg: #16213E;
+    --topbar-text: #EEEEEE;
+}
 
-            #server-config {
-                margin-bottom: 20px;
-                padding: 15px;
-                border-radius: 10px;
-                background-color: #2b2b2b;
-                border: 1px solid #444;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-            }
-            #ws-address-input {
-                background-color: #111;
-                color: #fff;
-                border: 1px solid #555;
-                border-radius: 5px;
-                padding: 8px;
-                width: 260px;
-                font-family: monospace;
-                font-size: 14px;
-                text-align: center;
-            }
-            #connect-btn {
-                background-color: #007acc;
-                border-color: #005999;
-                padding: 8px 18px;
-                border-radius: 5px;
-                font-size: 14px;
-            }
-            #connect-btn:active {
-                background-color: #0098ff;
-            }
+.theme-light {
+    /* Tema Claro */
+    --bg-primary: #F5F5F5;
+    --bg-surface: #FFFFFF;
+    --bg-surface-variant: #E8E8E8;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-color: #CCCCCC;
+    
+    /* TopBar siempre oscuro, incluso en claro */
+    --topbar-bg: #16213E;
+    --topbar-text: #EEEEEE;
+}
 
-            .controller-layout {
-                display: flex;
-                gap: 50px;
-                align-items: center;
-            }
+/* RESET Y BASE */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
-            .d-pad {
-                display: grid;
-                grid-template-columns: 60px 60px 60px;
-                grid-template-rows: 60px 60px 60px;
-                gap: 5px;
-            }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
+    user-select: none;
+}
 
-            button {
-                background-color: #444;
-                color: white;
-                border: 2px solid #555;
-                border-radius: 10px;
-                font-size: 16px;
-                font-weight: bold;
-                cursor: pointer;
-                user-select: none;
-                touch-action: manipulation;
-            }
+/* Material Symbols */
+.material-symbols-rounded {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
+    font-size: 20px;
+    line-height: 1;
+    vertical-align: middle;
+}
 
-            button:active {
-                background-color: #666;
-                border-color: #888;
-            }
+/* SISTEMA DE PANTALLAS */
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
 
-            .btn-up {
-                grid-column: 2;
-                grid-row: 1;
-            }
-            .btn-left {
-                grid-column: 1;
-                grid-row: 2;
-            }
-            .btn-right {
-                grid-column: 3;
-                grid-row: 2;
-            }
-            .btn-down {
-                grid-column: 2;
-                grid-row: 3;
-            }
+.screen.active {
+    display: flex;
+    flex-direction: column;
+}
 
-            .action-pad {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+/* CONTROLLER */
+#screen-controller {
+    background-color: var(--bg-primary);
+}
 
-            .btn-a {
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                background-color: #007acc;
-                border-color: #005999;
-            }
-            .btn-a:active {
-                background-color: #0098ff;
-            }
-            .btn-b {
-                width: 70px;
-                height: 70px;
-                border-radius: 50%;
-                background-color: #5a2d82;
-                border-color: #3d1f5a;
-            }
-            .btn-b:active {
-                background-color: #7b3fbf;
-            }
+/* TopBar */
+.top-bar {
+    background-color: var(--topbar-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    gap: 8px;
+    flex-shrink: 0;
+}
 
-            #log {
-                margin-top: 20px;
-                font-family: monospace;
-                color: #aaa;
-                font-size: 14px;
-            }
+.status-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
 
-            #sensor-section {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 12px;
-                margin-top: 20px;
-            }
+.socket-status {
+    font-size: 12px;
+    color: #AAAAAA;
+}
 
-            #sensor-data {
-                font-family: monospace;
-                font-size: 14px;
-                background-color: #2a2a2a;
-                border: 1px solid #444;
-                border-radius: 8px;
-                padding: 10px 20px;
-                color: #ccc;
-                min-width: 180px;
-                text-align: center;
-            }
+.socket-status.connected {
+    color: #22C55E;
+}
 
-            #sensor-data span {
-                color: #0098ff;
-                font-weight: bold;
-            }
+.player-status {
+    font-size: 12px;
+    font-weight: bold;
+    color: #CCCCCC;
+}
 
-            #mic-section {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-                margin-top: 12px;
-            }
+.player-status.player-1 {
+    color: #00A8FF;
+}
 
-            #mic-label {
-                font-family: monospace;
-                font-size: 14px;
-                color: #ccc;
-            }
+.player-status.player-2 {
+    color: #E84118;
+}
 
-            #mic-label span {
-                font-weight: bold;
-                color: #aaa;
-            }
+.btn-toggle-sensors {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 36px;
+    margin: 0 auto; /* Centrado en la barra */
+}
 
-            #volume-bar-container {
-                width: 220px;
-                height: 14px;
-                background-color: #2a2a2a;
-                border: 1px solid #444;
-                border-radius: 8px;
-                overflow: hidden;
-            }
+.btn-toggle-sensors.active {
+    background-color: var(--color-error);
+}
 
-            #volume-bar {
-                height: 100%;
-                width: 0%;
-                background-color: #4caf50;
-                border-radius: 8px;
-                transition:
-                    width 0.05s ease-out,
-                    background-color 0.1s;
-            }
+.top-actions-desktop {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
 
-            #volume-bar.yelling {
-                background-color: #f44336;
-            }
+.top-actions-mobile {
+    display: none;
+}
+
+.bottom-bar {
+    display: none;
+    background-color: var(--topbar-bg);
+    padding: 8px 12px;
+    justify-content: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--topbar-text);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.icon-btn .material-symbols-rounded {
+    font-size: 20px;
+}
+
+.icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-disconnect {
+    background-color: var(--color-error);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    height: 36px;
+}
+
+.btn-disconnect.inactive {
+    background-color: var(--color-success);
+}
+
+/* Calibración */
+.calibration-panel {
+    background-color: var(--bg-surface);
+    padding: 8px 16px;
+    flex-shrink: 0;
+}
+
+.calibration-panel.hidden {
+    display: none;
+}
+
+.calibration-text {
+    font-size: 12px;
+    color: var(--color-primary);
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.calibration-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-surface-variant);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.calibration-progress {
+    height: 100%;
+    background-color: var(--color-primary);
+    border-radius: 4px;
+    transition: width 0.1s;
+    width: 0%;
+}
+
+.calibration-percent {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 2px;
+}
+
+/* Debug info */
+.debug-info {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-secondary);
+    padding: 4px 16px;
+    font-family: monospace;
+    flex-shrink: 0;
+}
+
+.debug-info.hidden {
+    display: none;
+}
+
+/* Panel de micrófono */
+.mic-panel {
+    background-color: var(--bg-surface-variant);
+    border-radius: 12px;
+    margin: 0 16px 8px;
+    padding: 12px;
+    flex-shrink: 0;
+}
+
+.mic-panel.hidden {
+    display: none;
+}
+
+.mic-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.mic-header span {
+    font-size: 12px;
+    color: var(--text-secondary);
+    width: 60px;
+}
+
+.volume-display {
+    flex: 1;
+    height: 20px;
+    background-color: var(--bg-primary);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.volume-bar {
+    height: 100%;
+    width: 0%;
+    background-color: var(--color-success);
+    border-radius: 10px;
+    transition: width 0.1s, background-color 0.2s;
+}
+
+.volume-bar.medium {
+    background-color: #EAB308;
+}
+
+.volume-bar.high {
+    background-color: var(--color-error);
+}
+
+.rms-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.blow-indicator {
+    text-align: center;
+    color: var(--color-error);
+    font-size: 14px;
+    font-weight: bold;
+    margin: 4px 0;
+}
+
+.blow-indicator.hidden {
+    display: none;
+}
+
+.mic-sliders {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.slider-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.slider-group label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.slider-group input[type="range"] {
+    width: 100%;
+    height: 20px;
+}
+
+.slider-group span {
+    font-size: 11px;
+    color: var(--color-primary);
+}
+
+/* Área principal del controller */
+.controller-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 48px;
+    flex: 1;
+    padding: 16px 124px 16px 24px; /* 100px extra a la derecha para compensar btn-b */
+    min-height: 0;
+    position: relative;
+}
+
+/* Contador de pickups flotante */
+.pickup-counter {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background-color: #0F3460;
+    border: 2px solid #FFD700;
+    border-radius: 12px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #FFD700;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    user-select: none;
+}
+
+.pickup-counter .material-symbols-rounded {
+    font-size: 20px;
+    color: #FFD700;
+}
+
+/* Control Area (D-Pad o Touchpad) */
+.control-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Touchpad - Altura = 2 botones + gap = height */
+.touchpad-container {
+    width: auto;
+    height: 256px;
+    max-width: 60vw;
+    aspect-ratio: 380 / 256;
+}
+
+.touchpad-container.hidden {
+    display: none;
+}
+
+.touchpad {
+    width: 100%;
+    height: 100%;
+    background-color: #0F3460;
+    border: 4px solid #E94560;
+    border-radius: 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+}
+
+.touchpad.disabled {
+    opacity: 0.4;
+    background-color: #2a2a3e;
+    border-color: #555;
+    cursor: not-allowed;
+}
+
+.touchpad.disabled .touchpad-dot {
+    background-color: #888;
+    opacity: 0.6;
+}
+
+.touchpad-dot {
+    width: 48px;
+    height: 48px;
+    background-color: #E94560;
+    border-radius: 50%;
+    position: absolute;
+    transition: transform 0.05s, background-color 0.3s ease, opacity 0.3s ease;
+    transform: translate(0, 0);
+}
+
+/* D-Pad (Modo botones) - Tamaño = 2 botones A/B + gap */
+.d-pad {
+    display: grid;
+    grid-template-columns: 80px 80px 80px;
+    grid-template-rows: 80px 80px 80px;
+    gap: 8px;
+    width: 256px;  /* 120*2 + 16 */
+    height: 256px; /* 120*2 + 16 */
+}
+
+.d-pad.hidden {
+    display: none;
+}
+
+.d-pad button {
+    background-color: #0F3460;
+    color: white;
+    border: 2px solid #E94560;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.d-pad button:active {
+    background-color: #1a4a7a;
+    border-color: #ff6b6b;
+}
+
+.d-pad button:disabled {
+    background-color: #333;
+    border-color: #444;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.btn-up {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.btn-left {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.btn-right {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.btn-down {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+/* Botones de Acción */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-action {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    touch-action: manipulation;
+    transition: transform 0.1s;
+}
+
+.btn-action:active {
+    transform: scale(0.95);
+}
+
+.btn-action .btn-letter {
+    font-size: 32px;
+    line-height: 1;
+}
+
+.btn-action .btn-label {
+    font-size: 11px;
+    margin-top: 2px;
+    text-transform: uppercase;
+}
+
+.btn-a {
+    background-color: #9333EA;
+}
+
+.btn-a:active {
+    background-color: #A855F7;
+}
+
+.btn-b {
+    background-color: #EA580C;
+    position: relative;
+    left: 100px;
+}
+
+.btn-b:active {
+    background-color: #F97316;
+}
+
+/* Log de eventos */
+.event-log {
+    text-align: center;
+    font-size: 12px;
+    color: var(--color-primary);
+    padding: 4px 16px;
+    min-height: 20px;
+    flex-shrink: 0;
+}
+
+/* Mensaje de error */
+.error-message {
+    text-align: center;
+    font-size: 12px;
+    color: var(--color-error);
+    padding: 4px 16px;
+    flex-shrink: 0;
+}
+
+.error-message.hidden {
+    display: none;
+}
+
+/* ============================================
+   PANTALLA 3: SETTINGS
+   ============================================ */
+#screen-settings {
+    background-color: var(--bg-primary);
+}
+
+.settings-header {
+    background-color: var(--topbar-bg);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    flex-shrink: 0;
+}
+
+.settings-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--topbar-text);
+}
+
+.settings-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.settings-card {
+    background-color: var(--bg-surface-variant);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.settings-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+/* Toggle de tema */
+.theme-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.theme-btn {
+    flex: 1;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 14px;
+}
+
+.theme-btn.active {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+/* Modo de control */
+.control-mode-options {
+    display: flex;
+    gap: 8px;
+}
+
+.mode-btn {
+    flex: 1;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.mode-btn.active {
+    background-color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    color: white;
+}
+
+ .mode-icon {
+    font-size: 24px;
+}
+
+.mode-icon.material-symbols-rounded {
+    font-size: 28px;
+}
+
+.mode-label {
+    font-size: 12px;
+}
+
+/* Iconos Material Symbols en botones de tema */
+.theme-btn .material-symbols-rounded {
+    font-size: 18px;
+}
+
+
+
+/* Sensibilidad */
+.sensitivity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.sensitivity-btn {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    height: 90px;
+}
+
+.sensitivity-btn.active {
+    background-color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    color: white;
+}
+
+.sensitivity-icon {
+    font-size: 20px;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.sensitivity-icon.material-symbols-rounded {
+    font-family: 'Material Symbols Rounded', monospace;
+    font-size: 24px;
+}
+
+.sensitivity-label {
+    font-size: 12px;
+}
+
+.sensitivity-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.sensitivity-btn.active .sensitivity-desc {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Custom force */
+.custom-force {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.custom-force.hidden {
+    display: none;
+}
+
+.custom-force label {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.custom-force input {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--text-primary);
+    font-size: 16px;
+    width: 100%;
+}
+
+.current-sensitivity {
+    margin-top: 12px;
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.current-sensitivity .highlight {
+    color: var(--color-primary);
+    font-weight: bold;
+}
+
+/* ============================================
+   UTILIDADES
+   ============================================ */
+.hidden {
+    display: none !important;
+}
+
+/* Scrollbar personalizada para settings */
+.settings-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+    background: var(--bg-surface-variant);
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 600px) {
+    .controller-main {
+        gap: 24px;
+        padding: 8px 16px;
+    }
+    
+    .touchpad-container {
+        width: auto;
+        height: 196px; /* 2 botones (90px) + gap (16px) */
+        max-width: 60vw;
+        aspect-ratio: 380 / 256;
+    }
+    
+    .btn-action {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .btn-action .btn-letter {
+        font-size: 24px;
+    }
+    
+    .d-pad {
+        grid-template-columns: 62px 62px 62px;
+        grid-template-rows: 62px 62px 62px;
+        gap: 5px;
+        width: 196px;  /* 90*2 + 16 */
+        height: 196px; /* 90*2 + 16 */
+    }
+    
+    .d-pad button {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 360px) {
+    .controller-main {
+        gap: 16px;
+    }
+    
+    .touchpad-container {
+        width: auto;
+        height: 156px; /* 2 botones (70px) + gap (16px) */
+        max-width: 60vw;
+        aspect-ratio: 380 / 256;
+    }
+    
+    .btn-action {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .btn-action .btn-letter {
+        font-size: 20px;
+    }
+    
+    .btn-action .btn-label {
+        font-size: 9px;
+    }
+    
+    .d-pad {
+        grid-template-columns: 50px 50px 50px;
+        grid-template-rows: 50px 50px 50px;
+        gap: 3px;
+        width: 156px;  /* 70*2 + 16 */
+        height: 156px; /* 70*2 + 16 */
+    }
+}
+
+/* ============================================
+   ORIENTACIÓN VERTICAL (PORTRAIT)
+   ============================================ */
+@media (orientation: portrait) {
+    .controller-main {
+        flex-direction: column;
+        gap: 32px;
+        padding: 8px 16px;
+    }
+    
+    /* Touchpad/D-Pad arriba */
+    .control-area {
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        margin-left: 0;
+    }
+    
+    .touchpad-container {
+        height: 85vw;
+        max-height: 380px;
+        width: auto;
+        aspect-ratio: 380 / 256;
+        padding-top: 25px;
+    }
+    
+    .touchpad {
+        border-radius: 20px;
+    }
+    
+    /* D-Pad en orientación vertical - más grande */
+    .d-pad {
+        grid-template-columns: 85px 85px 85px;
+        grid-template-rows: 85px 85px 85px;
+        gap: 10px;
+        width: 275px;
+        height: 275px;
+    }
+    
+    .d-pad button {
+        font-size: 20px;
+        border-radius: 12px;
+    }
+    
+    /* TopBar simplificada */
+    .top-actions-desktop,
+    #toggle-sensors-btn {
+        display: none;
+    }
+    
+    .top-actions-mobile {
+        display: flex;
+        align-items: center;
+    }
+    
+    /* TopBar con mismo margen que bottom bar */
+    .top-bar {
+        padding: 8px 24px;
+    }
+    
+    /* Barra inferior */
+    .bottom-bar {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 24px;
+    }
+    
+    .bottom-bar .btn-toggle-sensors,
+    .bottom-bar .btn-disconnect {
+        width: auto;
+        margin: 0;
+    }
+    
+    /* Botones A/B abajo en vertical - centrados */
+    .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+        flex-shrink: 0;
+        padding-bottom: 16px;
+    }
+    
+    .btn-action {
+        width: 130px;
+        height: 130px;
+    }
+    
+    .btn-action .btn-letter {
+        font-size: 36px;
+    }
+    
+    .btn-action .btn-label {
+        font-size: 14px;
+    }
+    
+    /* Botón A */
+    .action-buttons .btn-a {
+        position: relative;
+        right: 50px;
+    }
+    
+    /* Botón B */
+    .action-buttons .btn-b {
+        position: relative;
+        left: 50px;
+    }
+}
+
+@media (orientation: portrait) and (max-height: 700px) {
+    .controller-main {
+        gap: 24px;
+        padding: 6px 12px;
+    }
+    
+    .touchpad-container {
+        width: 85vw;
+        max-width: 380px;
+        height: auto;
+        aspect-ratio: 380 / 256;
+    }
+    
+    .btn-action {
+        width: 110px;
+        height: 110px;
+    }
+    
+    .btn-action .btn-letter {
+        font-size: 32px;
+    }
+    
+    /* Botón A centrado (sin desplazamiento) */
+    .action-buttons .btn-a {
+        position: relative;
+        left: 0;
+    }
+    
+    /* Botón B desplazado a la derecha */
+    .action-buttons .btn-b {
+        position: relative;
+        left: 25px;
+    }
+    
+    .action-buttons {
+        gap: 24px;
+    }
+    
+    .d-pad {
+        grid-template-columns: 70px 70px 70px;
+        grid-template-rows: 70px 70px 70px;
+        gap: 8px;
+        width: 226px;
+        height: 226px;
+    }
+    
+    .d-pad button {
+        font-size: 18px;
+    }
+    
+    /* Barra inferior más compacta */
+    .bottom-bar {
+        padding: 6px 16px;
+    }
+    
+    .bottom-bar .btn-toggle-sensors,
+    .bottom-bar .btn-disconnect {
+        padding: 4px 10px;
+        font-size: 11px;
+        height: 32px;
+        max-width: 120px;
+    }
+}
+
+/* ============================================
+   MODO DESACTIVADO (input-disabled)
+   ============================================ */
+.input-disabled .touchpad {
+    opacity: 0.3;
+    background-color: #2a2a3e;
+    border-color: #555;
+    cursor: not-allowed;
+}
+
+.input-disabled .touchpad-dot {
+    background-color: #666;
+    opacity: 0.5;
+}
+
+.input-disabled .d-pad button {
+    background-color: #333;
+    border-color: #444;
+    color: #777;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.input-disabled .btn-action {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+
+.input-disabled .btn-toggle-sensors {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.input-disabled .event-log {
+    color: var(--color-primary);
+    font-weight: bold;
+}
         </style>
     </head>
-    <body>
-        <div id="status" class="disconnected">🔴 Desconectado</div>
+    <body class="theme-light">
 
-        <div id="server-config">
-            <div style="font-size: 12px; color: #aaa; margin-bottom: 4px;">Dirección del Servidor WebSocket</div>
-            <input type="text" id="ws-address-input" placeholder="ws://localhost:3003" />
-            <button id="connect-btn">Conectar</button>
-        </div>
-
-        <div class="controller-layout">
-            <!-- Pad Direccional -->
-            <div class="d-pad">
-                <button class="btn-up" data-x="0" data-y="1">W</button>
-                <button class="btn-left" data-x="-1" data-y="0">A</button>
-                <button class="btn-right" data-x="1" data-y="0">D</button>
-                <button class="btn-down" data-x="0" data-y="-1">S</button>
-            </div>
-
-            <!-- Botones de Acción -->
-            <div class="action-pad">
-                <button class="btn-b">B</button>
-                <button class="btn-a">A</button>
-            </div>
-        </div>
-
-        <div id="log">Esperando inputs...</div>
-
-        <div id="mic-section">
-            <div id="mic-label">
-                🎙️ Volumen: <span id="mic-status">inactivo</span>
-            </div>
-            <div id="volume-bar-container">
-                <div id="volume-bar"></div>
-            </div>
-        </div>
-
-        <div id="sensor-section">
-            <div id="sensor-btn-container">
-                <button id="start-sensor-btn">
-                    🎮 Activar Sensores para Jugar
+    <!-- PANTALLA CONTROLLER -->
+        <section id="screen-controller" class="screen active">
+            <!-- TopBar -->
+            <header class="top-bar">
+                <div class="status-info">
+                    <div id="socket-status" class="socket-status">Socket: desconectado</div>
+                    <div id="player-status" class="player-status">Sin rol</div>
+                </div>
+                
+                <button id="toggle-sensors-btn" class="btn-toggle-sensors">
+                    Activar sensores
+                </button>
+                
+                <div class="top-actions-desktop">
+                    <button id="toggle-mic-btn" class="icon-btn" title="Micrófono">
+                        <span id="mic-icon" class="material-symbols-rounded">mic</span>
+                    </button>
+                    <button id="test-vibration-btn" class="icon-btn" title="Test vibración">
+                        <span class="material-symbols-rounded">vibration</span>
+                    </button>
+                    <button id="open-settings-btn" class="icon-btn" title="Configuración">
+                        <span class="material-symbols-rounded">settings</span>
+                    </button>
+                    <button id="fullscreen-btn" class="icon-btn" title="Pantalla completa">
+                        <span id="fullscreen-icon" class="material-symbols-rounded">fullscreen</span>
+                    </button>
+                    <button id="disconnect-btn" class="btn-disconnect">
+                        Desactivar
+                    </button>
+                </div>
+                
+                <!-- Botones solo para móvil (se muestran en portrait) -->
+                <div class="top-actions-mobile">
+                    <button id="toggle-mic-btn-mobile" class="icon-btn" title="Micrófono">
+                        <span id="mic-icon-mobile" class="material-symbols-rounded">mic</span>
+                    </button>
+                    <button id="test-vibration-btn-mobile" class="icon-btn" title="Test vibración">
+                        <span class="material-symbols-rounded">vibration</span>
+                    </button>
+                    <button id="open-settings-btn-mobile" class="icon-btn" title="Configuración">
+                        <span class="material-symbols-rounded">settings</span>
+                    </button>
+                    <button id="fullscreen-btn-mobile" class="icon-btn" title="Pantalla completa">
+                        <span id="fullscreen-icon-mobile" class="material-symbols-rounded">fullscreen</span>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Barra inferior para móvil (solo portrait) -->
+            <div class="bottom-bar">
+                <button id="toggle-sensors-btn-mobile" class="btn-toggle-sensors">
+                    Activar sensores
+                </button>
+                <button id="disconnect-btn-mobile" class="btn-disconnect">
+                    Desactivar
                 </button>
             </div>
-            <div id="sensor-data">
-                📡 γ <span id="sensor-gamma">--</span> &nbsp; β
-                <span id="sensor-beta">--</span>
+            
+            <!-- Calibración -->
+            <div id="calibration-panel" class="calibration-panel hidden">
+                <div class="calibration-text">Calibrando sensores...</div>
+                <div class="calibration-bar">
+                    <div id="calibration-progress" class="calibration-progress"></div>
+                </div>
+                <div id="calibration-percent" class="calibration-percent">0%</div>
             </div>
-        </div>
-        <!--  aqui empieza el script -->
+            
+            <!-- Debug info -->
+            <div id="debug-info" class="debug-info hidden">
+                tiltX: <span id="debug-tilt-x">0.00</span> | tiltY: <span id="debug-tilt-y">0.00</span>
+            </div>
+            
+            <!-- Panel de micrófono -->
+            <div id="mic-panel" class="mic-panel hidden">
+                <div class="mic-header">
+                    <span>Micrófono</span>
+                    <div class="volume-display">
+                        <div id="mic-volume-bar" class="volume-bar"></div>
+                        <span id="mic-rms" class="rms-text">0%</span>
+                    </div>
+                </div>
+                <div id="blow-indicator" class="blow-indicator hidden">SOPLO!</div>
+                <div class="mic-sliders">
+                    <div class="slider-group">
+                        <label>Sensib.</label>
+                        <input type="range" id="threshold-slider" min="5" max="50" value="10" />
+                        <span id="threshold-value">0.10</span>
+                    </div>
+                    <div class="slider-group">
+                        <label>Cooldown</label>
+                        <input type="range" id="cooldown-slider" min="200" max="2000" value="800" />
+                        <span id="cooldown-value">800ms</span>
+                    </div>
+                    <div class="slider-group">
+                        <label>Escala</label>
+                        <input type="range" id="scale-slider" min="1" max="10" value="3.33" step="0.1" />
+                        <span id="scale-value">3.3x</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Área principal del controller -->
+            <main class="controller-main">
+                <!-- Touchpad / Botones -->
+                <div id="control-area" class="control-area">
+                    <!-- Modo Touchpad -->
+                    <div id="touchpad-mode" class="touchpad-container hidden">
+                        <div id="touchpad" class="touchpad">
+                            <div id="touchpad-dot" class="touchpad-dot"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Modo Botones -->
+                    <div id="buttons-mode" class="d-pad">
+                        <button class="btn-up" data-x="0" data-y="1">W</button>
+                        <button class="btn-left" data-x="-1" data-y="0">A</button>
+                        <button class="btn-right" data-x="1" data-y="0">D</button>
+                        <button class="btn-down" data-x="0" data-y="-1">S</button>
+                    </div>
+                </div>
+                
+                <!-- Contador de pickups (monedas) flotante -->
+                <div class="pickup-counter">
+                    <span class="material-symbols-rounded">monetization_on</span>
+                    <span id="pickup-count">0</span>
+                </div>
+                
+                <!-- Botones de Acción -->
+                <div class="action-buttons">
+                    <button class="btn-action btn-a">
+                        <span class="btn-letter">A</span>
+                        <span class="btn-label">SALTAR</span>
+                    </button>
+                    <button class="btn-action btn-b">
+                        <span class="btn-letter">B</span>
+                        <span class="btn-label">VALIDAR</span>
+                    </button>
+                </div>
+            </main>
+            
+            <!-- Log de eventos -->
+            <div id="event-log" class="event-log"></div>
+            
+            <!-- Mensaje de error -->
+            <div id="error-message" class="error-message hidden"></div>
+        </section>
+
+    <!-- PANTALLA SETTINGS -->
+        <section id="screen-settings" class="screen">
+            <header class="settings-header">
+                <button id="back-btn" class="icon-btn">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </button>
+                <h2>Configuración</h2>
+            </header>
+            
+            <div class="settings-content">
+                <!-- Apariencia -->
+                <div class="settings-card">
+                    <h3>Apariencia</h3>
+                    <div class="theme-toggle">
+                        <button id="theme-light" class="theme-btn">
+                            <span class="material-symbols-rounded">light_mode</span> Claro
+                        </button>
+                        <button id="theme-dark" class="theme-btn active">
+                            <span class="material-symbols-rounded">dark_mode</span> Oscuro
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Modo de Control -->
+                <div class="settings-card">
+                    <h3>Modo de Control</h3>
+                    <div class="control-mode-options">
+                        <button id="mode-touchpad" class="mode-btn active">
+                            <span class="mode-icon material-symbols-rounded">sports_esports</span>
+                            <span class="mode-label">Touchpad</span>
+                        </button>
+                        <button id="mode-buttons" class="mode-btn">
+                            <span class="mode-icon material-symbols-rounded">smart_button</span>
+                            <span class="mode-label">Botones</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Sensibilidad -->
+                <div class="settings-card">
+                    <h3>Nivel de Sensibilidad</h3>
+                    <div class="sensitivity-grid">
+                        <button class="sensitivity-btn" data-level="low">
+                            <span class="sensitivity-icon">&gt;</span>
+                            <span class="sensitivity-label">Bajo</span>
+                            <span class="sensitivity-desc">0.8</span>
+                        </button>
+                        <button class="sensitivity-btn active" data-level="medium">
+                            <span class="sensitivity-icon">&gt;&gt;</span>
+                            <span class="sensitivity-label">Medio</span>
+                            <span class="sensitivity-desc">4.5</span>
+                        </button>
+                        <button class="sensitivity-btn" data-level="high">
+                            <span class="sensitivity-icon">&gt;&gt;&gt;</span>
+                            <span class="sensitivity-label">Alto</span>
+                            <span class="sensitivity-desc">10.0</span>
+                        </button>
+                        <button class="sensitivity-btn" data-level="custom">
+                            <span class="sensitivity-icon material-symbols-rounded">tune</span>
+                            <span class="sensitivity-label">Custom</span>
+                            <span class="sensitivity-desc">Personalizado</span>
+                        </button>
+                    </div>
+                    <div id="custom-force-container" class="custom-force hidden">
+                        <label>Fuerza personalizada (1-100):</label>
+                        <input type="number" id="custom-force-input" min="1" max="100" value="45" />
+                    </div>
+                    <div class="current-sensitivity">
+                        <div>Nivel: <span id="current-level" class="highlight">Medio</span></div>
+                        <div>Fuerza: <span id="current-force" class="highlight">4.5</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
         <script>
-            const statusEl = document.getElementById("status");
-            const logEl = document.getElementById("log");
-            const serverConfigEl = document.getElementById("server-config");
-            const wsAddressInput = document.getElementById("ws-address-input");
-            const connectBtn = document.getElementById("connect-btn");
-            let ws;
-            let myPlayerId = null; // Guardamos quién somos
-            let reconnectTimeout = null;
-            let currentWsUrl = "";
+// ============================================
+// ESTADO GLOBAL
+// ============================================
+const AppState = {
+    currentScreen: 'connection',
+    ws: null,
+    myPlayerId: null,
+    reconnectTimeout: null,
+    currentWsUrl: '',
+    
+    // Sensores
+    sensorsActive: false,
+    sensorOffset: { gamma: 0, beta: 0 },
+    isCalibrating: false,
+    calibrationProgress: 0,
+    lastSensorTime: 0,
+    SENSOR_TICK_RATE: 50,
+    
+    // Input
+    currentInput: {
+        type: 'input',
+        gamma: 0,
+        beta: 0,
+        dpadX: 0,
+        dpadY: 0,
+        btnA: false,
+        btnB: false,
+        isYelling: false,
+    },
+    
+    // Micrófono
+    isYelling: false,
+    audioContext: null,
+    analyser: null,
+    microphone: null,
+    micActive: false,
+    
+    // Settings
+    settings: {
+        darkMode: false,
+        controlMode: 'touchpad', // 'touchpad' | 'buttons'
+        sensitivity: 'medium', // 'low' | 'medium' | 'high' | 'custom'
+        customForce: 45,
+    },
+    
+    // Touchpad
+    isDragging: false,
+    manualOffset: { x: 0, y: 0 },
+    
+    // Envío de datos
+    sendingInput: true,
+    
+    // Contador de pickups (monedas)
+    pickupCount: 0,
+};
 
-            let lastSensorTime = 0;
-            const SENSOR_TICK_RATE = 50; // Enviar datos cada 50ms (20 FPS)
+// ============================================
+// NAVEGACIÓN ENTRE PANTALLAS
+// ============================================
+function showScreen(screenName) {
+    // Ocultar todas las pantallas
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    
+    // Mostrar la pantalla solicitada
+    const targetScreen = document.getElementById(`screen-${screenName}`);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+        AppState.currentScreen = screenName;
+    }
+}
 
-            const startBtn = document.getElementById("start-sensor-btn");
-            const sensorGammaEl = document.getElementById("sensor-gamma");
-            const sensorBetaEl = document.getElementById("sensor-beta");
+// ============================================
+// PANTALLA 1: CONTROLLER
+// ============================================
+const controllerScreen = {
+    elements: {},
+    
+    init() {
+        this.cacheElements();
+        this.bindEvents();
+        this.updateUI();
+    },
+    
+    autoConnect(url) {
+        AppState.currentWsUrl = url;
+        
+        if (AppState.ws) {
+            try { AppState.ws.close(); } catch(e) {}
+        }
+        
+        AppState.ws = new WebSocket(url);
+        
+        AppState.ws.onopen = () => {
+            this.logEvent('Conectado. Esperando rol...');
+            AppState.ws.send(JSON.stringify({ type: 'join' }));
+        };
+        
+        AppState.ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.handleServerMessage(data);
+        };
+        
+        AppState.ws.onerror = () => {
+            this.logEvent('Error de conexión');
+            this.updateUI();
+        };
+        
+        AppState.ws.onclose = () => {
+            this.handleDisconnect();
+        };
+        
+        this.updateUI();
+    },
+    
+    cacheElements() {
+        this.elements = {
+            socketStatus: document.getElementById('socket-status'),
+            playerStatus: document.getElementById('player-status'),
+            toggleSensorsBtn: document.getElementById('toggle-sensors-btn'),
+            toggleSensorsBtnMobile: document.getElementById('toggle-sensors-btn-mobile'),
+            toggleMicBtn: document.getElementById('toggle-mic-btn'),
+            toggleMicBtnMobile: document.getElementById('toggle-mic-btn-mobile'),
+            micIcon: document.getElementById('mic-icon'),
+            testVibrationBtn: document.getElementById('test-vibration-btn'),
+            testVibrationBtnMobile: document.getElementById('test-vibration-btn-mobile'),
+            openSettingsBtn: document.getElementById('open-settings-btn'),
+            openSettingsBtnMobile: document.getElementById('open-settings-btn-mobile'),
+            fullscreenBtn: document.getElementById('fullscreen-btn'),
+            fullscreenBtnMobile: document.getElementById('fullscreen-btn-mobile'),
+            fullscreenIcon: document.getElementById('fullscreen-icon'),
+            fullscreenIconMobile: document.getElementById('fullscreen-icon-mobile'),
+            disconnectBtn: document.getElementById('disconnect-btn'),
+            disconnectBtnMobile: document.getElementById('disconnect-btn-mobile'),
+            calibrationPanel: document.getElementById('calibration-panel'),
+            calibrationProgress: document.getElementById('calibration-progress'),
+            calibrationPercent: document.getElementById('calibration-percent'),
+            debugInfo: document.getElementById('debug-info'),
+            debugTiltX: document.getElementById('debug-tilt-x'),
+            debugTiltY: document.getElementById('debug-tilt-y'),
+            micPanel: document.getElementById('mic-panel'),
+            micVolumeBar: document.getElementById('mic-volume-bar'),
+            micRms: document.getElementById('mic-rms'),
+            blowIndicator: document.getElementById('blow-indicator'),
+            thresholdSlider: document.getElementById('threshold-slider'),
+            thresholdValue: document.getElementById('threshold-value'),
+            cooldownSlider: document.getElementById('cooldown-slider'),
+            cooldownValue: document.getElementById('cooldown-value'),
+            scaleSlider: document.getElementById('scale-slider'),
+            scaleValue: document.getElementById('scale-value'),
+            touchpadMode: document.getElementById('touchpad-mode'),
+            buttonsMode: document.getElementById('buttons-mode'),
+            touchpad: document.getElementById('touchpad'),
+            touchpadDot: document.getElementById('touchpad-dot'),
+            eventLog: document.getElementById('event-log'),
+            errorMessage: document.getElementById('error-message'),
+            controllerMain: document.querySelector('.controller-main'),
+            pickupCount: document.getElementById('pickup-count'),
+        };
+    },
+    
+    bindEvents() {
+        // Sensores
+        this.elements.toggleSensorsBtn.addEventListener('click', () => {
+            if (AppState.sensorsActive) {
+                this.stopSensors();
+            } else {
+                this.startSensors();
+            }
+        });
+        
+        // Micrófono
+        this.elements.toggleMicBtn.addEventListener('click', () => {
+            if (AppState.micActive) {
+                this.stopMicrophone();
+            } else {
+                this.startMicrophone();
+            }
+        });
+        
+        // Test vibración (desktop)
+        this.elements.testVibrationBtn.addEventListener('click', () => {
+            this.testVibration();
+        });
+        
+        // Test vibración (mobile)
+        if (this.elements.testVibrationBtnMobile) {
+            this.elements.testVibrationBtnMobile.addEventListener('click', () => {
+                this.testVibration();
+            });
+        }
+        
+        // Micrófono (mobile)
+        if (this.elements.toggleMicBtnMobile) {
+            this.elements.toggleMicBtnMobile.addEventListener('click', () => {
+                if (AppState.micActive) {
+                    this.stopMicrophone();
+                } else {
+                    this.startMicrophone();
+                }
+            });
+        }
+        
+        // Settings (desktop)
+        this.elements.openSettingsBtn.addEventListener('click', () => {
+            showScreen('settings');
+        });
+        
+        // Settings (mobile)
+        if (this.elements.openSettingsBtnMobile) {
+            this.elements.openSettingsBtnMobile.addEventListener('click', () => {
+                showScreen('settings');
+            });
+        }
+        
+        // Fullscreen (desktop)
+        if (this.elements.fullscreenBtn) {
+            this.elements.fullscreenBtn.addEventListener('click', () => {
+                this.toggleFullscreen();
+            });
+        }
+        
+        // Fullscreen (mobile)
+        if (this.elements.fullscreenBtnMobile) {
+            this.elements.fullscreenBtnMobile.addEventListener('click', () => {
+                this.toggleFullscreen();
+            });
+        }
+        
+        // Escuchar cambios de fullscreen para actualizar icono
+        document.addEventListener('fullscreenchange', () => {
+            this.updateFullscreenIcon();
+        });
+        
+        // Desactivar/Activar envío (desktop)
+        this.elements.disconnectBtn.addEventListener('click', () => {
+            this.toggleInput();
+        });
+        
+        // Desactivar/Activar envío (mobile)
+        if (this.elements.disconnectBtnMobile) {
+            this.elements.disconnectBtnMobile.addEventListener('click', () => {
+                this.toggleInput();
+            });
+        }
+        
+        // Activar sensores (mobile)
+        if (this.elements.toggleSensorsBtnMobile) {
+            this.elements.toggleSensorsBtnMobile.addEventListener('click', () => {
+                if (AppState.sensorsActive) {
+                    this.stopSensors();
+                } else {
+                    this.startSensors();
+                }
+            });
+        }
+        
+        // Touchpad
+        this.bindTouchpadEvents();
+        
+        // Botones D-Pad
+        this.bindDPadEvents();
+        
+        // Botones A/B
+        this.bindActionButtons();
+        
+        // Sliders del micrófono
+        this.bindMicSliders();
+        
+        // WebSocket events
+        if (AppState.ws) {
+            AppState.ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                this.handleServerMessage(data);
+            };
+            
+            AppState.ws.onclose = () => {
+                this.handleDisconnect();
+            };
+        }
+        
+        // Actualizar modo de control
+        this.updateControlMode();
+        
+        // Detectar orientación automáticamente
+        this.detectOrientation();
+        
+        // Escuchar cambios de tamaño para detectar orientación
+        window.addEventListener('resize', () => {
+            this.detectOrientation();
+        });
+    },
+    
+    bindTouchpadEvents() {
+        const touchpad = this.elements.touchpad;
+        let maxRadiusX, maxRadiusY;
+        
+        const updateDimensions = () => {
+            const rect = touchpad.getBoundingClientRect();
+            maxRadiusX = rect.width / 2 * 0.75;
+            maxRadiusY = rect.height / 2 * 0.75;
+        };
+        
+        const handleStart = (e) => {
+            if (AppState.sensorsActive) return;
+            e.preventDefault();
+            AppState.isDragging = true;
+            updateDimensions();
+            
+            const rect = touchpad.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            AppState.manualOffset.x = clientX - rect.left - rect.width / 2;
+            AppState.manualOffset.y = clientY - rect.top - rect.height / 2;
+            
+            this.clampAndUpdateTouchpad();
+        };
+        
+        const handleMove = (e) => {
+            if (!AppState.isDragging) return;
+            e.preventDefault();
+            
+            const rect = touchpad.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            AppState.manualOffset.x = clientX - rect.left - rect.width / 2;
+            AppState.manualOffset.y = clientY - rect.top - rect.height / 2;
+            
+            this.clampAndUpdateTouchpad();
+        };
+        
+        const handleEnd = () => {
+            AppState.isDragging = false;
+            AppState.manualOffset = { x: 0, y: 0 };
+            AppState.currentInput.gamma = 0;
+            AppState.currentInput.beta = 0;
+            // Resetear valores de botones también
+            AppState.currentInput.dpadX = 0;
+            AppState.currentInput.dpadY = 0;
+            this.sendInput();
+            this.updateTouchpadVisual();
+        };
+        
+        touchpad.addEventListener('pointerdown', handleStart);
+        touchpad.addEventListener('pointermove', handleMove);
+        touchpad.addEventListener('pointerup', handleEnd);
+        touchpad.addEventListener('pointerleave', handleEnd);
+        touchpad.addEventListener('touchstart', handleStart, { passive: false });
+        touchpad.addEventListener('touchmove', handleMove, { passive: false });
+        touchpad.addEventListener('touchend', handleEnd);
+    },
+    
+    clampAndUpdateTouchpad() {
+        const touchpad = this.elements.touchpad;
+        const rect = touchpad.getBoundingClientRect();
+        const maxRadiusX = rect.width / 2 * 0.75;
+        const maxRadiusY = rect.height / 2 * 0.75;
+        
+        let { x, y } = AppState.manualOffset;
+        
+        const normalizedX = x / maxRadiusX;
+        const normalizedY = y / maxRadiusY;
+        const dist = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+        
+        if (dist > 1) {
+            x = x / dist;
+            y = y / dist;
+            AppState.manualOffset = { x, y };
+        }
+        
+        const gamma = (x / maxRadiusX).clamp(-1, 1);
+        const beta = -(y / maxRadiusY).clamp(-1, 1);
+        
+        // Resetear valores de botones al usar touchpad
+        AppState.currentInput.dpadX = 0;
+        AppState.currentInput.dpadY = 0;
+        AppState.currentInput.gamma = gamma;
+        AppState.currentInput.beta = beta;
+        this.sendInput();
+        this.updateTouchpadVisual();
+    },
+    
+    updateTouchpadVisual() {
+        const dot = this.elements.touchpadDot;
+        
+        if (AppState.sensorsActive) {
+            // Usar valores de sensores
+            const gamma = AppState.currentInput.gamma;
+            const beta = AppState.currentInput.beta;
+            const x = gamma * 100; // %
+            const y = -beta * 100; // %
+            dot.style.transform = `translate(${x}%, ${y}%)`;
+        } else if (AppState.isDragging) {
+            // Usar offset manual
+            const touchpad = this.elements.touchpad;
+            const rect = touchpad.getBoundingClientRect();
+            const x = (AppState.manualOffset.x / (rect.width / 2)) * 100;
+            const y = (AppState.manualOffset.y / (rect.height / 2)) * 100;
+            dot.style.transform = `translate(${x}%, ${y}%)`;
+        } else {
+            dot.style.transform = 'translate(0, 0)';
+        }
+    },
+    
+    bindDPadEvents() {
+        const buttons = document.querySelectorAll('.d-pad button');
+        
+        buttons.forEach(btn => {
+            const x = parseFloat(btn.getAttribute('data-x'));
+            const y = parseFloat(btn.getAttribute('data-y'));
+            
+            const handlePress = () => {
+                if (AppState.sensorsActive) return;
+                // Resetear valores del touchpad al usar botones
+                AppState.currentInput.gamma = 0;
+                AppState.currentInput.beta = 0;
+                AppState.currentInput.dpadX = x;
+                AppState.currentInput.dpadY = y;
+                this.sendInput();
+            };
+            
+            const handleRelease = () => {
+                AppState.currentInput.dpadX = 0;
+                AppState.currentInput.dpadY = 0;
+                this.sendInput();
+            };
+            
+            btn.addEventListener('pointerdown', handlePress);
+            btn.addEventListener('pointerup', handleRelease);
+            btn.addEventListener('pointerleave', handleRelease);
+        });
+    },
+    
+    bindActionButtons() {
+        const btnA = document.querySelector('.btn-action.btn-a');
+        const btnB = document.querySelector('.btn-action.btn-b');
+        
+        const bindButton = (btn, key) => {
+            const handlePress = () => {
+                AppState.currentInput[key] = true;
+                this.sendInput();
+            };
+            const handleRelease = () => {
+                AppState.currentInput[key] = false;
+                this.sendInput();
+            };
+            
+            btn.addEventListener('pointerdown', handlePress);
+            btn.addEventListener('pointerup', handleRelease);
+            btn.addEventListener('pointerleave', handleRelease);
+        };
+        
+        bindButton(btnA, 'btnA');
+        bindButton(btnB, 'btnB');
+    },
+    
+    bindMicSliders() {
+        this.elements.thresholdSlider.addEventListener('input', (e) => {
+            const val = e.target.value / 100;
+            this.elements.thresholdValue.textContent = val.toFixed(2);
+        });
+        
+        this.elements.cooldownSlider.addEventListener('input', (e) => {
+            this.elements.cooldownValue.textContent = `${e.target.value}ms`;
+        });
+        
+        this.elements.scaleSlider.addEventListener('input', (e) => {
+            this.elements.scaleValue.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+        });
+    },
+    
+    startSensors() {
+        if (typeof DeviceOrientationEvent === 'undefined') {
+            this.showError('Error al enviar datos de sensores.');
+            return;
+        }
+        
+        // Pedir permiso en iOS 13+
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then(permissionState => {
+                    if (permissionState === 'granted') {
+                        this.activateSensors();
+                    } else {
+                        this.showError('Permiso denegado para usar los sensores');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error solicitando permiso:', err);
+                    this.showError('Error al acceder a los sensores');
+                });
+        } else {
+            this.activateSensors();
+        }
+    },
+    
+    activateSensors() {
+        AppState.sensorsActive = true;
+        AppState.isCalibrating = true;
+        AppState.calibrationProgress = 0;
+        
+        // Mostrar panel de calibración
+        this.elements.calibrationPanel.classList.remove('hidden');
+        this.elements.debugInfo.classList.remove('hidden');
+        
+        // Tomar posición actual como centro
+        const handleOrientation = (event) => {
+            if (!AppState.sensorsActive) return;
+            
+            const now = Date.now();
+            if (now - AppState.lastSensorTime < AppState.SENSOR_TICK_RATE) return;
+            AppState.lastSensorTime = now;
+            
+            const gamma = event.gamma || 0;
+            const beta = event.beta || 0;
+            
+            if (AppState.isCalibrating) {
+                // Primera lectura = centro
+                AppState.sensorOffset = { gamma, beta };
+                AppState.isCalibrating = false;
+                this.elements.calibrationPanel.classList.add('hidden');
+            }
+            
+            // Aplicar offset
+            const calibratedGamma = gamma - AppState.sensorOffset.gamma;
+            const calibratedBeta = beta - AppState.sensorOffset.beta;
+            
+            // Mapear a [-1, 1]
+            const maxAngle = 40;
+            const mappedGamma = (calibratedGamma / maxAngle).clamp(-1, 1);
+            const mappedBeta = (calibratedBeta / maxAngle).clamp(-1, 1);
+            
+            AppState.currentInput.gamma = mappedGamma;
+            AppState.currentInput.beta = mappedBeta;
+            
+            // Actualizar debug
+            this.elements.debugTiltX.textContent = mappedGamma.toFixed(2);
+            this.elements.debugTiltY.textContent = mappedBeta.toFixed(2);
+            
+            // Actualizar visual del touchpad
+            this.updateTouchpadVisual();
+            
+            // Enviar input
+            this.sendInput();
+        };
+        
+        window.addEventListener('deviceorientation', handleOrientation);
+        this._orientationHandler = handleOrientation;
+        
+        this.updateUI();
+    },
+    
+    stopSensors() {
+        AppState.sensorsActive = false;
+        AppState.isCalibrating = false;
+        
+        if (this._orientationHandler) {
+            window.removeEventListener('deviceorientation', this._orientationHandler);
+            this._orientationHandler = null;
+        }
+        
+        AppState.currentInput.gamma = 0;
+        AppState.currentInput.beta = 0;
+        this.sendInput();
+        
+        this.elements.calibrationPanel.classList.add('hidden');
+        this.elements.debugInfo.classList.add('hidden');
+        this.updateUI();
+    },
+    
+    startMicrophone() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                AppState.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                AppState.analyser = AppState.audioContext.createAnalyser();
+                AppState.analyser.fftSize = 256;
+                AppState.microphone = AppState.audioContext.createMediaStreamSource(stream);
+                AppState.microphone.connect(AppState.analyser);
+                
+                AppState.micActive = true;
+                this.elements.micPanel.classList.remove('hidden');
+                this.elements.micIcon.textContent = 'mic';
+                this.elements.toggleMicBtn.style.color = '#EF4444';
+                if (this.elements.toggleMicBtnMobile) {
+                    this.elements.toggleMicBtnMobile.style.color = '#EF4444';
+                }
+                if (this.elements.micIconMobile) {
+                    this.elements.micIconMobile.textContent = 'mic';
+                }
+                
+                this.measureVolume();
+            })
+            .catch(err => {
+                console.error('Error al acceder al micrófono:', err);
+                this.showError('Error al acceder al micrófono');
+            });
+    },
+    
+    stopMicrophone() {
+        AppState.micActive = false;
+        if (AppState.audioContext) {
+            AppState.audioContext.close();
+            AppState.audioContext = null;
+        }
+        this.elements.micPanel.classList.add('hidden');
+        this.elements.micIcon.textContent = 'mic_off';
+        this.elements.toggleMicBtn.style.color = '';
+        if (this.elements.toggleMicBtnMobile) {
+            this.elements.toggleMicBtnMobile.style.color = '';
+        }
+        if (this.elements.micIconMobile) {
+            this.elements.micIconMobile.textContent = 'mic_off';
+        }
+        AppState.currentInput.isYelling = false;
+        this.sendInput();
+    },
+    
+    measureVolume() {
+        if (!AppState.micActive || !AppState.analyser) return;
+        
+        requestAnimationFrame(() => this.measureVolume());
+        
+        const dataArray = new Uint8Array(AppState.analyser.frequencyBinCount);
+        AppState.analyser.getByteFrequencyData(dataArray);
+        
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        const average = sum / dataArray.length;
+        
+        const threshold = parseInt(this.elements.thresholdSlider.value);
+        const scale = parseFloat(this.elements.scaleSlider.value);
+        const progress = Math.min((average / 255) * 100 * scale / 3.33, 100);
+        
+        // Actualizar barra visual
+        this.elements.micVolumeBar.style.width = `${progress}%`;
+        this.elements.micRms.textContent = `${Math.round(progress)}%`;
+        
+        // Color según intensidad
+        this.elements.micVolumeBar.classList.remove('medium', 'high');
+        if (progress > 80) {
+            this.elements.micVolumeBar.classList.add('high');
+        } else if (progress > 50) {
+            this.elements.micVolumeBar.classList.add('medium');
+        }
+        
+        // Detectar "soplo"
+        const isBlowing = average > threshold;
+        if (isBlowing !== AppState.isYelling) {
+            AppState.isYelling = isBlowing;
+            AppState.currentInput.isYelling = isBlowing;
+            this.sendInput();
+        }
+        
+        if (isBlowing) {
+            this.elements.blowIndicator.classList.remove('hidden');
+        } else {
+            this.elements.blowIndicator.classList.add('hidden');
+        }
+    },
+    
+    testVibration() {
+        console.log('[testVibration] Intentando vibrar...');
 
-            // Estado completo del input — se envía cada vez que algo cambia
-            const currentInput = {
+        // Feedback visual inmediato (parpadeo del botón)
+        const btns = [
+            this.elements.testVibrationBtn,
+            this.elements.testVibrationBtnMobile
+        ].filter(Boolean);
+
+        btns.forEach(btn => {
+            btn.style.backgroundColor = '#E94560';
+            setTimeout(() => {
+                btn.style.backgroundColor = '';
+            }, 200);
+        });
+
+        // Vibración larga para gama baja (1001ms para no ignorarla)
+        if ('vibrate' in navigator) {
+            try {
+                const result = navigator.vibrate(1001);
+                console.log('[testVibration] navigator.vibrate() devolvió:', result);
+                this.logEvent('📳 Vibración de prueba');
+            } catch (err) {
+                console.warn('Error al vibrar:', err);
+                this.showError('Vibración no disponible en este dispositivo');
+            }
+        } else {
+            console.warn('[testVibration] navigator.vibrate no está disponible');
+            this.showError('Tu navegador no soporta vibración');
+        }
+    },
+    
+    // ── Eventos de Unity ──────────────────────────────────────────
+    //    Los usaremos para mostrar feedback visual, vibración, y eventos de juego específicos (como inicio de puzzles) mientras jugamos.  
+    handleServerMessage(data) {
+        switch (data.type) {
+            // Rol asignado por el servidor
+            case 'assignRole':
+                AppState.myPlayerId = data.playerId;
+                this.logEvent(`Asignado como Jugador ${data.playerId}`);
+                this.updateUI();
+                break;
+            // Eventos de juego enviados desde Unity
+            case 'collision':
+                this.logEvent('💥 Choque!');
+                this.flashScreen('#ff5151', 150);
+                this.vibrate(1001);
+                break;
+            case 'death':
+                this.logEvent('💀 Has muerto!');
+                this.flashScreen('#960000', 400);
+                this.vibrate([0, 1001]);
+                break;
+            case 'pickup':
+                AppState.pickupCount++;
+                this.elements.pickupCount.textContent = AppState.pickupCount;
+                this.logEvent(`✨ ${data.pickupType || 'Objeto'} recogido!`);
+                this.flashScreen('#00ff88', 150);
+                this.vibrate(1001);
+                break;
+            case 'ui_update':
+                this.logEvent(`🖥️ ${data.data || 'Update'}`);
+                break;
+            case 'screen_effect':
+                this.flashScreen(data.color || '#ffffff', data.duration || 200);
+                if (data.vibrate) this.vibrate(1001);
+                break;
+            case 'puzzle_start':
+                this.logEvent(`🧩 Puzzle: ${data.puzzleId}`);
+                this.vibrate(1001);
+                break;
+            // Eventos personalizados que Unity puede enviar
+            case 'custom':
+                this.logEvent(`📨 ${data.data || 'Evento'}`);
+                this.vibrate(1001);
+                break;
+            // Errores enviados desde el servidor
+            case 'error':
+                this.showError(data.message);
+                break;
+        }
+    },
+    
+    // ── Manejo de desconexiones ──────────────────────────────────────────
+    //    Si la conexión se pierde, mostramos un mensaje de error y tratamos de reconectar automáticamente cada 2 segundos. Esto es útil para conexiones inestables o si el servidor se reinicia.
+    handleDisconnect() {
+        AppState.myPlayerId = null;
+        this.elements.socketStatus.textContent = 'Socket: desconectado';
+        this.elements.socketStatus.classList.remove('connected');
+        this.elements.playerStatus.textContent = 'Sin rol';
+        this.elements.playerStatus.className = 'player-status';
+        this.updateUI();
+        
+        // Auto-reconectar después de 2 segundos
+        if (AppState.reconnectTimeout) clearTimeout(AppState.reconnectTimeout);
+        AppState.reconnectTimeout = setTimeout(() => {
+            if (!AppState.ws || AppState.ws.readyState !== WebSocket.OPEN) {
+                this.logEvent('Reconectando...');
+                this.autoConnect(AppState.currentWsUrl);
+            }
+        }, 2000);
+    },
+    
+    // ── Alternar Entrada ──────────────────────────────────────────
+    //    Permite activar o desactivar el envío de datos al servidor. Cuando se desactiva, se envía un último mensaje con todos los valores a 0 para evitar que el personaje quede "atorado" con una entrada previa. También muestra un mensaje persistente indicando que el envío está desactivado.
+    toggleInput() {
+        const screenController = document.getElementById('screen-controller');
+        
+        if (AppState.sendingInput) {
+            // Desactivar envío
+            AppState.sendingInput = false;
+            
+            // Detener sensores
+            if (AppState.sensorsActive) {
+                this.stopSensors();
+            }
+            
+            // Detener micrófono
+            if (AppState.micActive) {
+                this.stopMicrophone();
+            }
+            
+            // Resetear valores a neutro
+            AppState.currentInput = {
+                type: 'input',
                 gamma: 0,
                 beta: 0,
                 dpadX: 0,
                 dpadY: 0,
                 btnA: false,
                 btnB: false,
+                isYelling: false,
             };
-
-            function sendCurrentInput() {
-                if (!ws || ws.readyState !== WebSocket.OPEN || !myPlayerId)
-                    return;
-                ws.send(
-                    JSON.stringify({
-                        type: "input",
-                        ...currentInput,
-                        isYelling,
-                    }),
-                );
+            AppState.manualOffset = { x: 0, y: 0 };
+            
+            // Enviar último mensaje con todo en 0
+            this.sendInput();
+            
+            // Añadir clase visual de desactivado
+            screenController.classList.add('input-disabled');
+            
+            // Mensaje persistente (no desaparece)
+            this.logEvent('⛔ Envío de datos desactivado', true);
+        } else {
+            // Activar envío
+            AppState.sendingInput = true;
+            
+            // Quitar clase visual de desactivado
+            screenController.classList.remove('input-disabled');
+            
+            // Limpiar mensaje persistente
+            if (this._logTimeout) {
+                clearTimeout(this._logTimeout);
+                this._logTimeout = null;
             }
-
-            function sendPuzzleAction(puzzleId, status) {
-                if (!ws || ws.readyState !== WebSocket.OPEN || !myPlayerId)
-                    return;
-                ws.send(
-                    JSON.stringify({ type: "puzzle_action", puzzleId, status }),
-                );
-            }
-            const micStatusEl = document.getElementById("mic-status");
-            const volumeBarEl = document.getElementById("volume-bar");
-
-            let isYelling = false;
-            let audioContext, analyser, microphone;
-
-            async function iniciarMicrofono() {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        audio: true,
-                    });
-                    audioContext = new (
-                        window.AudioContext || window.webkitAudioContext
-                    )();
-                    analyser = audioContext.createAnalyser();
-                    analyser.fftSize = 256;
-                    microphone = audioContext.createMediaStreamSource(stream);
-                    microphone.connect(analyser);
-                    micStatusEl.textContent = "activo";
-                    micStatusEl.style.color = "#4caf50";
-                    medirVolumen();
-                } catch (err) {
-                    console.error("Error al acceder al micrófono:", err);
-                    micStatusEl.textContent = "sin permiso";
-                    micStatusEl.style.color = "#f44336";
-                }
-            }
-
-            function medirVolumen() {
-                requestAnimationFrame(medirVolumen);
-                const dataArray = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteFrequencyData(dataArray);
-
-                let suma = 0;
-                for (let i = 0; i < dataArray.length; i++) suma += dataArray[i];
-                const volumenPromedio = suma / dataArray.length; // 0 - 255
-
-                const umbralGrito = 20;
-                isYelling = volumenPromedio > umbralGrito;
-
-                // Actualizar barra visual (escala 0-255 a 0-100%)
-                const porcentaje = Math.min((volumenPromedio / 255) * 100, 100);
-                volumeBarEl.style.width = porcentaje + "%";
-                volumeBarEl.classList.toggle("yelling", isYelling);
-                micStatusEl.textContent = isYelling
-                    ? "¡GRITANDO! 📢"
-                    : "activo";
-                micStatusEl.style.color = isYelling ? "#f44336" : "#4caf50";
-            }
-
-            startBtn.addEventListener("click", () => {
-                if (
-                    typeof DeviceOrientationEvent !== "undefined" &&
-                    typeof DeviceOrientationEvent.requestPermission ===
-                        "function"
-                ) {
-                    // Requerido en iOS 13+ y algunos Androids nuevos
-                    DeviceOrientationEvent.requestPermission()
-                        .then((permissionState) => {
-                            if (permissionState === "granted") {
-                                iniciarSensores();
-                                iniciarMicrofono();
-                                startBtn.style.display = "none";
-                            } else {
-                                alert(
-                                    "Permiso denegado para usar los sensores.",
-                                );
-                            }
-                        })
-                        .catch(console.error);
-                } else {
-                    // Dispositivos que no requieren permiso explícito (Android / PC)
-                    iniciarSensores();
-                    iniciarMicrofono();
-                    startBtn.style.display = "none";
-                }
-            });
-
-            function iniciarSensores() {
-                window.addEventListener("deviceorientation", (event) => {
-                    if (!myPlayerId) return;
-
-                    const now = Date.now();
-                    if (now - lastSensorTime > SENSOR_TICK_RATE) {
-                        const anguloMaximo = 40.0;
-
-                        let gamma = event.gamma || 0;
-                        if (gamma > anguloMaximo) gamma = anguloMaximo;
-                        if (gamma < -anguloMaximo) gamma = -anguloMaximo;
-                        currentInput.gamma = gamma / anguloMaximo;
-
-                        // beta: inclinación adelante/atrás, mismo rango
-                        let beta = event.beta || 0;
-                        if (beta > anguloMaximo) beta = anguloMaximo;
-                        if (beta < -anguloMaximo) beta = -anguloMaximo;
-                        currentInput.beta = beta / anguloMaximo;
-
-                        sensorGammaEl.textContent =
-                            currentInput.gamma.toFixed(2);
-                        sensorBetaEl.textContent = currentInput.beta.toFixed(2);
-
-                        sendCurrentInput();
-                        lastSensorTime = now;
-                    }
-                });
-            }
-
-            function flashScreen(color, duration) {
-                const original = document.body.style.backgroundColor;
-                document.body.style.backgroundColor = color;
-                setTimeout(() => {
-                    document.body.style.backgroundColor = original || "#1e1e1e";
-                }, duration);
-            }
-
-            function vibrate(pattern) {
-                if (navigator.vibrate) navigator.vibrate(pattern);
-            }
-
-            function connect() {
-                if (ws) {
-                    try { ws.close(); } catch(e) {}
-                }
-
-                let targetUrl = wsAddressInput.value.trim();
-                if (!targetUrl) {
-                    const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-                    targetUrl = `${protocol}${window.location.host}`;
-                    wsAddressInput.value = targetUrl;
-                }
-
-                currentWsUrl = targetUrl;
-                localStorage.setItem("wiigames_ws_url", targetUrl);
-
-                logEl.textContent = "Conectando a " + targetUrl + "...";
-                ws = new WebSocket(targetUrl);
-                
-                ws.onopen = () => {
-                    logEl.textContent = "Conectado. Esperando rol...";
-                    // Nada más conectar, pedimos un hueco de jugador
-                    ws.send(JSON.stringify({ type: "join" }));
-                };
-
-                // Escuchar mensajes del servidor (Aquí se cumple la bidireccionalidad)
-                ws.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-
-                    // ── Manejo de errores ─────────────────────────────────────────
-                    if (data.type === "error") {
-                        logEl.textContent = `❌ Error: ${data.message}`;
-                        statusEl.textContent = `❌ ${data.message}`;
-                        statusEl.style.color = "#f44336";
-                        if (reconnectTimeout) clearTimeout(reconnectTimeout);
-                        return;
-                    }
-
-                    // ── Asignación de rol ─────────────────────────────────────────
-                    if (data.type === "assignRole") {
-                        myPlayerId = data.playerId;
-                        serverConfigEl.style.display = "none"; // Ocultar configuración al conectar con éxito
-                        if (myPlayerId === 1) {
-                            statusEl.textContent =
-                                "🟢 Eres el Jugador 1 (Azul)";
-                            statusEl.style.color = "#00a8ff";
-                            document.body.style.border = "5px solid #00a8ff";
-                        } else if (myPlayerId === 2) {
-                            statusEl.textContent =
-                                "🟢 Eres el Jugador 2 (Rojo)";
-                            statusEl.style.color = "#e84118";
-                            document.body.style.border = "5px solid #e84118";
-                        }
-                        return;
-                    }
-
-                    // ── Eventos de Unity ──────────────────────────────────────────
-                    if (data.type === "collision") {
-                        logEl.textContent = `💥 Choque con ${data.objectName || "objeto"}`;
-                        flashScreen("#ff0000", 150);
-                        vibrate(1001);
-                        return;
-                    }
-
-                    if (data.type === "death") {
-                        logEl.textContent = `💀 ¡Has muerto!`;
-                        flashScreen("#ff0000", 400);
-                        vibrate([500, 100, 401]);
-                        return;
-                    }
-
-                    if (data.type === "pickup") {
-                        logEl.textContent = `✨ Recogiste: ${data.pickupType || "item"}`;
-                        flashScreen("#00ff88", 150);
-                        vibrate(1001);
-                        return;
-                    }
-
-                    if (data.type === "ui_update") {
-                        logEl.textContent = `🖥️ ${data.data || JSON.stringify(data)}`;
-                        return;
-                    }
-
-                    if (data.type === "screen_effect") {
-                        flashScreen(
-                            data.color || "#ffffff",
-                            data.duration || 200,
-                        );
-                        if (data.vibrate)
-                            vibrate(Math.max(data.duration || 150, 1001));
-                        return;
-                    }
-
-                    if (data.type === "puzzle_start") {
-                        logEl.textContent = `🧩 Puzzle: ${data.puzzleId}`;
-                        vibrate(1001);
-                        return;
-                    }
-
-                    if (data.type === "custom") {
-                        logEl.textContent = `📨 ${data.data || JSON.stringify(data)}`;
-                        vibrate(1001);
-                        return;
-                    }
-                };
-
-                ws.onclose = () => {
-                    statusEl.textContent = "🔴 Desconectado (Reintentando...)";
-                    statusEl.style.color = "#f44336";
-                    myPlayerId = null;
-                    document.body.style.border = "none";
-                    serverConfigEl.style.display = "flex"; // Volver a mostrar la configuración al desconectar
-                    
-                    if (reconnectTimeout) clearTimeout(reconnectTimeout);
-                    reconnectTimeout = setTimeout(connect, 2000);
-                };
-            }
-
-            // sendInput ya no se usa directamente; los handlers usan currentInput + sendCurrentInput()
-
-            document.querySelectorAll(".d-pad button").forEach((btn) => {
-                const x = parseFloat(btn.getAttribute("data-x"));
-                const y = parseFloat(btn.getAttribute("data-y"));
-                btn.addEventListener("pointerdown", () => {
-                    currentInput.dpadX = x;
-                    currentInput.dpadY = y;
-                    sendCurrentInput();
-                });
-                btn.addEventListener("pointerup", () => {
-                    currentInput.dpadX = 0;
-                    currentInput.dpadY = 0;
-                    sendCurrentInput();
-                });
-                btn.addEventListener("pointerleave", () => {
-                    currentInput.dpadX = 0;
-                    currentInput.dpadY = 0;
-                    sendCurrentInput();
-                });
-            });
-
-            // Botón A (salto)
-            document
-                .querySelector(".btn-a")
-                .addEventListener("pointerdown", () => {
-                    currentInput.btnA = true;
-                    sendCurrentInput();
-                });
-            document
-                .querySelector(".btn-a")
-                .addEventListener("pointerup", () => {
-                    currentInput.btnA = false;
-                    sendCurrentInput();
-                });
-            document
-                .querySelector(".btn-a")
-                .addEventListener("pointerleave", () => {
-                    currentInput.btnA = false;
-                    sendCurrentInput();
-                });
-
-            // Botón B (acción secundaria)
-            document
-                .querySelector(".btn-b")
-                .addEventListener("pointerdown", () => {
-                    currentInput.btnB = true;
-                    sendCurrentInput();
-                });
-            document
-                .querySelector(".btn-b")
-                .addEventListener("pointerup", () => {
-                    currentInput.btnB = false;
-                    sendCurrentInput();
-                });
-            document
-                .querySelector(".btn-b")
-                .addEventListener("pointerleave", () => {
-                    currentInput.btnB = false;
-                    sendCurrentInput();
-                });
-
-            // Inicializar valor de input de manera dinámica y robusta
-            let defaultUrl = "";
-            if (window.location.protocol.startsWith("http")) {
-                // Si se sirve desde un servidor web (Javalin, ngrok, etc.), usar el mismo host y protocolo
-                const protocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-                defaultUrl = `${protocol}${window.location.host}`;
+            this.elements.eventLog.textContent = '';
+            
+            this.logEvent('✅ Envío de datos activado');
+        }
+        
+        this.updateUI();
+    },
+    
+    // ── Enviar Entrada ──────────────────────────────────────────
+    //    Esta función se encarga de enviar el estado actual de los controles al servidor. Dependiendo del modo de control (touchpad o botones), enviará diferentes datos. También incluye el estado de los botones A/B y si el jugador está "gritando" (soplando el micrófono).
+    sendInput() {
+        if (!AppState.sendingInput || !AppState.ws || AppState.ws.readyState !== WebSocket.OPEN || !AppState.myPlayerId) return;
+        
+        const mode = AppState.settings.controlMode;
+        let input;
+        
+        if (mode === 'touchpad') {
+            // Modo touchpad: enviar gamma, beta (sin dpadX/Y)
+            input = {
+                type: 'input',
+                gamma: AppState.currentInput.gamma,
+                beta: AppState.currentInput.beta,
+                dpadX: 0,
+                dpadY: 0,
+                btnA: AppState.currentInput.btnA,
+                btnB: AppState.currentInput.btnB,
+                isYelling: AppState.isYelling,
+            };
+        } else {
+            // Modo botones: enviar dpadX, dpadY (sin gamma/beta)
+            input = {
+                type: 'input',
+                gamma: 0,
+                beta: 0,
+                dpadX: AppState.currentInput.dpadX,
+                dpadY: AppState.currentInput.dpadY,
+                btnA: AppState.currentInput.btnA,
+                btnB: AppState.currentInput.btnB,
+                isYelling: AppState.isYelling,
+            };
+        }
+        
+        AppState.ws.send(JSON.stringify(input));
+    },
+    
+    updateUI() {
+        // Estado del socket
+        if (AppState.ws && AppState.ws.readyState === WebSocket.OPEN) {
+            this.elements.socketStatus.textContent = 'Socket: conectado';
+            this.elements.socketStatus.classList.add('connected');
+        } else {
+            this.elements.socketStatus.textContent = 'Socket: desconectado';
+            this.elements.socketStatus.classList.remove('connected');
+        }
+        
+        // Estado del jugador
+        if (AppState.myPlayerId) {
+            this.elements.playerStatus.textContent = `Jugador ${AppState.myPlayerId}`;
+            this.elements.playerStatus.className = `player-status player-${AppState.myPlayerId}`;
+        } else {
+            this.elements.playerStatus.textContent = 'Sin rol';
+            this.elements.playerStatus.className = 'player-status';
+        }
+        
+        // Botón de sensores (desktop)
+        if (AppState.sensorsActive) {
+            this.elements.toggleSensorsBtn.textContent = 'Desactivar sensores';
+            this.elements.toggleSensorsBtn.classList.add('active');
+            this.elements.touchpad.classList.add('disabled');
+        } else {
+            this.elements.toggleSensorsBtn.textContent = 'Activar sensores';
+            this.elements.toggleSensorsBtn.classList.remove('active');
+            this.elements.touchpad.classList.remove('disabled');
+        }
+        
+        // Botón de sensores (mobile)
+        if (this.elements.toggleSensorsBtnMobile) {
+            if (AppState.sensorsActive) {
+                this.elements.toggleSensorsBtnMobile.textContent = 'Desactivar sensores';
+                this.elements.toggleSensorsBtnMobile.classList.add('active');
             } else {
-                // Si se abre localmente como archivo
-                const savedUrl = localStorage.getItem("wiigames_ws_url");
-                defaultUrl = savedUrl || "ws://localhost:3002";
+                this.elements.toggleSensorsBtnMobile.textContent = 'Activar sensores';
+                this.elements.toggleSensorsBtnMobile.classList.remove('active');
             }
-            wsAddressInput.value = defaultUrl;
-
-            connectBtn.addEventListener("click", () => {
-                if (reconnectTimeout) clearTimeout(reconnectTimeout);
-                connect();
+        }
+        
+        // Botón Desactivar/Activar envío (desktop)
+        if (AppState.sendingInput) {
+            this.elements.disconnectBtn.textContent = 'Desactivar';
+            this.elements.disconnectBtn.classList.remove('inactive');
+        } else {
+            this.elements.disconnectBtn.textContent = 'Activar';
+            this.elements.disconnectBtn.classList.add('inactive');
+        }
+        
+        // Botón Desactivar/Activar envío (mobile)
+        if (this.elements.disconnectBtnMobile) {
+            if (AppState.sendingInput) {
+                this.elements.disconnectBtnMobile.textContent = 'Desactivar';
+                this.elements.disconnectBtnMobile.classList.remove('inactive');
+            } else {
+                this.elements.disconnectBtnMobile.textContent = 'Activar';
+                this.elements.disconnectBtnMobile.classList.add('inactive');
+            }
+        }
+    },
+    
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.warn('Error al entrar en fullscreen:', err);
             });
+        } else {
+            document.exitFullscreen();
+        }
+    },
+    
+    updateFullscreenIcon() {
+        const isFullscreen = !!document.fullscreenElement;
+        const icon = isFullscreen ? 'fullscreen_exit' : 'fullscreen';
+        if (this.elements.fullscreenIcon) {
+            this.elements.fullscreenIcon.textContent = icon;
+        }
+        if (this.elements.fullscreenIconMobile) {
+            this.elements.fullscreenIconMobile.textContent = icon;
+        }
+    },
+    
+    updateControlMode() {
+        const mode = AppState.settings.controlMode;
+        if (mode === 'touchpad') {
+            this.elements.touchpadMode.classList.remove('hidden');
+            this.elements.buttonsMode.classList.add('hidden');
+        } else {
+            this.elements.touchpadMode.classList.add('hidden');
+            this.elements.buttonsMode.classList.remove('hidden');
+        }
+        
+        // Limpiar valores del modo anterior al cambiar
+        if (mode === 'touchpad') {
+            AppState.currentInput.dpadX = 0;
+            AppState.currentInput.dpadY = 0;
+        } else {
+            AppState.currentInput.gamma = 0;
+            AppState.currentInput.beta = 0;
+            AppState.manualOffset = { x: 0, y: 0 };
+        }
+        this.sendInput();
+    },
+    
+    detectOrientation() {
+        const isPortrait = window.innerHeight > window.innerWidth;
+        if (isPortrait) {
+            this.elements.controllerMain.classList.add('portrait-layout');
+        } else {
+            this.elements.controllerMain.classList.remove('portrait-layout');
+        }
+    },
+    
+    logEvent(message, persistent = false) {
+        if (this._logTimeout) {
+            clearTimeout(this._logTimeout);
+            this._logTimeout = null;
+        }
+        this.elements.eventLog.textContent = message;
+        if (!persistent) {
+            this._logTimeout = setTimeout(() => {
+                if (this.elements.eventLog.textContent === message) {
+                    this.elements.eventLog.textContent = '';
+                }
+            }, 3000);
+        }
+    },
+    
+    showError(message) {
+        this.elements.errorMessage.textContent = message;
+        this.elements.errorMessage.classList.remove('hidden');
+        setTimeout(() => {
+            this.elements.errorMessage.classList.add('hidden');
+        }, 5000);
+    },
+    
+    flashScreen(color, duration) {
+        if (this._flashTimeout) {
+            clearTimeout(this._flashTimeout);
+        }
+        const original = document.body.style.backgroundColor;
+        document.body.style.backgroundColor = color;
+        this._flashTimeout = setTimeout(() => {
+            if (original) {
+                document.body.style.backgroundColor = original;
+            } else {
+                document.body.style.backgroundColor = '';
+            }
+            this._flashTimeout = null;
+        }, duration);
+    },
+    
+    vibrate(pattern) {
+        if (navigator.vibrate) navigator.vibrate(pattern);
+    }
+};
 
-            connect();
+// ============================================
+// PANTALLA 3: SETTINGS
+// ============================================
+const settingsScreen = {
+    init() {
+        this.bindEvents();
+        this.loadSettings();
+    },
+    
+    bindEvents() {
+        // Volver
+        document.getElementById('back-btn').addEventListener('click', () => {
+            showScreen('controller');
+        });
+        
+        // Tema
+        document.getElementById('theme-light').addEventListener('click', () => {
+            this.setTheme(false);
+        });
+        document.getElementById('theme-dark').addEventListener('click', () => {
+            this.setTheme(true);
+        });
+        
+        // Modo de control
+        document.getElementById('mode-touchpad').addEventListener('click', () => {
+            this.setControlMode('touchpad');
+        });
+        document.getElementById('mode-buttons').addEventListener('click', () => {
+            this.setControlMode('buttons');
+        });
+        
+        // Sensibilidad
+        document.querySelectorAll('.sensitivity-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const level = btn.getAttribute('data-level');
+                this.setSensitivity(level);
+            });
+        });
+        
+        // Custom force
+        document.getElementById('custom-force-input').addEventListener('input', (e) => {
+            AppState.settings.customForce = parseInt(e.target.value) || 45;
+            this.updateSensitivityDisplay();
+        });
+    },
+    
+    loadSettings() {
+        const saved = localStorage.getItem('wiicell_settings');
+        if (saved) {
+            AppState.settings = { ...AppState.settings, ...JSON.parse(saved) };
+        }
+        
+        // Aplicar tema al body
+        this.updateThemeUI();
+        this.updateControlModeUI();
+        this.updateSensitivityUI();
+    },
+    
+    saveSettings() {
+        localStorage.setItem('wiicell_settings', JSON.stringify(AppState.settings));
+    },
+    
+    setTheme(dark) {
+        AppState.settings.darkMode = dark;
+        this.updateThemeUI();
+        this.saveSettings();
+    },
+    
+    updateThemeUI() {
+        const isDark = AppState.settings.darkMode;
+        document.body.classList.toggle('theme-light', !isDark);
+        document.body.classList.toggle('theme-dark', isDark);
+        document.getElementById('theme-light').classList.toggle('active', !isDark);
+        document.getElementById('theme-dark').classList.toggle('active', isDark);
+    },
+    
+    setControlMode(mode) {
+        AppState.settings.controlMode = mode;
+        this.updateControlModeUI();
+        this.saveSettings();
+        
+        // Actualizar controller (cambia las clases CSS para mostrar/ocultar)
+        controllerScreen.updateControlMode();
+    },
+    
+    updateControlModeUI() {
+        const mode = AppState.settings.controlMode;
+        document.getElementById('mode-touchpad').classList.toggle('active', mode === 'touchpad');
+        document.getElementById('mode-buttons').classList.toggle('active', mode === 'buttons');
+    },
+    
+
+    
+    setSensitivity(level) {
+        AppState.settings.sensitivity = level;
+        this.updateSensitivityUI();
+        this.saveSettings();
+    },
+    
+    updateSensitivityUI() {
+        const level = AppState.settings.sensitivity;
+        
+        document.querySelectorAll('.sensitivity-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-level') === level);
+        });
+        
+        // Mostrar/ocultar custom force
+        const customContainer = document.getElementById('custom-force-container');
+        customContainer.classList.toggle('hidden', level !== 'custom');
+        
+        this.updateSensitivityDisplay();
+    },
+    
+    updateSensitivityDisplay() {
+        const level = AppState.settings.sensitivity;
+        const forceMap = {
+            low: { label: 'Bajo', force: 0.8 },
+            medium: { label: 'Medio', force: 4.5 },
+            high: { label: 'Alto', force: 10.0 },
+            custom: { label: 'Custom', force: AppState.settings.customForce / 10 }
+        };
+        
+        const info = forceMap[level];
+        document.getElementById('current-level').textContent = info.label;
+        document.getElementById('current-force').textContent = info.force.toFixed(1);
+    }
+};
+
+// ============================================
+// UTILIDADES
+// ============================================
+Number.prototype.clamp = function(min, max) {
+    return Math.min(Math.max(this, min), max);
+};
+
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar settings primero (para cargar configuración guardada)
+    settingsScreen.init();
+    settingsScreen.loadSettings();
+    
+    // Inicializar controller (ahora ya tiene los settings cargados)
+    controllerScreen.init();
+    
+    // Mostrar pantalla de controller directamente (en web el servidor ya sirve esta página)
+    showScreen('controller');
+    
+    // Conectar automáticamente al WebSocket del servidor actual
+    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    const wsUrl = `${protocol}${window.location.host}`;
+    controllerScreen.autoConnect(wsUrl);
+});
         </script>
     </body>
 </html>

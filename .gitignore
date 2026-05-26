@@ -8,3 +8,10 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 pnpm-lock.yaml
+java-server/.idea/
+java-server/target/*
+java-server/*.class
+java-server/lib/
+*.log
+.vscode/
+.opencode/
