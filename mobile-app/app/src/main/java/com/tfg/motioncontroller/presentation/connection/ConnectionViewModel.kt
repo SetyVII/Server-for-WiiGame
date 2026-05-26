@@ -32,14 +32,24 @@ class ConnectionViewModel @Inject constructor(
             initialValue = ""
         )
 
-    fun connect(serverIp: String, port: Int = 3000) {
+    val lastServerPort: StateFlow<Int> = settingsDataStore.lastServerPortFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 3000
+        )
+
+    fun connect(serverIp: String, port: Int) {
         viewModelScope.launch {
             settingsDataStore.saveLastServerIp(serverIp)
+            settingsDataStore.saveLastServerPort(port)
         }
         gameRepository.connect(serverIp, port)
     }
 
-    fun disconnect() {
-        gameRepository.disconnect()
+    fun saveServerPort(port: Int) {
+        viewModelScope.launch {
+            settingsDataStore.saveLastServerPort(port)
+        }
     }
 }

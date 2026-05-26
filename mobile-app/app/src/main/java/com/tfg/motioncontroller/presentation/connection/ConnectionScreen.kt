@@ -17,7 +17,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,9 +60,12 @@ fun ConnectionScreen(
 ) {
     val connectionStatus by viewModel.connectionStatus.collectAsStateWithLifecycle()
     val savedServerIp by viewModel.lastServerIp.collectAsStateWithLifecycle()
+    val savedServerPort by viewModel.lastServerPort.collectAsStateWithLifecycle()
 
     var serverIp by remember(savedServerIp) { mutableStateOf(savedServerIp) }
-    val serverPort = 3000 // Puerto del servidor WiiGames
+    var serverPortStr by remember(savedServerPort) { mutableStateOf(savedServerPort.toString()) }
+    var isEditingPort by remember { mutableStateOf(false) }
+    
     val useHttps = false  // WS (sin SSL)
     val context = LocalContext.current
 
@@ -164,28 +170,106 @@ fun ConnectionScreen(
                     }
                 )
 
+                // Label Puerto (Visible en modo de edición)
+                if (isEditingPort) {
+                    Text(
+                        text = "Puerto del Servidor",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    BasicTextField(
+                        value = serverPortStr,
+                        onValueChange = { serverPortStr = it.filter { char -> char.isDigit() } },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.background)
+                            .padding(horizontal = 16.dp),
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        enabled = connectionStatus.socketState != SocketState.CONNECTING,
+                        decorationBox = { innerTextField ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    if (serverPortStr.isEmpty()) {
+                                        Text(
+                                            text = "Ej: 3002",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                                IconButton(
+                                    onClick = {
+                                        val port = serverPortStr.toIntOrNull() ?: 3000
+                                        viewModel.saveServerPort(port)
+                                        isEditingPort = false
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Guardar puerto",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    )
+                }
+
                 // Info del puerto
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Puerto: 3000 (WS)",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "Puerto: ${serverPortStr.ifEmpty { "3000" }}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    if (!isEditingPort) {
+                        Text(
+                            text = "Cambiar",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable { isEditingPort = true }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 }
 
                 // Boton Conectar
                 Button(
                     onClick = {
-                        viewModel.connect(serverIp, serverPort)
+                        viewModel.connect(serverIp, serverPortStr.toIntOrNull() ?: 3000)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -272,7 +356,8 @@ fun ConnectionScreen(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    val webUrl = "http://$serverIp:3000"
+                    val currentPort = serverPortStr.ifEmpty { "3000" }
+                    val webUrl = "http://$serverIp:$currentPort"
                     Text(
                         text = webUrl,
                         style = MaterialTheme.typography.bodyLarge,

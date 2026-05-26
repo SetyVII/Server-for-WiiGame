@@ -48,11 +48,27 @@ Implementacion del contador de pickups (monedas) flotante en la pantalla del con
 - Mismo envio de datos: touchpad envia gamma/beta, botones envian dpadX/dpadY
 - Reset automatico al cambiar de modo
 
+### 3. Cambio dinámico de puerto de servidor
+**Implementación**:
+- Añadido botón "Cambiar" en la pantalla de conexión junto a la info del puerto.
+- Implementado campo `BasicTextField` para editar el puerto manualmente.
+- Añadido botón de confirmación (check) para guardar el puerto en el `DataStore`.
+- Persistencia del puerto (`LAST_SERVER_PORT`) en `SettingsDataStore` para que se mantenga entre sesiones.
+- Actualización dinámica de la URL de alternativa web basada en el puerto configurado.
+
+**Archivos modificados**:
+- `SettingsDataStore.kt` - Añadida clave `LAST_SERVER_PORT`, flujo de lectura y función de guardado.
+- `ConnectionViewModel.kt` - Exposición de `lastServerPort` y lógica para guardar el puerto.
+- `ConnectionScreen.kt` - Nueva interfaz para edición de puerto y validación de entrada numérica.
+
 ---
 
 ## Archivos Afectados
 
 ### Modificados
+- `mobile-app/app/src/main/java/com/tfg/motioncontroller/data/local/SettingsDataStore.kt`
+- `mobile-app/app/src/main/java/com/tfg/motioncontroller/presentation/connection/ConnectionViewModel.kt`
+- `mobile-app/app/src/main/java/com/tfg/motioncontroller/presentation/connection/ConnectionScreen.kt`
 - `mobile-app/app/src/main/java/com/tfg/motioncontroller/domain/model/ConnectionState.kt`
 - `mobile-app/app/src/main/java/com/tfg/motioncontroller/presentation/controller/ControllerViewModel.kt`
 - `mobile-app/app/src/main/java/com/tfg/motioncontroller/presentation/controller/ControllerScreen.kt`

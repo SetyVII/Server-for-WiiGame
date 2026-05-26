@@ -31,6 +31,7 @@ class SettingsDataStore @Inject constructor(
         val CUSTOM_FORCE = intPreferencesKey("custom_force")
         val CONTROL_MODE = stringPreferencesKey("control_mode")
         val LAST_SERVER_IP = stringPreferencesKey("last_server_ip")
+        val LAST_SERVER_PORT = intPreferencesKey("last_server_port")
     }
 
     val settingsFlow: Flow<GameSettings> = dataStore.data.map { preferences ->
@@ -88,6 +89,16 @@ class SettingsDataStore @Inject constructor(
     suspend fun saveLastServerIp(ip: String) {
         dataStore.edit { preferences ->
             preferences[LAST_SERVER_IP] = ip
+        }
+    }
+
+    val lastServerPortFlow: Flow<Int> = dataStore.data.map { preferences ->
+        preferences[LAST_SERVER_PORT] ?: 3000
+    }
+
+    suspend fun saveLastServerPort(port: Int) {
+        dataStore.edit { preferences ->
+            preferences[LAST_SERVER_PORT] = port
         }
     }
 }

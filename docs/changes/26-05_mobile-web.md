@@ -82,6 +82,11 @@ flashScreen(color, duration) {
 - `mobile-web/style.css` - Estilos del contador flotante + `position: relative` en `.controller-main`
 - `mobile-web/script.js` - Estado `pickupCount`, cache del elemento, incremento en `handleServerMessage('pickup')`
 
+### 4. Sincronización con java-server
+**Implementación**:
+- Los cambios realizados en `mobile-web/` (index.html, style.css, script.js) han sido consolidados en el archivo standalone `java-server/src/main/resources/index.html`.
+- Esta consolidación asegura que el servidor Java sirva la versión más reciente del mando web sin dependencias externas.
+
 ---
 
 ## Archivos Afectados
@@ -90,6 +95,9 @@ flashScreen(color, duration) {
 - `mobile-web/index.html`
 - `mobile-web/style.css`
 - `mobile-web/script.js`
+- `java-server/src/main/resources/index.html` (consolidación)
+- `java-server/run_server.bat` (nuevo archivo)
+- `.gitignore` (actualización de reglas)
 
 ---
 
