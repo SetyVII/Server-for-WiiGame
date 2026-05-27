@@ -318,19 +318,19 @@ const controllerScreen = {
             this.clampAndUpdateTouchpad();
         };
         
-        const handleMove = (e) => {
-            if (!AppState.isDragging) return;
-            // e.preventDefault(); // Comentado para permitir scroll si fuera necesario, o usar pointerEvents
-            
-            const rect = touchpad.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            AppState.manualOffset.x = clientX - rect.left - rect.width / 2;
-            AppState.manualOffset.y = clientY - rect.top - rect.height / 2;
-            
-            this.clampAndUpdateTouchpad();
-        };
+         const handleMove = (e) => {
+             if (!AppState.isDragging) return;
+             e.preventDefault();
+             
+             const rect = touchpad.getBoundingClientRect();
+             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+             
+             AppState.manualOffset.x = clientX - rect.left - rect.width / 2;
+             AppState.manualOffset.y = clientY - rect.top - rect.height / 2;
+             
+             this.clampAndUpdateTouchpad();
+         };
         
         const handleEnd = () => {
             AppState.isDragging = false;

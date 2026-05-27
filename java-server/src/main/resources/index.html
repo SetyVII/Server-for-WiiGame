@@ -1784,28 +1784,36 @@ const controllerScreen = {
         });
     },
     
-    bindActionButtons() {
-        const btnA = document.querySelector('.btn-action.btn-a');
-        const btnB = document.querySelector('.btn-action.btn-b');
-        
-        const bindButton = (btn, key) => {
-            const handlePress = () => {
-                AppState.currentInput[key] = true;
-                this.sendInput();
-            };
-            const handleRelease = () => {
-                AppState.currentInput[key] = false;
-                this.sendInput();
-            };
-            
-            btn.addEventListener('pointerdown', handlePress);
-            btn.addEventListener('pointerup', handleRelease);
-            btn.addEventListener('pointerleave', handleRelease);
-        };
-        
-        bindButton(btnA, 'btnA');
-        bindButton(btnB, 'btnB');
-    },
+     bindActionButtons() {
+         const btnA = document.querySelector('.btn-action.btn-a');
+         const btnB = document.querySelector('.btn-action.btn-b');
+         
+         const bindButton = (btn, key) => {
+             const handlePress = (e) => {
+                 e.preventDefault();
+                 AppState.currentInput[key] = true;
+                 this.sendInput();
+                 btn.classList.add('active');
+             };
+             const handleRelease = (e) => {
+                 if (e) e.preventDefault();
+                 AppState.currentInput[key] = false;
+                 this.sendInput();
+                 btn.classList.remove('active');
+             };
+             
+             btn.addEventListener('pointerdown', handlePress);
+             btn.addEventListener('pointerup', handleRelease);
+             btn.addEventListener('pointerleave', handleRelease);
+
+             // Touch events explícitos
+             btn.addEventListener('touchstart', handlePress, { passive: false });
+             btn.addEventListener('touchend', handleRelease, { passive: false });
+         };
+         
+         bindButton(btnA, 'btnA');
+         bindButton(btnB, 'btnB');
+     },
     
     bindMicSliders() {
         this.elements.thresholdSlider.addEventListener('input', (e) => {
