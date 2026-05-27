@@ -26,6 +26,12 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+echo Copiando archivos estaticos...
+xcopy "src\main\resources\*" "target\classes\" /Y /I /E >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Advertencia: No se pudieron copiar todos los recursos
+)
+
 echo Iniciando servidor en puerto 3002...
 java -cp "target/classes;target/java-server-1.0.jar" server.Main
 popd

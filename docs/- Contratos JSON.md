@@ -139,7 +139,7 @@ Lo que el server reenvía a Unity (añade `playerId`):
 | `gamma` | float | -1.0 a 1.0 | Inclinación izq/der (giroscopio), normalizado desde ±40° |
 | `beta` | float | -1.0 a 1.0 | Inclinación adelante/atrás, normalizado desde ±40° |
 | `dpadX` | int | -1, 0, 1 | D-pad horizontal (botones A/D del móvil). **Nota**: Se duplica en `gamma` para compatibilidad con Unity. |
-| `dpadY` | int | -1, 0, 1 | D-pad vertical (botones W/S del móvil). |
+| `dpadY` | int | -1, 0, 1 | D-pad vertical (botones W/S del móvil). **Nota**: Se duplica en `beta` para compatibilidad con Unity. |
 | `btnA` | bool | — | Botón A (salto) |
 | `btnB` | bool | — | Botón B (ataque) |
 | `isYelling` | bool | — | Micrófono supera umbral de 100/255 |

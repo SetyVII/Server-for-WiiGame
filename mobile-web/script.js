@@ -320,7 +320,7 @@ const controllerScreen = {
         
         const handleMove = (e) => {
             if (!AppState.isDragging) return;
-            e.preventDefault();
+            // e.preventDefault(); // Comentado para permitir scroll si fuera necesario, o usar pointerEvents
             
             const rect = touchpad.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -413,26 +413,32 @@ const controllerScreen = {
             const y = parseFloat(btn.getAttribute('data-y'));
             
             const handlePress = () => {
-                if (AppState.sensorsActive) return;
-                // Resetear valores del touchpad al usar botones
-                AppState.currentInput.gamma = x; // Mapeo de dpadX a gamma para Unity
-                AppState.currentInput.beta = 0;
+                // Actualizar valores igual que Android: gamma = x, beta = 0
                 AppState.currentInput.dpadX = x;
                 AppState.currentInput.dpadY = y;
+                AppState.currentInput.gamma = x;
+                AppState.currentInput.beta = 0;
                 this.sendInput();
             };
             
             const handleRelease = () => {
-                AppState.currentInput.gamma = 0;
-                AppState.currentInput.beta = 0;
+                // Resetear todo igual que Android
                 AppState.currentInput.dpadX = 0;
                 AppState.currentInput.dpadY = 0;
+                AppState.currentInput.gamma = 0;
+                AppState.currentInput.beta = 0;
                 this.sendInput();
             };
             
+            // Eventos para móvil y PC
             btn.addEventListener('pointerdown', handlePress);
             btn.addEventListener('pointerup', handleRelease);
             btn.addEventListener('pointerleave', handleRelease);
+            
+            // Touch events explícitos para asegurar respuesta inmediata
+            btn.addEventListener('touchstart', handlePress, { passive: false });
+            btn.addEventListener('touchend', handleRelease, { passive: false });
+            btn.addEventListener('touchcancel', handleRelease, { passive: false });
         });
     },
     
@@ -441,18 +447,26 @@ const controllerScreen = {
         const btnB = document.querySelector('.btn-action.btn-b');
         
         const bindButton = (btn, key) => {
-            const handlePress = () => {
+            const handlePress = (e) => {
+                e.preventDefault();
                 AppState.currentInput[key] = true;
                 this.sendInput();
+                btn.classList.add('active');
             };
-            const handleRelease = () => {
+            const handleRelease = (e) => {
+                if (e) e.preventDefault();
                 AppState.currentInput[key] = false;
                 this.sendInput();
+                btn.classList.remove('active');
             };
             
             btn.addEventListener('pointerdown', handlePress);
             btn.addEventListener('pointerup', handleRelease);
             btn.addEventListener('pointerleave', handleRelease);
+
+            // Touch events explícitos
+            btn.addEventListener('touchstart', handlePress, { passive: false });
+            btn.addEventListener('touchend', handleRelease, { passive: false });
         };
         
         bindButton(btnA, 'btnA');
@@ -516,36 +530,54 @@ const controllerScreen = {
             if (now - AppState.lastSensorTime < AppState.SENSOR_TICK_RATE) return;
             AppState.lastSensorTime = now;
             
-            const gamma = event.gamma || 0;
-            const beta = event.beta || 0;
+            // Detectar orientación actual
+            const isPortrait = window.innerHeight > window.innerWidth;
             
-            if (AppState.isCalibrating) {
-                // Primera lectura = centro
-                AppState.sensorOffset = { gamma, beta };
-                AppState.isCalibrating = false;
-                this.elements.calibrationPanel.classList.add('hidden');
-            }
-            
-            // Aplicar offset
-            const calibratedGamma = gamma - AppState.sensorOffset.gamma;
-            const calibratedBeta = beta - AppState.sensorOffset.beta;
-            
-            // Mapear a [-1, 1]
+            let mappedGamma = 0;
+            let mappedBeta = 0;
             const maxAngle = 40;
-            const mappedGamma = (calibratedGamma / maxAngle).clamp(-1, 1);
-            const mappedBeta = (calibratedBeta / maxAngle).clamp(-1, 1);
+
+            if (isPortrait) {
+                // Portrait: izq/der = gamma, adelante/atrás = beta
+                const rawGamma = event.gamma || 0;
+                const rawBeta = event.beta || 0;
+
+                if (AppState.isCalibrating) {
+                    AppState.sensorOffset = { gamma: rawGamma, beta: rawBeta };
+                    AppState.isCalibrating = false;
+                    this.elements.calibrationPanel.classList.add('hidden');
+                }
+
+                const calibratedGamma = rawGamma - AppState.sensorOffset.gamma;
+                const calibratedBeta = rawBeta - AppState.sensorOffset.beta;
+                
+                mappedGamma = (calibratedGamma / maxAngle).clamp(-1, 1);
+                mappedBeta = (calibratedBeta / maxAngle).clamp(-1, 1);
+            } else {
+                // Landscape (Mando): izq/der = beta, adelante/atrás = gamma
+                const rawBeta = event.beta || 0;
+                const rawGamma = event.gamma || 0;
+
+                if (AppState.isCalibrating) {
+                    AppState.sensorOffset = { beta: rawBeta, gamma: rawGamma };
+                    AppState.isCalibrating = false;
+                    this.elements.calibrationPanel.classList.add('hidden');
+                }
+
+                const calibratedBeta = rawBeta - AppState.sensorOffset.beta;
+                const calibratedGamma = rawGamma - AppState.sensorOffset.gamma;
+                
+                mappedGamma = (calibratedBeta / maxAngle).clamp(-1, 1);
+                mappedBeta = (calibratedGamma / maxAngle).clamp(-1, 1);
+            }
             
             AppState.currentInput.gamma = mappedGamma;
             AppState.currentInput.beta = mappedBeta;
             
-            // Actualizar debug
+            // Actualizar debug y visual
             this.elements.debugTiltX.textContent = mappedGamma.toFixed(2);
             this.elements.debugTiltY.textContent = mappedBeta.toFixed(2);
-            
-            // Actualizar visual del touchpad
             this.updateTouchpadVisual();
-            
-            // Enviar input
             this.sendInput();
         };
         
@@ -832,33 +864,19 @@ const controllerScreen = {
         if (!AppState.sendingInput || !AppState.ws || AppState.ws.readyState !== WebSocket.OPEN || !AppState.myPlayerId) return;
         
         const mode = AppState.settings.controlMode;
-        let input;
         
-        if (mode === 'touchpad') {
-            // Modo touchpad: enviar gamma, beta (sin dpadX/Y)
-            input = {
-                type: 'input',
-                gamma: AppState.currentInput.gamma,
-                beta: AppState.currentInput.beta,
-                dpadX: 0,
-                dpadY: 0,
-                btnA: AppState.currentInput.btnA,
-                btnB: AppState.currentInput.btnB,
-                isYelling: AppState.isYelling,
-            };
-        } else {
-            // Modo botones: enviar dpadX, dpadY (sin gamma/beta)
-            input = {
-                type: 'input',
-                gamma: 0,
-                beta: 0,
-                dpadX: AppState.currentInput.dpadX,
-                dpadY: AppState.currentInput.dpadY,
-                btnA: AppState.currentInput.btnA,
-                btnB: AppState.currentInput.btnB,
-                isYelling: AppState.isYelling,
-            };
-        }
+        // El servidor espera el formato de WebSocketMessage.kt (InputMessage)
+        // No filtramos por modo aquí, enviamos el estado completo para que Unity reciba gamma/beta/dpad
+        const input = {
+            type: 'input',
+            gamma: AppState.currentInput.gamma,
+            beta: AppState.currentInput.beta,
+            dpadX: AppState.currentInput.dpadX,
+            dpadY: AppState.currentInput.dpadY,
+            btnA: AppState.currentInput.btnA,
+            btnB: AppState.currentInput.btnB,
+            isYelling: AppState.currentInput.isYelling,
+        };
         
         AppState.ws.send(JSON.stringify(input));
     },
@@ -957,13 +975,14 @@ const controllerScreen = {
         }
         
         // Limpiar valores del modo anterior al cambiar
+        // En modo touchpad: limpiar botones (los sensores seguirán controlando gamma/beta)
+        // En modo botones: limpiar solo el offset manual (no tocar gamma/beta para que los sensores sigan activos)
         if (mode === 'touchpad') {
             AppState.currentInput.dpadX = 0;
             AppState.currentInput.dpadY = 0;
         } else {
-            AppState.currentInput.gamma = 0;
-            AppState.currentInput.beta = 0;
             AppState.manualOffset = { x: 0, y: 0 };
+            // No limpiamos gamma/beta porque los sensores deben seguir funcionando
         }
         this.sendInput();
     },

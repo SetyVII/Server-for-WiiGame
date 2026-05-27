@@ -1761,18 +1761,20 @@ const controllerScreen = {
             const y = parseFloat(btn.getAttribute('data-y'));
             
             const handlePress = () => {
-                if (AppState.sensorsActive) return;
-                // Resetear valores del touchpad al usar botones
-                AppState.currentInput.gamma = 0;
-                AppState.currentInput.beta = 0;
+                // Actualizar valores igual que Android: gamma = x, beta = 0
                 AppState.currentInput.dpadX = x;
                 AppState.currentInput.dpadY = y;
+                AppState.currentInput.gamma = x;
+                AppState.currentInput.beta = 0;
                 this.sendInput();
             };
             
             const handleRelease = () => {
+                // Resetear todo igual que Android
                 AppState.currentInput.dpadX = 0;
                 AppState.currentInput.dpadY = 0;
+                AppState.currentInput.gamma = 0;
+                AppState.currentInput.beta = 0;
                 this.sendInput();
             };
             
@@ -2177,34 +2179,19 @@ const controllerScreen = {
     sendInput() {
         if (!AppState.sendingInput || !AppState.ws || AppState.ws.readyState !== WebSocket.OPEN || !AppState.myPlayerId) return;
         
-        const mode = AppState.settings.controlMode;
-        let input;
-        
-        if (mode === 'touchpad') {
-            // Modo touchpad: enviar gamma, beta (sin dpadX/Y)
-            input = {
-                type: 'input',
-                gamma: AppState.currentInput.gamma,
-                beta: AppState.currentInput.beta,
-                dpadX: 0,
-                dpadY: 0,
-                btnA: AppState.currentInput.btnA,
-                btnB: AppState.currentInput.btnB,
-                isYelling: AppState.isYelling,
-            };
-        } else {
-            // Modo botones: enviar dpadX, dpadY (sin gamma/beta)
-            input = {
-                type: 'input',
-                gamma: 0,
-                beta: 0,
-                dpadX: AppState.currentInput.dpadX,
-                dpadY: AppState.currentInput.dpadY,
-                btnA: AppState.currentInput.btnA,
-                btnB: AppState.currentInput.btnB,
-                isYelling: AppState.isYelling,
-            };
-        }
+        // Enviar SIEMPRE todos los datos sin discriminar por modo
+        // Los sensores deben funcionar en ambos modos (Touchpad y Botones)
+        // Los botones también deben funcionar independientemente
+        const input = {
+            type: 'input',
+            gamma: AppState.currentInput.gamma,
+            beta: AppState.currentInput.beta,
+            dpadX: AppState.currentInput.dpadX,
+            dpadY: AppState.currentInput.dpadY,
+            btnA: AppState.currentInput.btnA,
+            btnB: AppState.currentInput.btnB,
+            isYelling: AppState.isYelling,
+        };
         
         AppState.ws.send(JSON.stringify(input));
     },
@@ -2303,13 +2290,14 @@ const controllerScreen = {
         }
         
         // Limpiar valores del modo anterior al cambiar
+        // En modo touchpad: limpiar botones (los sensores seguirán controlando gamma/beta)
+        // En modo botones: limpiar solo el offset manual (no tocar gamma/beta para que los sensores sigan activos)
         if (mode === 'touchpad') {
             AppState.currentInput.dpadX = 0;
             AppState.currentInput.dpadY = 0;
         } else {
-            AppState.currentInput.gamma = 0;
-            AppState.currentInput.beta = 0;
             AppState.manualOffset = { x: 0, y: 0 };
+            // No limpiamos gamma/beta porque los sensores deben seguir funcionando
         }
         this.sendInput();
     },
