@@ -1763,7 +1763,7 @@ const controllerScreen = {
             const handlePress = () => {
                 if (AppState.sensorsActive) return;
                 // Resetear valores del touchpad al usar botones
-                AppState.currentInput.gamma = 0;
+                AppState.currentInput.gamma = x; // Mapeo de dpadX a gamma para Unity
                 AppState.currentInput.beta = 0;
                 AppState.currentInput.dpadX = x;
                 AppState.currentInput.dpadY = y;
@@ -1771,6 +1771,8 @@ const controllerScreen = {
             };
             
             const handleRelease = () => {
+                AppState.currentInput.gamma = 0;
+                AppState.currentInput.beta = 0;
                 AppState.currentInput.dpadX = 0;
                 AppState.currentInput.dpadY = 0;
                 this.sendInput();

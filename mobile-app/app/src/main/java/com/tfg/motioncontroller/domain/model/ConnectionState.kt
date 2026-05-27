@@ -27,7 +27,11 @@ data class GameSettings(
     val sensitivity: SensitivityLevel = SensitivityLevel.MEDIUM,
     val customForce: Int = 45,
     val darkMode: Boolean = true,
-    val controlMode: ControlMode = ControlMode.TOUCHPAD
+    val controlMode: ControlMode = ControlMode.TOUCHPAD,
+    // Ajustes de microfono persistentes
+    val micThreshold: Float = 0.10f,
+    val micCooldown: Int = 800,
+    val micScale: Float = 3.33f
 )
 
 enum class ControlMode(val label: String) {

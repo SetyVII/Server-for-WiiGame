@@ -53,25 +53,33 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tfg.motioncontroller.R
 import com.tfg.motioncontroller.domain.model.SocketState
 
+/**********************************************************************
+ * ConnectionScreen - Pantalla de conexión al servidor Java
+ * Objetivo: edir la IP y el Puerto para conectar con el servidor Java.
+ **********************************************************************/
 @Composable
 fun ConnectionScreen(
-    onConnected: () -> Unit,
+    onConnected: () -> Unit, // Navega a la siguiente pantalla tras conectar
     viewModel: ConnectionViewModel = hiltViewModel()
 ) {
+    // ESTADO DE LA PANTALLA
+    // Observamos los estados persistentes y locales para reaccionar a los cambios
     val connectionStatus by viewModel.connectionStatus.collectAsStateWithLifecycle()
     val savedServerIp by viewModel.lastServerIp.collectAsStateWithLifecycle()
     val savedServerPort by viewModel.lastServerPort.collectAsStateWithLifecycle()
 
+    // Estados temporales para los campos de texto
     var serverIp by remember(savedServerIp) { mutableStateOf(savedServerIp) }
     var serverPortStr by remember(savedServerPort) { mutableStateOf(savedServerPort.toString()) }
-    var isEditingPort by remember { mutableStateOf(false) }
+    var isEditingPort by remember { mutableStateOf(false) } // Controla si mostramos el campo del puerto
     
     val useHttps = false  // WS (sin SSL)
     val context = LocalContext.current
 
-    // Contador de intentos fallidos
+    // Contador de intentos para mostrar ayuda dinámica (el enlace web)
     var failedAttempts by remember { mutableIntStateOf(0) }
 
+    // Efecto secundario: cuando el socket dice "CONECTADO", avisamos para navegar
     LaunchedEffect(connectionStatus.socketState) {
         if (connectionStatus.socketState == SocketState.CONNECTED) {
             failedAttempts = 0
@@ -127,6 +135,12 @@ fun ConnectionScreen(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+
+                /***************************************************************************
+                 * CAMPO DE IP (y PUERTO opcional a cambiar)
+                 * Contiene un label, un campo de texto con placeholder y validación básica.
+                 ***************************************************************************/
+
                 // Label IP
                 Text(
                     text = "IP de tu PC",
@@ -135,7 +149,7 @@ fun ConnectionScreen(
                     fontWeight = FontWeight.Medium
                 )
                 
-                // Campo IP
+                // Campo IP - Campo de texto
                 BasicTextField(
                     value = serverIp,
                     onValueChange = { serverIp = it },
@@ -158,6 +172,7 @@ fun ConnectionScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // Placeholder
                             if (serverIp.isEmpty()) {
                                 Text(
                                     text = "Ej: 192.168.1.10",
@@ -170,7 +185,7 @@ fun ConnectionScreen(
                     }
                 )
 
-                // Label Puerto (Visible en modo de edición)
+                // Label Puerto - Solo aparece al pulsar si se está editando el puerto
                 if (isEditingPort) {
                     Text(
                         text = "Puerto del Servidor",
@@ -179,6 +194,7 @@ fun ConnectionScreen(
                         fontWeight = FontWeight.Medium
                     )
 
+                    // Campo Puerto - Campo de texto, solo aparece al pulsar "Cambiar"
                     BasicTextField(
                         value = serverPortStr,
                         onValueChange = { serverPortStr = it.filter { char -> char.isDigit() } },
@@ -219,7 +235,7 @@ fun ConnectionScreen(
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Edit,
+                                        imageVector = Icons.Default.Check,
                                         contentDescription = "Guardar puerto",
                                         tint = MaterialTheme.colorScheme.primary
                                     )
@@ -229,7 +245,7 @@ fun ConnectionScreen(
                     )
                 }
 
-                // Info del puerto
+                // Resumen del puerto actual y botón para editarlo
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -252,6 +268,7 @@ fun ConnectionScreen(
                         )
                     }
 
+                    // Vuelve a mostrar el botón "Cambiar" si no se está editando.
                     if (!isEditingPort) {
                         Text(
                             text = "Cambiar",
@@ -266,9 +283,10 @@ fun ConnectionScreen(
                     }
                 }
 
-                // Boton Conectar
+                // Botón de acción principal
                 Button(
                     onClick = {
+                        // Al conectar, usamos el puerto escrito o el 3000 por defecto
                         viewModel.connect(serverIp, serverPortStr.toIntOrNull() ?: 3000)
                     },
                     modifier = Modifier
@@ -293,7 +311,7 @@ fun ConnectionScreen(
                     }
                 }
 
-                // Estado de conexion
+                // Feedback visual del estado de conexion
                 when (connectionStatus.socketState) {
                     SocketState.CONNECTING -> {
                         Text(
@@ -328,12 +346,13 @@ fun ConnectionScreen(
                             }
                         }
                     }
-                    else -> {}
+                   else -> { /* no-op: sin acción */ }
                 }
             }
         }
 
-        // Mensaje de alternativa web despues de 3 intentos fallidos
+        // Si falla la conexión...
+        // Aparece un enlace al mando web como alternativa.
         if (failedAttempts >= 3 && serverIp.isNotBlank()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -364,6 +383,7 @@ fun ConnectionScreen(
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center,
+                        // Abre el enlace en el navegador al pulsar
                         modifier = Modifier.clickable {
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
                             context.startActivity(intent)
@@ -373,7 +393,11 @@ fun ConnectionScreen(
             }
         }
 
-        // Nota formateada
+        /***************************************************************
+         *  Nota Importante
+         *  Nos notifica que la IP debe ser la del PC donde se ejecuta el servidor Java, 
+         *  y que esa IP aparece en el log del servidor.
+         ***************************************************************/
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)

@@ -5,8 +5,10 @@ Aplicacion Android nativa que actua como mando virtual para el juego **WiiGames*
 ## Caracteristicas
 
 - **Conexion WebSocket** al servidor Node.js (puerto 3000, sin SSL)
-- **Sensores nativos** de Android (giroscopio + acelerometro) con calibracion automatica
-- **D-Pad tactil** con bolita de 48.dp arrastrable para control manual
+- **Sensores nativos** de Android (giroscopio + acelerometro) con calibracion automatica.
+- **Compatibilidad total**: Incluye fallback a acelerometro para dispositivos sin giroscopio.
+- **Mapeo Landscape**: Ejes optimizados para uso horizontal (TiltX = Pitch, TiltY = Roll).
+- **D-Pad tactil** con bolita de 48.dp arrastrable para control manual.
 - **Modo Botones** alternativo con D-Pad W/A/S/D clasico (envia dpadX/dpadY)
 - **Selector de modo** en Settings: Touchpad vs Botones con persistencia
 - **Control de velocidad variable** mediante gamma/beta segun distancia del centro
@@ -207,19 +209,16 @@ La app solicita los siguientes permisos:
 - [x] Guardado automatico en settings (sin boton "Guardar")
 - [x] Testing en multiples dispositivos
 
-## Cambios recientes (23/05/2026)
+## Cambios recientes (27/05/2026)
 
-Ver documento detallado en `/docs/changes/23-05_mobile-app.md`.
+- **Correccion de ejes**: Mapeo de sensores corregido para modo Landscape (Pitch -> gamma, Roll -> beta).
+- **Fallback de sensores**: Implementada deteccion automatica de acelerometro si el giroscopio no esta disponible.
+- **Compatibilidad WASD**: Los botones de direccion ahora tambien envian su valor al campo `gamma` para asegurar el movimiento en Unity.
+- **Estabilidad de red**: Mejorada la logica de reconexion y gestion de estados del WebSocket.
+- **Documentacion**: Actualizada la documentacion tecnica y comentarios en codigo (estilo humano).
+- **Build fixes**: Resueltos errores de compilacion Kotlin y problemas con rutas de Windows (ASCII).
 
-Principales cambios:
-- **Protocolo actualizado** para compatibilidad con servidor Node.js
-- **URL cambiada** de `wss://IP:8443/ws/motion` a `ws://IP:3000`
-- **Mensajes reestructurados** de tipos separados a `InputMessage` unificado
-- **Eventos de Unity** manejados con vibracion y log visual
-- **Reconexion mejorada** con cuenta atras de 5 segundos
-- **Guardado automatico** en settings sin boton "Guardar"
-- **Enlace a control web** tras 3 intentos fallidos de conexion
-- **D-Pad tactil interactivo** con control de velocidad variable
+## Cambios anteriores (23/05/2026)
 
 ## Notas
 

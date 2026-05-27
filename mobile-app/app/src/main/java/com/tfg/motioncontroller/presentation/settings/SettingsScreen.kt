@@ -52,14 +52,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.tfg.motioncontroller.domain.model.GameSettings
 import com.tfg.motioncontroller.domain.model.SensitivityLevel
 
+/************************************************************************************
+ * SettingsScreen: permite al usuario personalizar su experiencia.
+ * Desde aquí se controla el aspecto visual, el método de control (táctil vs botones)
+ * y la "finura" con la que responde el movimiento.
+ ************************************************************************************/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
+    // Obtenemos los ajustes actuales. Si no hay, usamos los de por defecto.
     val settings by viewModel.settings.collectAsState(initial = com.tfg.motioncontroller.domain.model.GameSettings())
 
+    // Titulo y "volver".
     Scaffold(
         topBar = {
             TopAppBar(
@@ -87,61 +94,45 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Apariencia
+            // --- SECCIÓN: APARIENCIA ---
+            // Permite alternar entre modo claro y oscuro.
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "Apariencia",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = "Apariencia", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
-                    // Modo oscuro/claro
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Botón Modo Claro
                         Button(
                             onClick = { viewModel.saveSettings(settings.copy(darkMode = false)) },
                             modifier = Modifier.weight(1f),
-                            colors = if (!settings.darkMode) {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            } else {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.LightMode,
-                                contentDescription = "Modo claro",
-                                modifier = Modifier.size(20.dp)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (!settings.darkMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
                             )
+                        ) {
+                            Icon(Icons.Default.LightMode, contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.size(4.dp))
                             Text("Claro")
                         }
+                        // Botón Modo Oscuro
                         Button(
                             onClick = { viewModel.saveSettings(settings.copy(darkMode = true)) },
                             modifier = Modifier.weight(1f),
-                            colors = if (settings.darkMode) {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            } else {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.DarkMode,
-                                contentDescription = "Modo oscuro",
-                                modifier = Modifier.size(20.dp)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (settings.darkMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
                             )
+                        ) {
+                            Icon(Icons.Default.DarkMode, contentDescription = null, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.size(4.dp))
                             Text("Oscuro")
                         }
@@ -149,88 +140,66 @@ fun SettingsScreen(
                 }
             }
 
-            // Modo de Control
+            // --- SECCIÓN: MODO DE CONTROL ---
+            // Define si el usuario prefiere inclinar el móvil (Touchpad/Giroscopio) o usar botones clásicos.
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "Modo de Control",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = "Modo de Control", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Botón Touchpad/Giroscopio
                         Button(
                             onClick = { viewModel.saveSettings(settings.copy(controlMode = com.tfg.motioncontroller.domain.model.ControlMode.TOUCHPAD)) },
                             modifier = Modifier.weight(1f),
-                            colors = if (settings.controlMode == com.tfg.motioncontroller.domain.model.ControlMode.TOUCHPAD) {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            } else {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                            }
-                        ) {
-                            Text("Touchpad")
-                        }
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (settings.controlMode == com.tfg.motioncontroller.domain.model.ControlMode.TOUCHPAD) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) { Text("Touchpad") }
+                        
+                        // Botón de Controles Clásicos
                         Button(
                             onClick = { viewModel.saveSettings(settings.copy(controlMode = com.tfg.motioncontroller.domain.model.ControlMode.BUTTONS)) },
                             modifier = Modifier.weight(1f),
-                            colors = if (settings.controlMode == com.tfg.motioncontroller.domain.model.ControlMode.BUTTONS) {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            } else {
-                                ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                            }
-                        ) {
-                            Text("Botones")
-                        }
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (settings.controlMode == com.tfg.motioncontroller.domain.model.ControlMode.BUTTONS) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) { Text("Botones") }
                     }
                 }
             }
 
-            // Sensibilidad
+            // --- SECCIÓN: SENSIBILIDAD ---
+            // Ajusta qué tan "fuerte" se mueve el personaje en Unity al inclinar el móvil.
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "Sensibilidad del control",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = "Sensibilidad del control", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
-                    // Opciones de sensibilidad
                     SensitivityGrid(
                         selected = settings.sensitivity,
-                        onSelect = {
-                            viewModel.saveSettings(settings.copy(sensitivity = it))
-                        }
+                        onSelect = { viewModel.saveSettings(settings.copy(sensitivity = it)) }
                     )
 
-                    // Input custom
+                    // Si el usuario elige "Personalizado", permitimos escribir un valor numérico exacto.
                     if (settings.sensitivity == SensitivityLevel.CUSTOM) {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Fuerza personalizada (1-100):",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Text(text = "Fuerza personalizada (1-100):", style = MaterialTheme.typography.bodyMedium)
                         TextField(
                             value = settings.customForce.toString(),
                             onValueChange = { value ->
@@ -246,59 +215,43 @@ fun SettingsScreen(
                         )
                     }
 
-                    // Valores actuales
-                    Spacer(modifier = Modifier.height(8.dp))
-                    val currentForce = when (settings.sensitivity) {
-                        SensitivityLevel.LOW -> 8
-                        SensitivityLevel.MEDIUM -> 45
-                        SensitivityLevel.HIGH -> 100
-                        SensitivityLevel.CUSTOM -> settings.customForce
-                    }
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.background
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Nivel:", style = MaterialTheme.typography.bodyMedium)
-                                Text(
-                                    settings.sensitivity.label,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text("Fuerza:", style = MaterialTheme.typography.bodyMedium)
-                                Text(
-                                    if (settings.sensitivity == SensitivityLevel.CUSTOM) {
-                                        "${(currentForce / 10.0).format(1)}"
-                                    } else {
-                                        settings.sensitivity.description
-                                    },
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
+                    // Resumen informativo de la configuración actual.
+                    CurrentSensitivitySummary(settings)
                 }
             }
         }
     }
 }
 
+// Muestra un pequeño cuadro con el nivel y la fuerza numérica aplicada.
+@Composable
+private fun CurrentSensitivitySummary(settings: GameSettings) {
+    val currentForce = when (settings.sensitivity) {
+        SensitivityLevel.LOW -> 8
+        SensitivityLevel.MEDIUM -> 45
+        SensitivityLevel.HIGH -> 100
+        SensitivityLevel.CUSTOM -> settings.customForce
+    }
+    
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
+        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Nivel:", style = MaterialTheme.typography.bodyMedium)
+                Text(settings.sensitivity.label, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Fuerza:", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    if (settings.sensitivity == SensitivityLevel.CUSTOM) "${(currentForce / 10.0).format(1)}" else settings.sensitivity.description,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
+
+// Cuadrícula de opciones para seleccionar la sensibilidad.
 @Composable
 private fun SensitivityGrid(
     selected: SensitivityLevel,

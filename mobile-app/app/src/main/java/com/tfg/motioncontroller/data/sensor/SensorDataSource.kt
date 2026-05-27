@@ -16,18 +16,24 @@ import javax.inject.Singleton
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
+/**
+ * SensorDataSource es el encargado de leer los sensores físicos del teléfono (giroscopio, acelerómetro).
+ * Su trabajo es traducir la inclinación física del móvil en valores que el juego de Unity 
+ * entienda (como "ir a la izquierda" o "saltar").
+ */
 @Singleton
 class SensorDataSource @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
         private const val TAG = "SensorDataSource"
-        private const val TILT_SCALE = 45f
-        private const val CALIBRATION_FRAMES = 30 // ~0.5 segundos a 60fps
+        private const val TILT_SCALE = 45f // Cuántos grados de inclinación equivalen al 100% de fuerza
+        private const val CALIBRATION_FRAMES = 30 // Cuántas muestras tomamos para el "punto cero"
     }
 
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
+    // Preferimos el sensor de rotación de juegos porque ignora el norte magnético (más estable)
     private val gameRotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
     private val rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
     private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -35,18 +41,15 @@ class SensorDataSource @Inject constructor(
     private val activeRotationSensor = gameRotationSensor ?: rotationSensor
 
     /**
-     * Flow de datos de sensores procesados con calibracion automatica
-     * 
-     * Durante los primeros CALIBRATION_FRAMES frames, calcula el offset promedio
-     * y lo aplica a todos los valores posteriores.
+     * Esta función crea un flujo (Flow) constante de datos.
+     * Incluye una fase de auto-calibración al inicio: 
+     * el usuario debe mantener el móvil quieto para definir qué es "estar recto".
      */
     fun sensorDataFlow(): Flow<SensorData> = callbackFlow {
         val rotationMatrix = FloatArray(9)
         val orientationAngles = FloatArray(3)
-        var lastAccelerometer: FloatArray? = null
-        var hasRotationData = false
         
-        // Variables de calibracion
+        // Variables para calcular el "punto cero"
         var calibrationCount = 0
         var pitchSum = 0.0
         var rollSum = 0.0
@@ -56,162 +59,127 @@ class SensorDataSource @Inject constructor(
 
         val listener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent) {
-                when (event.sensor.type) {
-                    Sensor.TYPE_GAME_ROTATION_VECTOR,
-                    Sensor.TYPE_ROTATION_VECTOR -> {
-                        hasRotationData = true
+                var pitchDeg = 0f
+                var rollDeg = 0f
+                var hasNewData = false
+
+                if (event.sensor.type == Sensor.TYPE_GAME_ROTATION_VECTOR || 
+                    event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
+                    // Obtener orientación desde el giroscopio virtual
+                    SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                    SensorManager.getOrientation(rotationMatrix, orientationAngles)
+                    
+                    pitchDeg = Math.toDegrees(orientationAngles[1].toDouble()).toFloat()
+                    rollDeg = Math.toDegrees(orientationAngles[2].toDouble()).toFloat()
+                    hasNewData = true
+                } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER && activeRotationSensor == null) {
+                    // Cálculo alternativo si el dispositivo no tiene giroscopio
+                    val accX = event.values[0]
+                    val accY = event.values[1]
+                    val accZ = event.values[2]
+                    
+                    pitchDeg = Math.toDegrees(atan2(accY.toDouble(), sqrt((accX * accX + accZ * accZ).toDouble()))).toFloat()
+                    rollDeg = Math.toDegrees(atan2(-accX.toDouble(), accZ.toDouble())).toFloat()
+                    hasNewData = true
+                }
+
+                if (hasNewData) {
+                    if (!isCalibrated) {
+                        // Fase inicial para establecer la posición de reposo
+                        pitchSum += pitchDeg
+                        rollSum += rollDeg
+                        calibrationCount++
                         
-                        SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-                        SensorManager.getOrientation(rotationMatrix, orientationAngles)
-                        
-                        val pitchRad = orientationAngles[1]
-                        val rollRad = orientationAngles[2]
-                        
-                        val pitchDeg = Math.toDegrees(pitchRad.toDouble()).toFloat()
-                        val rollDeg = Math.toDegrees(rollRad.toDouble()).toFloat()
-                        
-                        if (!isCalibrated) {
-                            // Fase de calibracion: acumular valores
-                            pitchSum += pitchDeg
-                            rollSum += rollDeg
-                            calibrationCount++
-                            
-                            if (calibrationCount >= CALIBRATION_FRAMES) {
-                                // Calcular offset promedio
-                                pitchOffset = (pitchSum / calibrationCount).toFloat()
-                                rollOffset = (rollSum / calibrationCount).toFloat()
-                                isCalibrated = true
-                                Log.i(TAG, "Calibracion completada. Offset: pitch=$pitchOffset, roll=$rollOffset")
-                            }
-                            
-                            // Durante calibracion, enviar valores neutros
-                            trySend(
-                                SensorData(
-                                    tiltX = 0f,
-                                    tiltY = 0f,
-                                    alpha = 0f,
-                                    beta = 0f,
-                                    gamma = 0f,
-                                    accX = 0f,
-                                    accY = 0f,
-                                    accZ = 0f,
-                                    isCalibrating = true,
-                                    calibrationProgress = calibrationCount.toFloat() / CALIBRATION_FRAMES
-                                )
-                            )
-                        } else {
-                            // Aplicar offset para valores calibrados
-                            val calibratedPitch = pitchDeg - pitchOffset
-                            val calibratedRoll = rollDeg - rollOffset
-                            
-                            // Mapeo landscape (igual que antes)
-                            val tiltX = (calibratedRoll / TILT_SCALE).coerceIn(-1f, 1f)
-                            val tiltY = (-calibratedPitch / TILT_SCALE).coerceIn(-1f, 1f)
-                            
-                            val alpha = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
-                            
-                            val acc = lastAccelerometer
-                            trySend(
-                                SensorData(
-                                    tiltX = tiltX,
-                                    tiltY = tiltY,
-                                    alpha = alpha,
-                                    beta = calibratedPitch,
-                                    gamma = calibratedRoll,
-                                    accX = acc?.get(0) ?: 0f,
-                                    accY = acc?.get(1) ?: 0f,
-                                    accZ = acc?.get(2) ?: 0f,
-                                    isCalibrating = false,
-                                    calibrationProgress = 1f
-                                )
-                            )
+                        if (calibrationCount >= CALIBRATION_FRAMES) {
+                            pitchOffset = (pitchSum / calibrationCount).toFloat()
+                            rollOffset = (rollSum / calibrationCount).toFloat()
+                            isCalibrated = true
+                            Log.i(TAG, "Calibrado: Pitch=$pitchOffset, Roll=$rollOffset")
                         }
+                        
+                        trySend(SensorData(isCalibrating = true, calibrationProgress = calibrationCount.toFloat() / CALIBRATION_FRAMES))
+                    } else {
+                        val calibratedPitch = pitchDeg - pitchOffset
+                        val calibratedRoll = rollDeg - rollOffset
+                        
+                        // Ajuste de ejes para el uso del dispositivo en horizontal
+                        val tiltX = (calibratedPitch / TILT_SCALE).coerceIn(-1f, 1f)
+                        val tiltY = (calibratedRoll / TILT_SCALE).coerceIn(-1f, 1f)
+                        
+                        trySend(
+                            SensorData(
+                                tiltX = tiltX,
+                                tiltY = tiltY,
+                                beta = calibratedRoll, // Eje longitudinal en horizontal
+                                gamma = calibratedPitch, // Eje transversal en horizontal
+                                isCalibrating = false
+                            )
+                        )
                     }
-                    Sensor.TYPE_ACCELEROMETER -> {
-                        lastAccelerometer = event.values.clone()
+                }
 
-                        if (activeRotationSensor == null) {
-                            val x = event.values[0]
-                            val y = event.values[1]
-                            val z = event.values[2]
 
-                            val pitch = atan2(-x.toDouble(), sqrt((y * y + z * z).toDouble()))
-                                .times(180.0 / kotlin.math.PI).toFloat()
-                            val roll = atan2(y.toDouble(), z.toDouble())
-                                .times(180.0 / kotlin.math.PI).toFloat()
-
-                            if (!isCalibrated) {
-                                pitchSum += pitch
-                                rollSum += roll
-                                calibrationCount++
-                                
-                                if (calibrationCount >= CALIBRATION_FRAMES) {
-                                    pitchOffset = (pitchSum / calibrationCount).toFloat()
-                                    rollOffset = (rollSum / calibrationCount).toFloat()
-                                    isCalibrated = true
-                                }
-                                
-                                trySend(
-                                    SensorData(
-                                        tiltX = 0f,
-                                        tiltY = 0f,
-                                        alpha = 0f,
-                                        beta = 0f,
-                                        gamma = 0f,
-                                        accX = 0f,
-                                        accY = 0f,
-                                        accZ = 0f,
-                                        isCalibrating = true,
-                                        calibrationProgress = calibrationCount.toFloat() / CALIBRATION_FRAMES
-                                    )
-                                )
-                            } else {
-                                val calibratedPitch = pitch - pitchOffset
-                                val calibratedRoll = roll - rollOffset
-                                
-                                val tiltX = (calibratedRoll / TILT_SCALE).coerceIn(-1f, 1f)
-                                val tiltY = (-calibratedPitch / TILT_SCALE).coerceIn(-1f, 1f)
-
-                                trySend(
-                                    SensorData(
-                                        tiltX = tiltX,
-                                        tiltY = tiltY,
-                                        alpha = 0f,
-                                        beta = calibratedPitch,
-                                        gamma = calibratedRoll,
-                                        accX = x,
-                                        accY = y,
-                                        accZ = z,
-                                        isCalibrating = false,
-                                        calibrationProgress = 1f
-                                    )
-                                )
-                            }
+                if (hasNewData) {
+                    if (!isCalibrated) {
+                        pitchSum += pitchDeg
+                        rollSum += rollDeg
+                        calibrationCount++
+                        
+                        if (calibrationCount >= CALIBRATION_FRAMES) {
+                            pitchOffset = (pitchSum / calibrationCount).toFloat()
+                            rollOffset = (rollSum / calibrationCount).toFloat()
+                            isCalibrated = true
+                            Log.i(TAG, "Calibrado: Pitch=$pitchOffset, Roll=$rollOffset")
                         }
+                        
+                        trySend(SensorData(isCalibrating = true, calibrationProgress = calibrationCount.toFloat() / CALIBRATION_FRAMES))
+                    } else {
+                        val calibratedPitch = pitchDeg - pitchOffset
+                        val calibratedRoll = rollDeg - rollOffset
+                        
+                        // Mapeo corregido para Modo Horizontal (Landscape):
+                        // Al estar el móvil de lado:
+                        // - La inclinación hacia adelante/atrás del usuario es el "Roll" del sensor.
+                        // - La inclinación lateral (izquierda/derecha) es el "Pitch" del sensor.
+                        
+                        val tiltX = (calibratedPitch / TILT_SCALE).coerceIn(-1f, 1f)
+                        val tiltY = (calibratedRoll / TILT_SCALE).coerceIn(-1f, 1f)
+                        
+                        trySend(
+                            SensorData(
+                                tiltX = tiltX,
+                                tiltY = tiltY,
+                                beta = calibratedRoll, // Inclinación adelante/atrás
+                                gamma = calibratedPitch, // Inclinación lateral
+                                isCalibrating = false
+                            )
+                        )
                     }
                 }
             }
 
-            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-                Log.d(TAG, "Precision del sensor ${sensor.name}: $accuracy")
+            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+        }
+
+        // Registramos los sensores disponibles
+        val sensorDelay = SensorManager.SENSOR_DELAY_GAME
+        
+        if (activeRotationSensor != null) {
+            Log.i(TAG, "Usando sensor de rotación: ${activeRotationSensor.name}")
+            sensorManager.registerListener(listener, activeRotationSensor, sensorDelay)
+        } else {
+            Log.i(TAG, "No hay sensor de rotación, usando acelerómetro como fallback")
+            accelerometer?.let {
+                sensorManager.registerListener(listener, it, sensorDelay)
             }
         }
 
-        activeRotationSensor?.let {
-            Log.i(TAG, "Registrando sensor de rotacion: ${it.name}")
-            sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_GAME)
-        }
-
-        accelerometer?.let {
-            Log.i(TAG, "Registrando acelerometro: ${it.name}")
-            sensorManager.registerListener(listener, it, SensorManager.SENSOR_DELAY_GAME)
-        }
-
         awaitClose {
-            Log.i(TAG, "Desregistrando sensores")
+            Log.i(TAG, "Cerrando flujo de sensores")
             sensorManager.unregisterListener(listener)
         }
     }
+
 
     fun hasRequiredSensors(): Boolean {
         val hasRotation = gameRotationSensor != null || rotationSensor != null

@@ -1,5 +1,11 @@
 package com.tfg.motioncontroller.presentation.controller
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -8,6 +14,8 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,33 +47,24 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import kotlinx.coroutines.delay
-import android.widget.Toast
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -83,7 +82,13 @@ import com.tfg.motioncontroller.ui.theme.TopBarBackground
 import com.tfg.motioncontroller.ui.theme.VolumeBarGradientEnd
 import com.tfg.motioncontroller.ui.theme.VolumeBarGradientMid
 import com.tfg.motioncontroller.ui.theme.VolumeBarGradientStart
+import kotlinx.coroutines.delay
 
+/******************************************************************
+ * ControllerScreen: es la pantalla principal del mando.
+ * Aquí se dibuja la interfaz (D-Pad, botones A/B, barra de micro) 
+ * y se gestionan los permisos y el modo inmersivo de Android.
+ ******************************************************************/
 @Composable
 fun ControllerScreen(
     onSettingsClick: () -> Unit,
@@ -94,7 +99,7 @@ fun ControllerScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Mostrar Snackbar cuando hay mensaje de snackbarMessage
+    // Escuchamos mensajes del sistema (ej: "Conexión perdida")
     LaunchedEffect(uiState.snackbarMessage) {
         uiState.snackbarMessage?.let { message ->
             snackbarHostState.showSnackbar(message)
@@ -102,7 +107,7 @@ fun ControllerScreen(
         }
     }
 
-    // Cuenta atras para volver al menu cuando se pierde la conexion
+    // Cuenta atrás para desconectar si se pierde la conexión
     LaunchedEffect(uiState.reconnectCountdown) {
         uiState.reconnectCountdown?.let { count ->
             if (count == 0) {
@@ -112,7 +117,9 @@ fun ControllerScreen(
         }
     }
 
-    // Modo inmersivo: ocultar barra de navegacion y notificaciones
+    /******************************************************************
+     * Configuramos el modo Inmersivo: ocultamos las barras de Android
+     ******************************************************************/
     DisposableEffect(Unit) {
         val activity = context as? ComponentActivity
         val window = activity?.window
@@ -126,30 +133,11 @@ fun ControllerScreen(
         }
     }
 
-    // Lanzador para solicitar permiso de microfono
+    // Gestor de permisos para el microfono
     val micPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
-        if (isGranted) {
-            viewModel.startMicrophone()
-        } else {
-            viewModel.showPermissionDenied()
-        }
-    }
-
-    // Funcion para verificar y solicitar permiso de microfono
-    val checkAndRequestMicPermission = {
-        when {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                viewModel.startMicrophone()
-            }
-            else -> {
-                micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-            }
-        }
+        if (isGranted) viewModel.startMicrophone() else viewModel.showPermissionDenied()
     }
 
     Box(
@@ -157,159 +145,139 @@ fun ControllerScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-        // Barra superior
-        TopBar(
-            socketState = uiState.connectionStatus.socketState,
-            playerId = uiState.playerId,
-            micActive = uiState.microphoneState.isActive,
-            sensorsActive = uiState.sensorsActive,
-            onToggleSensors = {
-                if (uiState.sensorsActive) {
-                    viewModel.stopSensors()
-                } else {
-                    viewModel.startSensors()
-                }
-            },
-            onToggleMic = {
-                if (uiState.microphoneState.isActive) {
-                    viewModel.stopMicrophone()
-                } else {
-                    checkAndRequestMicPermission()
-                }
-            },
-            onTestVibration = { viewModel.testVibration() },
-            onSettingsClick = onSettingsClick,
-            onDisconnect = {
-                viewModel.disconnect()
-                onDisconnect()
-            }
-        )
-
-        // Indicador de calibracion
-        if (uiState.isCalibrating) {
-            CalibrationIndicator(
-                progress = uiState.calibrationProgress,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Barra superior
+            TopBar(
+                socketState = uiState.connectionStatus.socketState,
+                playerId = uiState.playerId,
+                micActive = uiState.microphoneState.isActive,
+                sensorsActive = uiState.sensorsActive,
+                onToggleSensors = { if (uiState.sensorsActive) viewModel.stopSensors() else viewModel.startSensors() },
+                onToggleMic = {
+                    if (uiState.microphoneState.isActive) viewModel.stopMicrophone()
+                    else {
+                        val hasPerm = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+                        if (hasPerm) viewModel.startMicrophone() else micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                    }
+                },
+                onTestVibration = { viewModel.testVibration() },
+                onSettingsClick = onSettingsClick,
+                onDisconnect = { viewModel.disconnect(); onDisconnect() }
             )
-        }
 
-        // Panel de debug (valores de sensores)
-        if (uiState.sensorsActive && !uiState.isCalibrating) {
-            SensorDebugInfo(
-                tiltX = uiState.sensorValues.tiltX,
-                tiltY = uiState.sensorValues.tiltY,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-            )
-        }
-
-        // Panel de microfono expandible
-        AnimatedVisibility(
-            visible = uiState.microphoneState.isActive,
-            enter = expandVertically() + fadeIn(),
-            exit = shrinkVertically() + fadeOut()
-        ) {
-            MicPanel(
-                rmsLevel = uiState.microphoneState.rmsLevel,
-                isBlowing = uiState.microphoneState.isBlowing,
-                threshold = uiState.microphoneState.threshold,
-                cooldown = uiState.microphoneState.cooldown,
-                scale = uiState.microphoneState.scale,
-                onThresholdChange = { viewModel.updateMicrophoneSettings(it, uiState.microphoneState.cooldown, uiState.microphoneState.scale) },
-                onCooldownChange = { viewModel.updateMicrophoneSettings(uiState.microphoneState.threshold, it, uiState.microphoneState.scale) },
-                onScaleChange = { viewModel.updateMicrophoneSettings(uiState.microphoneState.threshold, uiState.microphoneState.cooldown, it) },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-        }
-
-        // Area principal del mando
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(horizontal = 24.dp, vertical = 16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Control area (Touchpad o Botones)
-                if (uiState.settings.controlMode == com.tfg.motioncontroller.domain.model.ControlMode.TOUCHPAD) {
-                    DPad(
-                        tiltX = uiState.sensorValues.gamma,
-                        tiltY = uiState.sensorValues.beta,
-                        isCalibrating = uiState.isCalibrating,
-                        sensorsActive = uiState.sensorsActive,
-                        onTiltChange = { gamma, beta -> viewModel.setManualTilt(gamma, beta) },
-                        onTiltReset = { viewModel.resetManualTilt() },
-                        modifier = Modifier
-                            .width(380.dp)
-                            .height(250.dp)
-                    )
-                } else {
-                    ButtonsPad(
-                        onButtonPress = { x, y -> viewModel.setDPadButton(x, y) },
-                        onButtonRelease = { viewModel.resetDPadButton() },
-                        modifier = Modifier
-                            .width(380.dp)
-                            .height(250.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(48.dp))
-
-                // Botones A y B (derecha)
-                ActionButtons(
-                    onButtonAPress = { viewModel.setButtonA(true) },
-                    onButtonARelease = { viewModel.setButtonA(false) },
-                    onButtonBPress = { viewModel.setButtonB(true) },
-                    onButtonBRelease = { viewModel.setButtonB(false) },
-                    modifier = Modifier.padding(start = 16.dp)
+            // Indicador de calibración
+            if (uiState.isCalibrating) {
+                CalibrationIndicator(
+                    progress = uiState.calibrationProgress,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                 )
             }
 
-            // Contador de pickups flotante
-            PickupCounter(
-                count = uiState.pickupCount,
-                modifier = Modifier.align(Alignment.TopEnd)
-            )
-        }
+            // Información de depuración de sensores
+            if (uiState.sensorsActive && !uiState.isCalibrating) {
+                SensorDebugInfo(
+                    tiltX = uiState.sensorValues.tiltX,
+                    tiltY = uiState.sensorValues.tiltY,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
 
-        // Mensaje de error
-        uiState.errorMessage?.let { error ->
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+            // Panel visual del micrófono
+            AnimatedVisibility(visible = uiState.microphoneState.isActive) {
+                MicPanel(
+                    rmsLevel = uiState.microphoneState.rmsLevel,
+                    isBlowing = uiState.microphoneState.isBlowing,
+                    threshold = uiState.microphoneState.threshold,
+                    cooldown = uiState.microphoneState.cooldown,
+                    scale = uiState.microphoneState.scale,
+                    onThresholdChange = { viewModel.updateMicrophoneSettings(it, uiState.microphoneState.cooldown, uiState.microphoneState.scale) },
+                    onCooldownChange = { viewModel.updateMicrophoneSettings(uiState.microphoneState.threshold, it, uiState.microphoneState.scale) },
+                    onScaleChange = { viewModel.updateMicrophoneSettings(uiState.microphoneState.threshold, uiState.microphoneState.cooldown, it) },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
+
+            // El "Cuerpo" del mando
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                textAlign = TextAlign.Center
-            )
+                    .weight(1f)
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Control de movimiento
+                    if (uiState.settings.controlMode == com.tfg.motioncontroller.domain.model.ControlMode.TOUCHPAD) {
+                        DPad(
+                            tiltX = uiState.sensorValues.gamma,
+                            tiltY = uiState.sensorValues.beta,
+                            isCalibrating = uiState.isCalibrating,
+                            sensorsActive = uiState.sensorsActive,
+                            onTiltChange = { gamma, beta -> viewModel.setManualTilt(gamma, beta) },
+                            onTiltReset = { viewModel.resetManualTilt() },
+                            modifier = Modifier.width(380.dp).height(250.dp)
+                        )
+                    } else {
+                        ButtonsPad(
+                            onButtonPress = { x, y -> viewModel.setDPadButton(x, y) },
+                            onButtonRelease = { viewModel.resetDPadButton() },
+                            modifier = Modifier.width(380.dp).height(250.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(48.dp))
+
+                    // Botones de acción
+                    ActionButtons(
+                        onButtonAPress = { viewModel.setButtonA(true) },
+                        onButtonARelease = { viewModel.setButtonA(false) },
+                        onButtonBPress = { viewModel.setButtonB(true) },
+                        onButtonBRelease = { viewModel.setButtonB(false) },
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+
+                // Contador de recogidas
+                PickupCounter(
+                    count = uiState.pickupCount,
+                    modifier = Modifier.align(Alignment.TopEnd)
+                )
+            }
         }
 
-        // Log de eventos del juego
-        uiState.logMessage?.let { log ->
-            Text(
-                text = log,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                textAlign = TextAlign.Center
-            )
+        // Mensajes de log y error flotantes
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 80.dp)
+        ) {
+            uiState.errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            uiState.logMessage?.let { log ->
+                Text(
+                    text = log,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
+
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
     }
-
-    SnackbarHost(
-        hostState = snackbarHostState,
-        modifier = Modifier.align(Alignment.BottomCenter)
-    )
-}
 }
 
 @Composable
@@ -459,8 +427,6 @@ private fun DPad(
     onTiltReset: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Radio maximo para movimiento de la bolita (proporcional al tamano)
-    // Usamos 40% del tamano disponible como radio maximo
     val density = LocalDensity.current
     var maxRadiusXPx by remember { mutableStateOf(0f) }
     var maxRadiusYPx by remember { mutableStateOf(0f) }
@@ -468,14 +434,12 @@ private fun DPad(
     var manualOffset by remember { mutableStateOf(Offset.Zero) }
     var isDragging by remember { mutableStateOf(false) }
 
-    // Offset visual: usa manualOffset si se arrastra, sino usa valores del sensor
     val visualOffset = if (isDragging) {
         manualOffset
     } else {
         Offset(tiltX * maxRadiusXPx, tiltY * maxRadiusYPx)
     }
 
-    // Color de la bolita: apagado cuando sensores activos
     val dotColor = when {
         sensorsActive -> Color.Gray
         isCalibrating -> Color.Gray
@@ -493,7 +457,7 @@ private fun DPad(
                 maxRadiusXPx = size.width / 2f * 0.75f
                 maxRadiusYPx = size.height / 2f * 0.75f
             }
-            .clip(RoundedCornerShape(percent = 50)) // Forma ovalada
+            .clip(RoundedCornerShape(percent = 50))
             .background(DPadBackground.copy(alpha = if (sensorsActive) 0.5f else 1f))
             .padding(4.dp)
             .pointerInput(sensorsActive) {
@@ -502,43 +466,28 @@ private fun DPad(
                 detectDragGestures(
                     onDragStart = { offset ->
                         isDragging = true
-                        // Calcular offset inicial relativo al centro
                         manualOffset = Offset(
                             offset.x - dpadWidth / 2f,
                             offset.y - dpadHeight / 2f
                         )
-                        // Limitar al radio ovalado
                         val normalizedX = manualOffset.x / maxRadiusXPx
                         val normalizedY = manualOffset.y / maxRadiusYPx
                         val dist = kotlin.math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY)
                         if (dist > 1f) {
-                            manualOffset = Offset(
-                                manualOffset.x / dist,
-                                manualOffset.y / dist
-                            )
+                            manualOffset = Offset(manualOffset.x / dist, manualOffset.y / dist)
                         }
-                        // Calcular gamma/beta
-                        val gamma = (manualOffset.x / maxRadiusXPx).coerceIn(-1f, 1f)
-                        val beta = -(manualOffset.y / maxRadiusYPx).coerceIn(-1f, 1f)
-                        onTiltChange(gamma, beta)
+                        onTiltChange(manualOffset.x / maxRadiusXPx, -(manualOffset.y / maxRadiusYPx))
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
                         val newOffset = manualOffset + Offset(dragAmount.x, dragAmount.y)
-                        val normalizedX = newOffset.x / maxRadiusXPx
-                        val normalizedY = newOffset.y / maxRadiusYPx
-                        val dist = kotlin.math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY)
+                        val dist = kotlin.math.sqrt((newOffset.x / maxRadiusXPx) * (newOffset.x / maxRadiusXPx) + (newOffset.y / maxRadiusYPx) * (newOffset.y / maxRadiusYPx))
                         manualOffset = if (dist > 1f) {
-                            Offset(
-                                newOffset.x / dist,
-                                newOffset.y / dist
-                            )
+                            Offset(newOffset.x / dist, newOffset.y / dist)
                         } else {
                             newOffset
                         }
-                        val gamma = (manualOffset.x / maxRadiusXPx).coerceIn(-1f, 1f)
-                        val beta = -(manualOffset.y / maxRadiusYPx).coerceIn(-1f, 1f)
-                        onTiltChange(gamma, beta)
+                        onTiltChange(manualOffset.x / maxRadiusXPx, -(manualOffset.y / maxRadiusYPx))
                     },
                     onDragEnd = {
                         isDragging = false
@@ -549,19 +498,12 @@ private fun DPad(
             },
         contentAlignment = Alignment.Center
     ) {
-        // Borde decorativo
         val borderIntensity = if (isDragging) {
-            val normalizedX = manualOffset.x / maxRadiusXPx
-            val normalizedY = manualOffset.y / maxRadiusYPx
-            kotlin.math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY).coerceIn(0f, 1f)
+            kotlin.math.sqrt((manualOffset.x / maxRadiusXPx) * (manualOffset.x / maxRadiusXPx) + (manualOffset.y / maxRadiusYPx) * (manualOffset.y / maxRadiusYPx)).coerceIn(0f, 1f)
         } else {
             ((kotlin.math.abs(tiltX) + kotlin.math.abs(tiltY)) / 2f).coerceIn(0f, 1f)
         }
-        val borderColor = androidx.compose.ui.graphics.lerp(
-            DPadBorder,
-            Color(0xFFFF6B6B),
-            borderIntensity
-        )
+        val borderColor = androidx.compose.ui.graphics.lerp(DPadBorder, Color(0xFFFF6B6B), borderIntensity)
 
         Box(
             modifier = Modifier
@@ -573,7 +515,6 @@ private fun DPad(
                 .background(borderColor.copy(alpha = 0.3f))
         )
 
-        // Bolita del D-Pad (48.dp)
         val dotOffsetX = with(density) { visualOffset.x.toDp() }
         val dotOffsetY = with(density) { visualOffset.y.toDp() }
 
@@ -593,13 +534,6 @@ private fun ButtonsPad(
     onButtonRelease: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val buttons = listOf(
-        Triple("W", 0, 1),
-        Triple("A", -1, 0),
-        Triple("D", 1, 0),
-        Triple("S", 0, -1)
-    )
-
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -608,34 +542,13 @@ private fun ButtonsPad(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Fila superior: W
-            DPadButton(
-                text = "W",
-                onPress = { onButtonPress(0, 1) },
-                onRelease = onButtonRelease
-            )
-            // Fila media: A, espacio, D
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                DPadButton(
-                    text = "A",
-                    onPress = { onButtonPress(-1, 0) },
-                    onRelease = onButtonRelease
-                )
+            DPadButton(text = "W", onPress = { onButtonPress(0, 1) }, onRelease = onButtonRelease)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DPadButton(text = "A", onPress = { onButtonPress(-1, 0) }, onRelease = onButtonRelease)
                 Spacer(modifier = Modifier.size(80.dp))
-                DPadButton(
-                    text = "D",
-                    onPress = { onButtonPress(1, 0) },
-                    onRelease = onButtonRelease
-                )
+                DPadButton(text = "D", onPress = { onButtonPress(1, 0) }, onRelease = onButtonRelease)
             }
-            // Fila inferior: S
-            DPadButton(
-                text = "S",
-                onPress = { onButtonPress(0, -1) },
-                onRelease = onButtonRelease
-            )
+            DPadButton(text = "S", onPress = { onButtonPress(0, -1) }, onRelease = onButtonRelease)
         }
     }
 }
@@ -651,33 +564,18 @@ private fun DPadButton(
     val isPressed by interactionSource.collectIsPressedAsState()
 
     LaunchedEffect(isPressed) {
-        if (isPressed) {
-            onPress()
-        } else {
-            onRelease()
-        }
+        if (isPressed) onPress() else onRelease()
     }
 
     Button(
-        onClick = { /* handled by interactionSource */ },
+        onClick = { },
         modifier = modifier.size(80.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = DPadBackground,
-            disabledContainerColor = Color(0xFF333333)
-        ),
-        border = androidx.compose.foundation.BorderStroke(
-            width = 2.dp,
-            color = DPadBorder
-        ),
+        colors = ButtonDefaults.buttonColors(containerColor = DPadBackground, disabledContainerColor = Color(0xFF333333)),
+        border = androidx.compose.foundation.BorderStroke(width = 2.dp, color = DPadBorder),
         interactionSource = interactionSource
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleLarge,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
+        Text(text = text, style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -696,30 +594,12 @@ private fun MicPanel(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(
-                MaterialTheme.colorScheme.surfaceVariant,
-                CircleShape.copy(all = androidx.compose.foundation.shape.CornerSize(8.dp))
-            )
+            .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
             .padding(12.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Microfono",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.width(60.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(20.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text("Microfono", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(60.dp))
+            Box(modifier = Modifier.weight(1f).height(20.dp).clip(CircleShape).background(MaterialTheme.colorScheme.background)) {
                 val progress = (rmsLevel * 100f * scale).coerceIn(0f, 100f) / 100f
                 LinearProgressIndicator(
                     progress = { progress },
@@ -731,101 +611,35 @@ private fun MicPanel(
                     },
                     trackColor = Color.Transparent
                 )
-
-                Text(
-                    text = "${(progress * 100).toInt()}%",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Text("${(progress * 100).toInt()}%", style = MaterialTheme.typography.labelSmall, color = Color.White, modifier = Modifier.align(Alignment.Center))
             }
-
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "${(rmsLevel * 100).toInt()}% RMS",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.width(60.dp)
-            )
+            Text("${(rmsLevel * 100).toInt()}% RMS", style = MaterialTheme.typography.labelSmall, modifier = Modifier.width(60.dp))
         }
 
         AnimatedVisibility(visible = isBlowing) {
-            Text(
-                text = "SOPLO! (${(rmsLevel * 100).toInt()}%)",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                textAlign = TextAlign.Center
-            )
+            Text("SOPLO!", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Sensib.",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Slider(
-                    value = threshold * 100,
-                    onValueChange = { onThresholdChange(it / 100f) },
-                    valueRange = 5f..50f,
-                    modifier = Modifier.height(24.dp)
-                )
-                Text(
-                    text = "%.2f".format(threshold),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Text("Sensib.", style = MaterialTheme.typography.labelSmall)
+                Slider(value = threshold * 100, onValueChange = { onThresholdChange(it / 100f) }, valueRange = 5f..50f)
+                Text("%.2f".format(threshold), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             }
-
             Spacer(modifier = Modifier.width(8.dp))
-
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Cooldown",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Slider(
-                    value = cooldown.toFloat(),
-                    onValueChange = { onCooldownChange(it.toInt()) },
-                    valueRange = 200f..2000f,
-                    modifier = Modifier.height(24.dp)
-                )
-                Text(
-                    text = "${cooldown}ms",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Text("Cooldown", style = MaterialTheme.typography.labelSmall)
+                Slider(value = cooldown.toFloat(), onValueChange = { onCooldownChange(it.toInt()) }, valueRange = 200f..2000f)
+                Text("${cooldown}ms", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             }
-
             Spacer(modifier = Modifier.width(8.dp))
-
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Escala",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Slider(
-                    value = scale,
-                    onValueChange = { onScaleChange(it) },
-                    valueRange = 1f..10f,
-                    modifier = Modifier.height(24.dp)
-                )
-                Text(
-                    text = "%.1fx".format(scale),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Text("Escala", style = MaterialTheme.typography.labelSmall)
+                Slider(value = scale, onValueChange = { onScaleChange(it) }, valueRange = 1f..10f)
+                Text("%.1fx".format(scale), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             }
         }
     }
@@ -839,34 +653,13 @@ private fun ActionButtons(
     onButtonBRelease: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxHeight(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxHeight()
     ) {
-        Column(
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxHeight()
-        ) {
-            PressableButton(
-                text = "A",
-                subtext = "SALTAR",
-                onPress = onButtonAPress,
-                onRelease = onButtonARelease,
-                color = ButtonA,
-                modifier = Modifier.size(120.dp)
-            )
-
-            PressableButton(
-                text = "B",
-                subtext = "VALIDAR",
-                onPress = onButtonBPress,
-                onRelease = onButtonBRelease,
-                color = ButtonB,
-                modifier = Modifier.size(120.dp)
-            )
-        }
+        PressableButton(text = "A", subtext = "SALTAR", onPress = onButtonAPress, onRelease = onButtonARelease, color = ButtonA, modifier = Modifier.size(120.dp))
+        PressableButton(text = "B", subtext = "VALIDAR", onPress = onButtonBPress, onRelease = onButtonBRelease, color = ButtonB, modifier = Modifier.size(120.dp))
     }
 }
 
@@ -881,17 +674,9 @@ private fun PressableButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-
-    LaunchedEffect(isPressed) {
-        if (isPressed) {
-            onPress()
-        } else {
-            onRelease()
-        }
-    }
-
+    LaunchedEffect(isPressed) { if (isPressed) onPress() else onRelease() }
     Button(
-        onClick = { /* handled by interactionSource */ },
+        onClick = { },
         modifier = modifier,
         shape = CircleShape,
         colors = ButtonDefaults.buttonColors(containerColor = color),
@@ -905,53 +690,18 @@ private fun PressableButton(
 }
 
 @Composable
-private fun SensorDebugInfo(
-    tiltX: Float,
-    tiltY: Float,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = "tiltX: ${tiltX.format(2)} | tiltY: ${tiltY.format(2)}",
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center,
-        modifier = modifier.fillMaxWidth()
-    )
+private fun SensorDebugInfo(tiltX: Float, tiltY: Float, modifier: Modifier = Modifier) {
+    Text("tiltX: ${"%.2f".format(tiltX)} | tiltY: ${"%.2f".format(tiltY)}", style = MaterialTheme.typography.labelSmall, textAlign = TextAlign.Center, modifier = modifier.fillMaxWidth())
 }
 
 @Composable
-private fun PickupCounter(
-    count: Int,
-    modifier: Modifier = Modifier
-) {
+private fun PickupCounter(count: Int, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier
-            .background(
-                color = Color(0xFF1A1A2E),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .border(
-                width = 2.dp,
-                color = Color(0xFFFFD700),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(horizontal = 14.dp, vertical = 6.dp),
+        modifier = modifier.background(Color(0xFF1A1A2E), RoundedCornerShape(12.dp)).border(2.dp, Color(0xFFFFD700), RoundedCornerShape(12.dp)).padding(horizontal = 14.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Icon(
-            imageVector = Icons.Filled.AttachMoney,
-            contentDescription = "Monedas",
-            tint = Color(0xFFFFD700),
-            modifier = Modifier.size(24.dp)
-        )
-        Text(
-            text = count.toString(),
-            color = Color(0xFFFFD700),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold
-        )
+        Icon(Icons.Filled.AttachMoney, contentDescription = "Monedas", tint = Color(0xFFFFD700), modifier = Modifier.size(24.dp))
+        Text(count.toString(), color = Color(0xFFFFD700), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
     }
 }
-
-private fun Float.format(digits: Int): String = "%.${digits}f".format(this)

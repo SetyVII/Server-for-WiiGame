@@ -138,20 +138,20 @@ Lo que el server reenvía a Unity (añade `playerId`):
 | `playerId` | int | 1-2 | Inyectado por el server |
 | `gamma` | float | -1.0 a 1.0 | Inclinación izq/der (giroscopio), normalizado desde ±40° |
 | `beta` | float | -1.0 a 1.0 | Inclinación adelante/atrás, normalizado desde ±40° |
-| `dpadX` | int | -1, 0, 1 | D-pad horizontal (botones A/D del móvil) |
-| `dpadY` | int | -1, 0, 1 | D-pad vertical (botones W/S del móvil) |
+| `dpadX` | int | -1, 0, 1 | D-pad horizontal (botones A/D del móvil). **Nota**: Se duplica en `gamma` para compatibilidad con Unity. |
+| `dpadY` | int | -1, 0, 1 | D-pad vertical (botones W/S del móvil). |
 | `btnA` | bool | — | Botón A (salto) |
 | `btnB` | bool | — | Botón B (ataque) |
 | `isYelling` | bool | — | Micrófono supera umbral de 100/255 |
 
 - **Cuándo**: El móvil lo envía a ~20 FPS desde los sensores, y en cada evento de botón.
 - **Unity (`GameEventManager.HandleInput`)**:
-  - `gamma` → `PlayerMovements.SetExternalInput()` — movimiento horizontal
+  - `gamma` → `PlayerMovements.SetExternalInput()` — movimiento horizontal (recibe tanto el giroscopio como el D-Pad mapeado).
   - `btnA` → `PlayerMovements.RequestExternalJump()` — salto normal
   - `isYelling` → `PlayerMovements.RequestExternalSuperJump()` — super salto automático
   - `btnB` → `PlayerMovements.PlayAttack1()` + dispara `OnPlayerSecondaryAction`
   - `beta` → dispara `OnPlayerContextInput(playerId, beta)`
-  - `dpadX` / `dpadY` → **no se usan en Unity** (se envían pero se ignoran)
+  - `dpadX` / `dpadY` → **No se usan directamente en Unity**, pero se envían por si el servidor o futuros scripts los necesitan.
 
 ---
 
@@ -383,7 +383,7 @@ Lo que el server reenvía a Unity (añade `playerId`):
 |---|---|---|---|---|---|
 | 1 | `join` | Mobile → Server | Mobile al conectar | Server asigna slot | ✅ |
 | 2 | `assignRole` | Server → Mobile | Server tras `join` | Mobile guarda `playerId` | ✅ |
-| 3 | `error` | Server → Mobile | Server si sala llena | Mobile (ignorado) | ⚠️ |
+| 3 | `error` | Server → Mobile | Server si sala llena | Mobile muestra mensaje | ✅ |
 | 4 | `join_unity` | Unity → Server | Unity al conectar | Server registra `unitySocket` | ✅ |
 | 5 | `unity_ready` | Server → Unity | Server tras `join_unity` | Unity log confirmación | ✅ |
 | 6 | `input` | Mobile → Server → Unity | Mobile ~20fps | Unity mueve/salta/ataca | ✅ |
@@ -400,12 +400,10 @@ Lo que el server reenvía a Unity (añade `playerId`):
 
 ## Problemas conocidos
 
-1. **`dpadX`/`dpadY` no se usan en Unity** — El móvil los envía en cada `input` pero Unity no los lee. Solo usa `gamma` para movimiento horizontal.
+1. **`dpadX`/`dpadY` no se usan directamente en Unity** — El móvil los envía en cada `input`, pero el sistema de movimiento de Unity solo lee `gamma`. **Solución aplicada**: Los clientes (Mobile/Web) ahora duplican el valor de `dpadX` en el campo `gamma` cuando se usan los botones WASD, asegurando compatibilidad sin cambiar el código de Unity.
 
 2. **`puzzle_action` con campos incorrectos** — El móvil envía `puzzleId` + `status`, pero la clase C# de Unity espera `actionId` + `data`. Aunque parsea, los campos no se mapean bien.
 
 3. **`screen_effect` con campos incorrectos** — Unity envía `effectType` + `data` (strings), pero el móvil espera `color`, `duration` y `vibrate` como campos separados. Usa defaults `#ffffff` y `200ms`.
 
-4. **`error` no se muestra en el móvil** — El server envía `{ type: "error", message: "Sala llena" }` pero el móvil no tiene handler para ese tipo.
-
-5. **`death`, `screen_effect`, `puzzle_start` nunca se llaman** — Los métodos existen en `GameEventManager` pero ningún script los invoca. Están disponibles para uso futuro.
+4. **`death`, `screen_effect`, `puzzle_start` nunca se llaman** — Los métodos existen en `GameEventManager` pero ningún script los invoca. Están disponibles para uso futuro.
